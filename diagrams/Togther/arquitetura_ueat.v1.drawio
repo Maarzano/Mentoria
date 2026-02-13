@@ -1,143 +1,251 @@
 <mxfile host="65bd71144e">
     <diagram id="h7NCbZccVR-JtDEVBYXP" name="Page-1">
-        <mxGraphModel dx="2532" dy="466" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="simple">
+        <mxGraphModel dx="7034" dy="1976" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="simple">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="3" value="Comprador" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-                    <mxGeometry x="40" y="170" width="120" height="80" as="geometry"/>
+                <mxCell id="73" value="Programar o Gateway&lt;div&gt;E configurar manualmente o load balancer&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-1945" y="2223" width="250" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="4" value="Estabelecimento" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-                    <mxGeometry x="40" y="450" width="120" height="80" as="geometry"/>
+                <mxCell id="74" value="Podemos fazer load balancer&amp;nbsp;&lt;div&gt;no gateway?&lt;br&gt;Ou fazer nele e fora?&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2140" y="2803" width="180" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-15" value="" style="group" vertex="1" connectable="0" parent="1">
-                    <mxGeometry x="240" y="110" width="160" height="210" as="geometry"/>
+                <mxCell id="75" value="Cache no bff com dados sanitizados&lt;div&gt;Caso mude uma fila avisa e descarta o cache&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-1705" y="2265" width="270" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-12" value="" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-15">
-                    <mxGeometry width="160" height="210" as="geometry"/>
+                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-13" value="Untitled Layer" parent="0"/>
+                <mxCell id="5" parent="0"/>
+                <mxCell id="6" value="" style="group" connectable="0" vertex="1" parent="5">
+                    <mxGeometry x="-170" y="1910" width="1192.3200000000002" height="1192.3200000000002" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-10" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="ZHVIvnVoHwWRqAKxdAmr-15" source="ZHVIvnVoHwWRqAKxdAmr-5" target="ZHVIvnVoHwWRqAKxdAmr-9">
+                <mxCell id="7" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;" vertex="1" parent="6">
+                    <mxGeometry width="1060" height="1060" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;dashed=1;dashPattern=8 8;" vertex="1" parent="6">
+                    <mxGeometry x="122.68518518518518" y="122.68518518518518" width="814.6296296296297" height="814.6296296296297" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="API GateWay" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="6">
+                    <mxGeometry x="412.22222222222223" width="235.55555555555557" height="117.77777777777779" as="geometry"/>
+                </mxCell>
+                <mxCell id="10" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;" vertex="1" parent="6">
+                    <mxGeometry x="-96.16" y="-96.15" width="1252.31" height="1252.31" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" value="Load balancer" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="6">
+                    <mxGeometry x="500" y="-70" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.077;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="6" source="10">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint x="50" y="529.77" as="sourcePoint"/>
+                        <mxPoint x="120" y="530" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="13" value="Web-bff" style="whiteSpace=wrap;html=1;" vertex="1" parent="6">
+                    <mxGeometry x="250" y="525" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="Pedido" style="whiteSpace=wrap;html=1;" vertex="1" parent="6">
+                    <mxGeometry x="640" y="310" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="Mensageria" style="whiteSpace=wrap;html=1;" vertex="1" parent="6">
+                    <mxGeometry x="595" y="530" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="Auth" style="whiteSpace=wrap;html=1;" vertex="1" parent="6">
+                    <mxGeometry x="380" y="250" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="Catalogo/merchant" style="whiteSpace=wrap;html=1;" vertex="1" parent="6">
+                    <mxGeometry x="510" y="730" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="Notificações" style="whiteSpace=wrap;html=1;" vertex="1" parent="6">
+                    <mxGeometry x="740" y="420" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="Pedidos" style="whiteSpace=wrap;html=1;" vertex="1" parent="6">
+                    <mxGeometry x="740" y="600" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="Geo-location" style="whiteSpace=wrap;html=1;" vertex="1" parent="6">
+                    <mxGeometry x="680" y="700" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="72" style="edgeStyle=none;html=1;entryX=0;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="6" source="21" target="16">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-11" value="Conversa com (http)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="ZHVIvnVoHwWRqAKxdAmr-10">
-                    <mxGeometry x="-0.2333" relative="1" as="geometry">
+                <mxCell id="21" value="App-bff" style="whiteSpace=wrap;html=1;" vertex="1" parent="6">
+                    <mxGeometry x="250" y="410" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="22" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.013;exitY=0.389;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.093;entryY=0.385;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="6" source="10">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-20.11999999999989" y="389.5"/>
+                        </Array>
+                        <mxPoint x="-69.99996999999985" y="390.49859000000015" as="sourcePoint"/>
+                        <mxPoint x="20.304830000000038" y="390.48934999999983" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="23" value="Faz o balancer" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="22">
+                    <mxGeometry x="-0.1367" relative="1" as="geometry">
+                        <mxPoint x="1" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="24" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.093;exitY=0.388;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.189;entryY=0.404;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="6" source="10" target="10">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint x="30" y="400" as="sourcePoint"/>
+                        <mxPoint x="110" y="400" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="68" value="Rate limiting&lt;div&gt;Verifica code injection&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="24">
+                    <mxGeometry x="-0.0902" y="1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-5" value="App (React Native)" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-15">
-                    <mxGeometry x="20" y="30" width="120" height="60" as="geometry"/>
+                <mxCell id="25" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.189;exitY=0.404;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="6" source="10" target="21">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint x="200" y="510" as="sourcePoint"/>
+                        <mxPoint x="280" y="510" as="targetPoint"/>
+                    </mxGeometry>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-9" value="App-bff" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-15">
-                    <mxGeometry x="20" y="130" width="120" height="60" as="geometry"/>
+                <mxCell id="71" value="Manda os&lt;div&gt;dados pro&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="25">
+                    <mxGeometry x="-0.1276" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-6" value="" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="ZHVIvnVoHwWRqAKxdAmr-5">
+                <mxCell id="26" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.173;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="6" source="10" target="13">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint x="240" y="580" as="sourcePoint"/>
+                        <mxPoint x="320" y="580" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="27" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="5" source="29" target="10">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="-379.9999999999982" y="2370" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="28" value="&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Manda o formulário (REST)&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="27">
+                    <mxGeometry x="-0.1913" y="-1" relative="1" as="geometry">
+                        <mxPoint x="5" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="29" value="Web (React)" style="whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="-660" y="2410" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="30" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="5" source="10">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint x="-250" y="2439.92" as="sourcePoint"/>
+                        <mxPoint x="-170" y="2439.92" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="31" value="Faz o balancer" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="30">
+                    <mxGeometry x="-0.1367" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="32" value="App (React Native)" style="whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                    <mxGeometry x="-660" y="2240" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="33" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.015;entryY=0.389;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="5" source="32" target="10">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-13" value="Untitled Layer" parent="0"/>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-16" value="" style="group;strokeColor=none;" vertex="1" connectable="0" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="240" y="390" width="160" height="210" as="geometry"/>
+                <mxCell id="34" value="Manda o formulário (REST)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="33">
+                    <mxGeometry x="-0.0319" y="2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-17" value="" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-16">
-                    <mxGeometry width="160" height="210" as="geometry"/>
+                <mxCell id="35" value="Retry" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="5">
+                    <mxGeometry x="-1830" y="2440" width="60" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-18" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="ZHVIvnVoHwWRqAKxdAmr-16" source="ZHVIvnVoHwWRqAKxdAmr-20" target="ZHVIvnVoHwWRqAKxdAmr-21">
+                <mxCell id="36" value="Observalidade" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="5">
+                    <mxGeometry x="-2040" y="2430" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="37" value="CDN" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="5">
+                    <mxGeometry x="-2230" y="2430" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="38" value="Database Sharding e Partitioning" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="5">
+                    <mxGeometry x="-2430" y="2340" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="39" value="Feature Toggles" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="5">
+                    <mxGeometry x="-2000" y="2260" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="40" value="CQRS e Event Sourcing" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="5">
+                    <mxGeometry x="-2430" y="2420" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="41" value="Rate Limiting e Throttling Avançado" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="5">
+                    <mxGeometry x="-2140" y="2180" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="42" value="CronJob" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="5">
+                    <mxGeometry x="-2430" y="2560" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="43" parent="0"/>
+                <mxCell id="44" value="Comprador" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="43">
+                    <mxGeometry x="-910" y="2230" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" value="Estabelecimento" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="43">
+                    <mxGeometry x="-910" y="2400" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="43" source="44" target="32">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-20" value="Web (React)" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-16">
-                    <mxGeometry x="20" y="30" width="120" height="60" as="geometry"/>
+                <mxCell id="47" value="Acessa" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="46">
+                    <mxGeometry x="-0.2166" y="-3" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-21" value="Web-bff" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-16">
-                    <mxGeometry x="20" y="130" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-22" value="backoffice" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-16">
-                    <mxGeometry x="40" width="80" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-29" value="&lt;span style=&quot;color: rgb(255, 255, 255); font-size: 11px; background-color: rgb(18, 18, 18);&quot;&gt;Conversa com (http)&lt;/span&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-16">
-                    <mxGeometry x="20" y="90" width="120" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-14" value="Mobile" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="290" y="110" width="60" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-23" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="ZHVIvnVoHwWRqAKxdAmr-13" source="4" target="ZHVIvnVoHwWRqAKxdAmr-20">
+                <mxCell id="48" value="Untitled Layer" parent="0"/>
+                <mxCell id="49" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="48" source="45" target="29">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-30" value="API gateway" style="shape=step;perimeter=stepPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="560" y="310" width="120" height="80" as="geometry"/>
+                <mxCell id="50" value="Acessa" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="49">
+                    <mxGeometry x="-0.0233" y="-1" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-31" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="ZHVIvnVoHwWRqAKxdAmr-13" source="ZHVIvnVoHwWRqAKxdAmr-9" target="ZHVIvnVoHwWRqAKxdAmr-30">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="51" value="Cada serviço terá um banco de leitura e outro de escrita?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-2400" y="2256" width="330" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-32" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="ZHVIvnVoHwWRqAKxdAmr-13" source="ZHVIvnVoHwWRqAKxdAmr-17" target="ZHVIvnVoHwWRqAKxdAmr-30">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="52" value="Terá duplicação?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-2310" y="2386" width="110" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-33" value="Pedido" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="950" y="130" width="120" height="60" as="geometry"/>
+                <mxCell id="53" value="mensageria para atualizar os bancos" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-2320" y="2296" width="220" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-34" value="Mensageria" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="950" y="220" width="120" height="60" as="geometry"/>
+                <mxCell id="54" value="Teria um Service Mesh entre os microserviços&lt;div&gt;para não precisarem saber cada rota de cada um&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-2150" y="2366" width="290" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-35" value="Cada serviço terá um banco de leitura e outro de escrita?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-1270" y="296" width="330" height="30" as="geometry"/>
+                <mxCell id="55" value="LoadBalancer" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-1460" y="2610" width="100" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-36" value="Terá duplicação?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-1180" y="426" width="110" height="30" as="geometry"/>
+                <mxCell id="56" value="Redundância Estratégica. Para não precisar fazer vários GETs" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-2250" y="2504" width="360" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-37" value="Auth" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="930" y="320" width="120" height="60" as="geometry"/>
+                <mxCell id="57" value="Cache para get de itens das lojas&lt;div&gt;Cache para pedidos&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-1735" y="2401" width="200" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-38" value="Catalogo/merchant" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="950" y="430" width="120" height="60" as="geometry"/>
+                <mxCell id="58" value="Qual arquitetura usar em cada Microservice?&lt;div&gt;Diferentes para aprendizado?&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-1990" y="2549" width="260" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-39" value="Notificações" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="1110" y="320" width="120" height="60" as="geometry"/>
+                <mxCell id="59" value="Docker para rodar loclamente.&lt;div&gt;Com compose para subir tudo&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-1890" y="2323" width="180" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-40" value="Pedidos" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="1130" y="420" width="120" height="60" as="geometry"/>
+                <mxCell id="60" value="Método de espelhamento feito&lt;div&gt;para não precisar de micro serviços conversarem muit:&lt;/div&gt;&lt;div&gt;Exemplo:&lt;/div&gt;&lt;div&gt;Ao adicionar alguém se cadastra, banco de usuários é atualziado&lt;/div&gt;&lt;div&gt;um evento é disparado e o banco de Pedidos (muitas vezes precisa de saber coisas do usuário)&lt;/div&gt;&lt;div&gt;é atualizado com o básico.&lt;/div&gt;&lt;div&gt;com filas, rabbitMQ&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-2540" y="2600" width="540" height="110" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-41" value="Geo-location" style="whiteSpace=wrap;html=1;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="1060" y="490" width="120" height="60" as="geometry"/>
+                <mxCell id="61" value="Circuit Breaker ou Fallback" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-2460" y="2470" width="170" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-42" value="mensageria para atualizar os bancos" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-1190" y="336" width="220" height="30" as="geometry"/>
+                <mxCell id="62" value="usar arquiteturas por níveis de criticidade&lt;div&gt;1. DDD/Hexa/Clean&lt;/div&gt;&lt;div&gt;2.Layered Architecture (Service/Controller/Repository)&lt;/div&gt;&lt;div&gt;3.Simples sla, MVC&amp;nbsp;&amp;nbsp;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-1955" y="2610" width="310" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-43" value="Teria um Service Mesh entre os microserviços&lt;div&gt;para não precisarem saber cada rota de cada um&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-1020" y="406" width="290" height="40" as="geometry"/>
+                <mxCell id="63" value="Devo fazer o espelhamento com itens que mudam pouco e essenciais para o sistema" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-2160" y="2760" width="480" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-44" value="LoadBalancer" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="490" y="420" width="100" height="30" as="geometry"/>
+                <mxCell id="64" value="WebSocket para atualizar o preço instantâneo&lt;div&gt;Se estiver no carrinho e alguém mudar&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-1690" y="2520" width="270" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-45" value="Redundância Estratégica. Para não precisar fazer vários GETs" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-1120" y="544" width="360" height="30" as="geometry"/>
+                <mxCell id="65" value="Graph para facilitar front?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-1650" y="2698" width="160" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-46" value="Cache para get de itens das lojas&lt;div&gt;Cache para pedidos&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-605" y="441" width="200" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-47" value="Qual arquitetura usar em cada Microservice?&lt;div&gt;Diferentes para aprendizado?&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-860" y="589" width="260" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-48" value="Docker para rodar loclamente.&lt;div&gt;Com compose para subir tudo&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-760" y="363" width="180" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-49" value="Método de espelhamento feito&lt;div&gt;para não precisar de micro serviços conversarem muit:&lt;/div&gt;&lt;div&gt;Exemplo:&lt;/div&gt;&lt;div&gt;Ao adicionar alguém se cadastra, banco de usuários é atualziado&lt;/div&gt;&lt;div&gt;um evento é disparado e o banco de Pedidos (muitas vezes precisa de saber coisas do usuário)&lt;/div&gt;&lt;div&gt;é atualizado com o básico.&lt;/div&gt;&lt;div&gt;com filas, rabbitMQ&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-1410" y="640" width="540" height="110" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-50" value="Circuit Breaker ou Fallback" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-1330" y="510" width="170" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-51" value="usar arquiteturas por níveis de criticidade&lt;div&gt;1. DDD/Hexa/Clean&lt;/div&gt;&lt;div&gt;2.Layered Architecture (Service/Controller/Repository)&lt;/div&gt;&lt;div&gt;3.Simples sla, MVC&amp;nbsp;&amp;nbsp;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-825" y="650" width="310" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-52" value="Devo fazer o espelhamento com itens que mudam pouco e essenciais para o sistema" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-1030" y="800" width="480" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-53" value="WebSocket para atualizar o preço instantâneo&lt;div&gt;Se estiver no carrinho e alguém mudar&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-560" y="560" width="270" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-54" value="Graph para facilitar front?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-520" y="738" width="160" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="ZHVIvnVoHwWRqAKxdAmr-55" value="&lt;div&gt;&lt;font color=&quot;#ffffff&quot;&gt;Front -&amp;gt; Gateway (REST/GraphQL)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#ffffff&quot;&gt;Gateway -&amp;gt; BFF (REST)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#ffffff&quot;&gt;BFF -&amp;gt; micro (gRPC)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#ffffff&quot;&gt;micro -&amp;gt; micro (gRPC)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#ffffff&quot;&gt;micro -&amp;gt; externo (REST)&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="ZHVIvnVoHwWRqAKxdAmr-13">
-                    <mxGeometry x="-1280" y="820" width="210" height="90" as="geometry"/>
+                <mxCell id="66" value="&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Externo -&amp;gt; Gateway (REST/GraphQL)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Gateway -&amp;gt; BFF (REST)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;BFF -&amp;gt; micro (gRPC)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; micro (gRPC/fila)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; externo (REST)&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="48">
+                    <mxGeometry x="-2420" y="2780" width="230" height="90" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
