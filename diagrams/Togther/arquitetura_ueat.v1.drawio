@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="h7NCbZccVR-JtDEVBYXP" name="Page-1">
-        <mxGraphModel dx="3590" dy="-673" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="simple">
+        <mxGraphModel dx="4185" dy="-195" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="simple">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -13,31 +13,34 @@
                 <mxCell id="75" value="Cache no bff com dados sanitizados&lt;div&gt;Caso mude uma fila avisa e descarta o cache&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="-1705" y="2265" width="270" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="76" value="Edge Caching para Imagens" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                <mxCell id="76" value="Edge Caching para Imagens" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="-1540" y="2330" width="180" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="77" value="i18n" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                <mxCell id="77" value="i18n" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="-2275" y="2198" width="50" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="78" value="o compositor deve ser inteligente para se algo cair, ter um fallback, como uma imagem placeholder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                <mxCell id="78" value="o compositor deve ser inteligente para se algo cair, ter um fallback, como uma imagem placeholder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="-1895" y="2803" width="550" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="79" value="1 repo (BFFs + Fronts)&lt;br&gt;1 repo (Microservices + Gateway e outros)&lt;br&gt;&lt;br&gt;&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Com 1 repo de front e BFFs podemos compartilhas&amp;nbsp;&lt;/span&gt;&lt;div style=&quot;color: rgb(192, 192, 192); scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30);&quot;&gt;interfaces e lógicas de UX.&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                <mxCell id="79" value="1 repo (BFFs + Fronts)&lt;br&gt;1 repo (Microservices + Gateway e outros)&lt;br&gt;&lt;br&gt;&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Com 1 repo de front e BFFs podemos compartilhas&amp;nbsp;&lt;/span&gt;&lt;div style=&quot;color: rgb(192, 192, 192); scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30);&quot;&gt;interfaces e lógicas de UX.&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="-2125" y="2030" width="300" height="90" as="geometry"/>
                 </mxCell>
-                <mxCell id="83" value="" style="edgeStyle=none;html=1;exitX=1.008;exitY=0.664;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="79" target="82">
+                <mxCell id="83" value="" style="edgeStyle=none;html=1;exitX=1.008;exitY=0.664;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="79" target="82" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="-1728.076923076923" y="2090" as="sourcePoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="82" value="Ou apenas monorepo mesmo com NX" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                <mxCell id="82" value="Ou apenas monorepo mesmo com NX" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="-1830" y="2140" width="230" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="85" value="Fazer automações e diminuir o erro humano" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                <mxCell id="85" value="Fazer automações e diminuir o erro humano" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="-2100" y="2130" width="260" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="86" value="IaC" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=0" vertex="1" parent="1">
+                <mxCell id="86" value="IaC" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=0" parent="1" vertex="1">
                     <mxGeometry x="-1770" y="2000" width="40" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="87" value="Server-Driven UI" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-1555" y="2188" width="110" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="ZHVIvnVoHwWRqAKxdAmr-13" value="Untitled Layer" parent="0"/>
                 <mxCell id="5" parent="0"/>
