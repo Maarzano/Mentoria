@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="h7NCbZccVR-JtDEVBYXP" name="Page-1">
-        <mxGraphModel dx="4185" dy="-195" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="simple">
+        <mxGraphModel dx="3764" dy="793" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="simple">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -39,8 +39,11 @@
                 <mxCell id="86" value="IaC" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=0" parent="1" vertex="1">
                     <mxGeometry x="-1770" y="2000" width="40" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="87" value="Server-Driven UI" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                <mxCell id="87" value="Server-Driven UI" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="-1555" y="2188" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="89" value="&lt;div&gt;&lt;font color=&quot;#ffffff&quot;&gt;Distribuited tracing&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#ffffff&quot;&gt;Métricas&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#ffffff&quot;&gt;Logs estruturados&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2275" y="2110" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="ZHVIvnVoHwWRqAKxdAmr-13" value="Untitled Layer" parent="0"/>
                 <mxCell id="5" parent="0"/>
@@ -270,8 +273,8 @@
                 <mxCell id="64" value="WebSocket para atualizar o preço instantâneo&lt;div&gt;Se estiver no carrinho e alguém mudar&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
                     <mxGeometry x="-1690" y="2520" width="270" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="65" value="Graph para facilitar front?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-1650" y="2698" width="160" height="30" as="geometry"/>
+                <mxCell id="65" value="GraphQL para facilitar front?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
+                    <mxGeometry x="-1660" y="2698" width="180" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="66" value="&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Externo -&amp;gt; Gateway (REST/GraphQL)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Gateway -&amp;gt; BFF (REST)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;BFF -&amp;gt; micro (gRPC)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; micro (gRPC/fila)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; externo (REST)&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
                     <mxGeometry x="-2420" y="2780" width="230" height="90" as="geometry"/>
