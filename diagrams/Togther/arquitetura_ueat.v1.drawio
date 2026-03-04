@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
-    <diagram id="h7NCbZccVR-JtDEVBYXP" name="Page-1">
-        <mxGraphModel dx="3705" dy="-551" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="simple">
+    <diagram id="h7NCbZccVR-JtDEVBYXP" name="requisitos1.C2">
+        <mxGraphModel dx="4062" dy="-171" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="simple">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -218,6 +218,245 @@
                 </mxCell>
                 <mxCell id="66" value="&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Externo -&amp;gt; Gateway (REST/GraphQL)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Gateway -&amp;gt; BFF (REST)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;BFF -&amp;gt; micro (gRPC)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; micro (gRPC/fila)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; externo (REST)&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
                     <mxGeometry x="-2420" y="2780" width="230" height="90" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="jiY3-IVjcYcii_tPrBLA" name="requisitos1.C3">
+        <mxGraphModel dx="6627" dy="913" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-1" value="Cache no bff com dados sanitizados&lt;div&gt;Caso mude uma fila avisa e descarta o cache&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2230" y="2290" width="270" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-2" value="o compositor deve ser inteligente para se algo cair, ter um fallback, como uma imagem placeholder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2150" y="2830" width="550" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-3" value="1 repo (BFFs + Fronts)&lt;br&gt;1 repo (Microservices + Gateway e outros)&lt;br&gt;&lt;br&gt;&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Com 1 repo de front e BFFs podemos compartilhas&amp;nbsp;&lt;/span&gt;&lt;div style=&quot;color: rgb(192, 192, 192); scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30);&quot;&gt;interfaces e lógicas de UX.&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2200" y="2110" width="300" height="90" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-4" value="" style="edgeStyle=none;html=1;exitX=1.008;exitY=0.664;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-3" target="MNuB5gF9UauvjkVyLA6w-5">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="-1803.076923076923" y="2170" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-5" value="Ou apenas monorepo mesmo com NX" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-1905" y="2220" width="230" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-6" value="Automatizar bastante" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2420" y="2330" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-7" value="" style="group" connectable="0" vertex="1" parent="1">
+                    <mxGeometry x="-170" y="1910" width="1192.3200000000002" height="1192.3200000000002" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-8" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry width="1060" height="1060" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-9" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;dashed=1;dashPattern=8 8;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="122.68518518518518" y="122.68518518518518" width="814.6296296296297" height="814.6296296296297" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-10" value="API GateWay" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="412.22222222222223" width="235.55555555555557" height="117.77777777777779" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-11" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="-96.16" y="-96.15" width="1252.31" height="1252.31" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-12" value="Load balancer" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="500" y="-70" width="60" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-13" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.077;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-11">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint x="50" y="529.77" as="sourcePoint"/>
+                        <mxPoint x="120" y="530" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-14" value="Web-bff" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="250" y="525" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-15" value="Pedido" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="640" y="310" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-16" value="Mensageria" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="595" y="530" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-17" value="Auth" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="380" y="250" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-18" value="Catalogo/merchant" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="510" y="730" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-19" value="Notificações" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="740" y="420" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-20" value="Pedidos" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="740" y="600" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-21" value="Geo-location" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="680" y="700" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-22" style="edgeStyle=none;html=1;entryX=0;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-23" target="MNuB5gF9UauvjkVyLA6w-17">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-23" value="App-bff" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
+                    <mxGeometry x="250" y="410" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-24" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.013;exitY=0.389;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.093;entryY=0.385;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-11">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-20.11999999999989" y="389.5"/>
+                        </Array>
+                        <mxPoint x="-69.99996999999985" y="390.49859000000015" as="sourcePoint"/>
+                        <mxPoint x="20.304830000000038" y="390.48934999999983" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-25" value="Faz o balancer" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-24">
+                    <mxGeometry x="-0.1367" relative="1" as="geometry">
+                        <mxPoint x="1" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-26" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.093;exitY=0.388;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.189;entryY=0.404;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-11" target="MNuB5gF9UauvjkVyLA6w-11">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint x="30" y="400" as="sourcePoint"/>
+                        <mxPoint x="110" y="400" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-27" value="Rate limiting&lt;div&gt;Verifica code injection&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="MNuB5gF9UauvjkVyLA6w-26">
+                    <mxGeometry x="-0.0902" y="1" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-28" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.189;exitY=0.404;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-11" target="MNuB5gF9UauvjkVyLA6w-23">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint x="200" y="510" as="sourcePoint"/>
+                        <mxPoint x="280" y="510" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-29" value="Manda os&lt;div&gt;dados pro&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="MNuB5gF9UauvjkVyLA6w-28">
+                    <mxGeometry x="-0.1276" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-30" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.173;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-11" target="MNuB5gF9UauvjkVyLA6w-14">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint x="240" y="580" as="sourcePoint"/>
+                        <mxPoint x="320" y="580" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-31" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-33" target="MNuB5gF9UauvjkVyLA6w-11">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="-379.9999999999982" y="2370" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-32" value="&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Manda o formulário (REST)&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-31">
+                    <mxGeometry x="-0.1913" y="-1" relative="1" as="geometry">
+                        <mxPoint x="5" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-33" value="Web (React)" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-660" y="2410" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-34" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-11">
+                    <mxGeometry width="80" relative="1" as="geometry">
+                        <Array as="points"/>
+                        <mxPoint x="-250" y="2439.92" as="sourcePoint"/>
+                        <mxPoint x="-170" y="2439.92" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-35" value="Faz o balancer" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-34">
+                    <mxGeometry x="-0.1367" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-36" value="App (React Native)" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-660" y="2240" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-37" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.015;entryY=0.389;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-36" target="MNuB5gF9UauvjkVyLA6w-11">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-38" value="Manda o formulário (REST)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-37">
+                    <mxGeometry x="-0.0319" y="2" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-39" value="Comprador" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-910" y="2230" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-40" value="Estabelecimento" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-910" y="2400" width="120" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-41" value="" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-39" target="MNuB5gF9UauvjkVyLA6w-36">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-42" value="Acessa" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-41">
+                    <mxGeometry x="-0.2166" y="-3" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-43" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-40" target="MNuB5gF9UauvjkVyLA6w-33">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-44" value="Acessa" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-43">
+                    <mxGeometry x="-0.0233" y="-1" relative="1" as="geometry">
+                        <mxPoint as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-45" value="Cada serviço terá um banco de leitura e outro de escrita?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2480" y="2390" width="330" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-46" value="Terá duplicação?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2380" y="2480" width="110" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-47" value="Teria um Service Mesh entre os microserviços&lt;div&gt;para não precisarem saber cada rota de cada um&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2150" y="2366" width="290" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-48" value="Redundância Estratégica. Para não precisar fazer vários GETs" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2250" y="2504" width="360" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-49" value="Qual arquitetura usar em cada Microservice?&lt;div&gt;Diferentes para aprendizado?&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-1990" y="2549" width="260" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-50" value="Método de espelhamento feito&lt;div&gt;para não precisar de micro serviços conversarem muit:&lt;/div&gt;&lt;div&gt;Exemplo:&lt;/div&gt;&lt;div&gt;Ao adicionar alguém se cadastra, banco de usuários é atualziado&lt;/div&gt;&lt;div&gt;um evento é disparado e o banco de Pedidos (muitas vezes precisa de saber coisas do usuário)&lt;/div&gt;&lt;div&gt;é atualizado com o básico.&lt;/div&gt;&lt;div&gt;com filas, rabbitMQ&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2540" y="2600" width="540" height="110" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-51" value="usar arquiteturas por níveis de criticidade&lt;div&gt;1. DDD/Hexa/Clean&lt;/div&gt;&lt;div&gt;2.Layered Architecture (Service/Controller/Repository)&lt;/div&gt;&lt;div&gt;3.Simples sla, MVC&amp;nbsp;&amp;nbsp;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-1955" y="2610" width="310" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-52" value="Devo fazer o espelhamento com itens que mudam pouco e essenciais para o sistema" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2160" y="2760" width="480" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-53" value="WebSocket para atualizar o preço instantâneo&lt;div&gt;Se estiver no carrinho e alguém mudar&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2060" y="2440" width="270" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-54" value="GraphQL para facilitar front?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2390" y="2870" width="180" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="MNuB5gF9UauvjkVyLA6w-55" value="&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Externo -&amp;gt; Gateway (REST/GraphQL)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Gateway -&amp;gt; BFF (REST)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;BFF -&amp;gt; micro (gRPC)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; micro (gRPC/fila)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; externo (REST)&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+                    <mxGeometry x="-2420" y="2780" width="230" height="90" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+    <diagram id="EXCvLXDRrwV8vsatSMZb" name="requisitos">
+        <mxGraphModel dx="2637" dy="1098" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="GA8RZb50cUZnVNPxyWNl-1" value="REQUISITOS-1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=26;" vertex="1" parent="1">
+                    <mxGeometry x="95" y="53" width="210" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="GA8RZb50cUZnVNPxyWNl-3" value="Quantidade de Devs: 1 (ou 2?).&#xa;&#xa;Conhecimento técnico dos devs: bom, mas não muito relevante pois é projeto to Learn.&#xa;&#xa;Tempo disponível: não específica, mas grande, não precisa fazer com pressa, mas não colocar coisa demais para ficar infinito.&#xa;&#xa;Orçamento: o mínimo possível.&#xa;&#xa;Onde estão nossos clientes: Brasil inicialmente, mas pode aumentar.&#xa;&#xa;Quantos usuários serão: 100.000 compradores, e 10.000 lojas.&#xa;&#xa;Quantas req/segundo? normalmente 1000 RPS, no pico ~3000" style="rounded=0;fillColor=default;fontColor=light-dark(#000000,#FFFFFF);container=0;verticalAlign=middle;align=left;horizontal=1;labelPosition=center;verticalLabelPosition=middle;" vertex="1" parent="1">
+                    <mxGeometry x="-110" y="120" width="700" height="200" as="geometry"/>
+                </mxCell>
+                <mxCell id="GA8RZb50cUZnVNPxyWNl-4" value="REQUISITOS-1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=26;" vertex="1" parent="1">
+                    <mxGeometry x="935" y="53" width="210" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="GA8RZb50cUZnVNPxyWNl-5" value="Quantidade de Devs: 1 (ou 2?).&#xa;&#xa;Conhecimento técnico dos devs: bom, mas não muito relevante pois é projeto to Learn.&#xa;&#xa;Tempo disponível: não específica, mas grande, não precisa fazer com pressa, mas não colocar coisa demais para ficar infinito.&#xa;&#xa;Orçamento: o mínimo possível.&#xa;&#xa;Onde estão nossos clientes: Brasil inicialmente, mas pode aumentar.&#xa;&#xa;Quantos usuários serão: 100.000 compradores, e 10.000 lojas.&#xa;&#xa;Quantas req/segundo? normalmente 1000 RPS, no pico ~3000" style="rounded=0;fillColor=default;fontColor=light-dark(#000000,#FFFFFF);container=0;verticalAlign=middle;align=left;horizontal=1;labelPosition=center;verticalLabelPosition=middle;" vertex="1" parent="1">
+                    <mxGeometry x="730" y="120" width="700" height="200" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
