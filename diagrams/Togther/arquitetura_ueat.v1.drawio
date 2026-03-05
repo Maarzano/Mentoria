@@ -1,33 +1,194 @@
 <mxfile host="65bd71144e">
     <diagram id="h7NCbZccVR-JtDEVBYXP" name="requisitos1.C2">
-        <mxGraphModel dx="4062" dy="-171" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="simple">
+        <mxGraphModel dx="11060" dy="5055" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="simple">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="75" value="Cache no bff com dados sanitizados&lt;div&gt;Caso mude uma fila avisa e descarta o cache&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="-2230" y="2290" width="270" height="40" as="geometry"/>
+                <mxCell id="79" value="1 repo (BFFs + Fronts)&lt;br&gt;1 repo (Microservices + Gateway e outros)&lt;br&gt;&lt;br&gt;&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Com 1 repo de front e BFFs podemos compartilhas&amp;nbsp;&lt;/span&gt;&lt;div style=&quot;color: rgb(192, 192, 192); scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30);&quot;&gt;interfaces e lógicas de UX.&lt;/div&gt;&lt;div style=&quot;color: rgb(192, 192, 192); scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30);&quot;&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;color: rgb(192, 192, 192); scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30);&quot;&gt;&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Ou apenas monorepo mesmo com NX&lt;/span&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="-1000" y="476.25" width="300" height="110" as="geometry"/>
                 </mxCell>
-                <mxCell id="78" value="o compositor deve ser inteligente para se algo cair, ter um fallback, como uma imagem placeholder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="-2150" y="2830" width="550" height="30" as="geometry"/>
+                <mxCell id="ZMD-k1KkdO0GaXOnLm97-85" value="CDN/WAF (cloudfare)" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="-50" y="2170" width="80" height="470" as="geometry"/>
                 </mxCell>
-                <mxCell id="79" value="1 repo (BFFs + Fronts)&lt;br&gt;1 repo (Microservices + Gateway e outros)&lt;br&gt;&lt;br&gt;&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Com 1 repo de front e BFFs podemos compartilhas&amp;nbsp;&lt;/span&gt;&lt;div style=&quot;color: rgb(192, 192, 192); scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30);&quot;&gt;interfaces e lógicas de UX.&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="-2200" y="2110" width="300" height="90" as="geometry"/>
+                <mxCell id="ZMD-k1KkdO0GaXOnLm97-86" value="DNS" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="-130" y="2170" width="80" height="470" as="geometry"/>
                 </mxCell>
-                <mxCell id="83" value="" style="edgeStyle=none;html=1;exitX=1.008;exitY=0.664;exitDx=0;exitDy=0;exitPerimeter=0;" parent="1" source="79" target="82" edge="1">
+                <mxCell id="ZMD-k1KkdO0GaXOnLm97-87" value="" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" parent="1" vertex="1">
+                    <mxGeometry x="-770" y="980" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="ZMD-k1KkdO0GaXOnLm97-88" value="Cliente" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
+                    <mxGeometry x="-380" y="2235" width="70" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="ZMD-k1KkdO0GaXOnLm97-91" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Não vamos usar microserviços inicialmente por questões de tempo, complexidade e afins, mas poderíamos utilizar monolito modular para facilitar uma migração futura.&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Para melhor separação vamos usar schemas diferentes para cada modulo, e para arrumar o problema de JOINS ou dados que outros usam vamos usar dados duplicados em tabelas de leituras, que vão ser acionadas pelo MediatR, mas a comunicação entre modulos será feita com Eventos.&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;ao ir para microserviços poderíamos ter banco separa de leitura e escrita&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" parent="1" vertex="1">
+                    <mxGeometry x="-580" y="30" width="230" height="272" as="geometry"/>
+                </mxCell>
+                <mxCell id="ZMD-k1KkdO0GaXOnLm97-92" value="" style="ellipse;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=2;hachureGap=8;fillColor=#990000;fillStyle=dots;sketch=1;" parent="1" vertex="1">
+                    <mxGeometry x="-960" y="940" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="ZMD-k1KkdO0GaXOnLm97-100" value="Estabelecimento" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
+                    <mxGeometry x="-380" y="2430" width="70" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="ZMD-k1KkdO0GaXOnLm97-101" value="" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="ZMD-k1KkdO0GaXOnLm97-100" edge="1" target="29">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="-1803.076923076923" y="2170" as="sourcePoint"/>
+                        <mxPoint x="-399.99999999999136" y="2530" as="sourcePoint"/>
+                        <mxPoint x="-270.00000000000045" y="2530" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="82" value="Ou apenas monorepo mesmo com NX" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="-1905" y="2220" width="230" height="30" as="geometry"/>
+                <mxCell id="ZMD-k1KkdO0GaXOnLm97-102" value="Acessa" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="ZMD-k1KkdO0GaXOnLm97-101" connectable="0" vertex="1">
+                    <mxGeometry x="-0.2166" y="-3" relative="1" as="geometry">
+                        <mxPoint x="-79" y="-3" as="offset"/>
+                    </mxGeometry>
                 </mxCell>
-                <mxCell id="85" value="Automatizar bastante" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
-                    <mxGeometry x="-2420" y="2330" width="140" height="30" as="geometry"/>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-85" value="Orquestração para coisas complexas e coreografia para coisas mais simples e que são de fora...&lt;br&gt;&lt;br&gt;ex: orquestração para pedidos, coreografia para mandar email" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-325" y="980" width="190" height="120" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-89" value="" style="group" vertex="1" connectable="0" parent="1">
+                    <mxGeometry x="-70" y="430" width="970" height="470" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-87" value="Distribuited Tracing" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="c17DG_hq72BnOwkdbsdk-89">
+                    <mxGeometry x="114.11764705882354" width="130" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-88" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="c17DG_hq72BnOwkdbsdk-89">
+                    <mxGeometry y="92.00428571428571" width="970" height="369.2857142857143" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-126" value="OpenTelemetry" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="c17DG_hq72BnOwkdbsdk-89">
+                    <mxGeometry x="360" y="20" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-128" value="ID em cada request" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="c17DG_hq72BnOwkdbsdk-89">
+                    <mxGeometry x="560" y="30" width="130" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-125" value="&lt;table style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 32px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; font-family: &amp;quot;Google Sans Text&amp;quot;, sans-serif !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9&quot;&gt;&lt;thead style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;tr style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgb(239, 239, 239); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;strong style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; margin-bottom: 0px !important; line-height: 1.15 !important;&quot;&gt;Ferramenta&lt;/strong&gt;&lt;/td&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgb(239, 239, 239); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;strong style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; margin-bottom: 0px !important; line-height: 1.15 !important;&quot;&gt;O que faz?&lt;/strong&gt;&lt;/td&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgb(239, 239, 239); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;strong style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; margin-bottom: 0px !important; line-height: 1.15 !important;&quot;&gt;O que ela te responde?&lt;/strong&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;tr style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,1,0,0&quot;&gt;&lt;b style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-index-in-node=&quot;0&quot; data-path-to-node=&quot;9,1,0,0&quot;&gt;Prometheus&lt;/b&gt;&lt;/span&gt;&lt;/td&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,1,1,0&quot;&gt;&lt;b style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-index-in-node=&quot;0&quot; data-path-to-node=&quot;9,1,1,0&quot;&gt;Métricas&lt;/b&gt;&lt;/span&gt;&lt;/td&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,1,2,0&quot;&gt;&quot;Qual a CPU agora?&quot;, &quot;Quantas req/s estamos recebendo?&quot;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,2,0,0&quot;&gt;&lt;b style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-index-in-node=&quot;0&quot; data-path-to-node=&quot;9,2,0,0&quot;&gt;Loki&lt;/b&gt;&lt;/span&gt;&lt;/td&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,2,1,0&quot;&gt;&lt;b style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-index-in-node=&quot;0&quot; data-path-to-node=&quot;9,2,1,0&quot;&gt;Logs&lt;/b&gt;&lt;/span&gt;&lt;/td&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,2,2,0&quot;&gt;&quot;Me mostre o erro que deu no pedido do Arthur às 20h.&quot;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,3,0,0&quot;&gt;&lt;b style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-index-in-node=&quot;0&quot; data-path-to-node=&quot;9,3,0,0&quot;&gt;Tempo&lt;/b&gt;&lt;/span&gt;&lt;/td&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,3,1,0&quot;&gt;&lt;b style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-index-in-node=&quot;0&quot; data-path-to-node=&quot;9,3,1,0&quot;&gt;Tracing&lt;/b&gt;&lt;/span&gt;&lt;/td&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,3,2,0&quot;&gt;&quot;Onde os 500ms dessa requisição foram gastos? (Gateway, API ou DB?)&quot;&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,4,0,0&quot;&gt;&lt;b style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-index-in-node=&quot;0&quot; data-path-to-node=&quot;9,4,0,0&quot;&gt;Grafana&lt;/b&gt;&lt;/span&gt;&lt;/td&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,4,1,0&quot;&gt;&lt;b style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-index-in-node=&quot;0&quot; data-path-to-node=&quot;9,4,1,0&quot;&gt;Visualização&lt;/b&gt;&lt;/span&gt;&lt;/td&gt;&lt;td style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 1px solid; inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 8px 12px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot;&gt;&lt;span style=&quot;animation: auto ease 0s 1 normal none running none; appearance: none; background: none 0% 0% / auto repeat scroll padding-box border-box rgba(0, 0, 0, 0); border: 0px none rgb(31, 31, 31); inset: auto; clear: none; clip: auto; color: rgb(31, 31, 31); columns: auto; contain: none; container: none; content: normal; cursor: auto; cx: 0px; cy: 0px; d: none; direction: ltr; display: inline; fill: rgb(0, 0, 0); filter: none; flex: 0 1 auto; float: none; gap: normal; hyphens: manual; interactivity: auto; isolation: auto; margin-right: 0px; margin-bottom: 0px; margin-left: 0px; marker: none; mask: none; offset: normal; opacity: 1; order: 0; outline: rgb(31, 31, 31) none 0px; overlay: none; padding: 0px; page: auto; perspective: none; position: static; quotes: auto; r: 0px; resize: none; rotate: none; rx: auto; ry: auto; scale: none; speak: normal; stroke: none; transform: none; transition: all; translate: none; visibility: visible; x: 0px; y: 0px; zoom: 1; margin-top: 0px !important; line-height: 1.15 !important;&quot; data-path-to-node=&quot;9,4,2,0&quot;&gt;É o painel (Dashboard) que junta tudo em gráficos bonitos.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;fillColor=#eeeeee;strokeColor=#36393d;" vertex="1" parent="c17DG_hq72BnOwkdbsdk-89">
+                    <mxGeometry x="150" y="175.36" width="640" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-93" value="&lt;div style=&quot;forced-color-adjust: none; color: rgb(192, 192, 192); scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30); box-shadow: none !important;&quot;&gt;&lt;br&gt;&lt;/div&gt;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="-50" y="2173" width="100" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-101" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Acha o domínio do site&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#C73500;shadow=0;glass=0;fontColor=#000000;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-240" y="1980" width="150" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-102" style="edgeStyle=none;html=1;entryX=0.394;entryY=-0.002;entryDx=0;entryDy=0;entryPerimeter=0;fillColor=#fa6800;strokeColor=#C73500;" edge="1" parent="1" source="c17DG_hq72BnOwkdbsdk-101" target="ZMD-k1KkdO0GaXOnLm97-86">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-104" style="edgeStyle=none;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fillColor=#fa6800;strokeColor=#C73500;" edge="1" parent="1" source="c17DG_hq72BnOwkdbsdk-103" target="ZMD-k1KkdO0GaXOnLm97-85">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-103" value="&lt;font style=&quot;scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30); text-align: left; color: rgb(192, 192, 192); font-size: 11px;&quot;&gt;Faz cache de imagens,&lt;/font&gt;&lt;div style=&quot;scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30); text-align: left; color: rgb(192, 192, 192);&quot;&gt;&lt;font style=&quot;scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30); color: rgb(192, 192, 192); font-size: 11px;&quot;&gt;assets, e proteção&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#C73500;shadow=0;glass=0;fontColor=#000000;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-120" y="2030" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-106" style="edgeStyle=none;html=1;entryX=0.33;entryY=0.029;entryDx=0;entryDy=0;fillColor=#fa6800;strokeColor=#C73500;entryPerimeter=0;" edge="1" parent="1" source="c17DG_hq72BnOwkdbsdk-105" target="7">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-105" value="&lt;span style=&quot;color: rgb(255, 255, 255); text-wrap-mode: nowrap;&quot;&gt;Vai fazer&amp;nbsp;&lt;/span&gt;&lt;div&gt;&lt;font color=&quot;#ffffff&quot;&gt;&lt;span style=&quot;text-wrap-mode: nowrap;&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;color: rgb(255, 255, 255); text-wrap-mode: nowrap;&quot;&gt;- balanceamento de&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;text-wrap-mode: nowrap; background-color: transparent;&quot;&gt;chamadas para instâncias da API&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;text-wrap-mode: nowrap; background-color: transparent;&quot;&gt;- Validar JWT&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;text-wrap-mode: nowrap; background-color: transparent;&quot;&gt;- Rate Limiting&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;text-wrap-mode: nowrap; background-color: transparent;&quot;&gt;- Service Discovery&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#C73500;shadow=0;glass=0;fontColor=#000000;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;align=left;verticalAlign=middle;spacingLeft=6;" vertex="1" parent="1">
+                    <mxGeometry x="740" y="1620" width="300" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="Auth" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1730" y="540" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="Pedido" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1990" y="600" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="18" value="Notificações" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="2090" y="710" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="Mensageria" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1945" y="820" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="19" value="Pedidos" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="2090" y="890" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="Geo-location" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="2030" y="990" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="Catalogo/merchant" style="whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="1860" y="1020" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-120" style="edgeStyle=none;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;fillColor=#fa6800;strokeColor=#C73500;" edge="1" parent="1" source="c17DG_hq72BnOwkdbsdk-119" target="ZMD-k1KkdO0GaXOnLm97-85">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-119" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;font-size: 11px;&quot;&gt;Pode fazer outros tipos de caching, para edge caching&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#C73500;shadow=0;glass=0;fontColor=#000000;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-10" y="1970" width="160" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-124" style="edgeStyle=none;html=1;entryX=0.562;entryY=0.007;entryDx=0;entryDy=0;fillColor=#fa6800;strokeColor=#C73500;entryPerimeter=0;" edge="1" parent="1" source="c17DG_hq72BnOwkdbsdk-123" target="7">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="1170" y="1840" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-123" value="&lt;span style=&quot;text-wrap-mode: nowrap;&quot;&gt;Ele pode ter plugins e ligado ao redis, para ter uma memória básica&lt;/span&gt;&lt;div&gt;&lt;span style=&quot;text-wrap-mode: nowrap;&quot;&gt;E fazer Rate Limiting distribuído ou outras coisas, como cache&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#C73500;shadow=0;glass=0;fontColor=#000000;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;align=left;verticalAlign=middle;spacingLeft=6;" vertex="1" parent="1">
+                    <mxGeometry x="1070" y="1620" width="380" height="57.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-129" value="External LB" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                    <mxGeometry x="455" y="2160" width="80" height="470" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-131" style="edgeStyle=none;html=1;entryX=0.25;entryY=0;entryDx=0;entryDy=0;fillColor=#fa6800;strokeColor=#C73500;" edge="1" parent="1" source="c17DG_hq72BnOwkdbsdk-130" target="c17DG_hq72BnOwkdbsdk-129">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-130" value="&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;font-size: 11px;&quot;&gt;Pode fazer descriptação https&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;font-size: 11px;&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;&lt;div style=&quot;text-align: left;&quot;&gt;&lt;span style=&quot;color: rgb(192, 192, 192); font-size: 11px;&quot;&gt;Vai fazer o balanceamento para as instancias do kong&lt;/span&gt;&lt;span style=&quot;font-size: 11px;&quot;&gt;&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#C73500;shadow=0;glass=0;fontColor=#000000;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="390" y="2000" width="170" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-133" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;API deve ter health checks de 3 níveis para linkar ao Kong e ao kubernets para saber se vai matar a instância ou o que&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-565" y="310" width="200" height="132.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-134" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Quero utilizar feature flags, pelo menos em algumas coisas para testar como se faz pode ser em features novas... podemos usar Redis para guardar ela, mas aí precisaríamos criar o front para mudar, ou usar SaaS disso. Podemos usar o Kong para canary release. Mas precisamos tomar cuidado com feature flags viverem tempo demais... precisamos excluir elas depois de validar.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-587.5" y="1120" width="212.5" height="192.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-135" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;usaremos IAC para facilitar a replicação da nuvem&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-325" y="810" width="190" height="72.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-137" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;backplane&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-970" y="169.5" width="200" height="132.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-138" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;podemos usar i18n para diferenciamento (nunca mexi)&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;ou podemos deixar para depois para diminuir complexidade&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-335" y="670" width="200" height="132.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-139" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Cada camada se precisar terá&amp;nbsp;&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Retry, Circuit breaker, fallback&lt;/span&gt;, com lógica exponencial e valor de tempo a leatorío dado um tempo...&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-340" y="890" width="210" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-143" value="" style="verticalLabelPosition=bottom;html=1;verticalAlign=top;align=center;strokeColor=none;fillColor=#00BEF2;shape=mxgraph.azure.queue_generic;pointerEvents=1;" vertex="1" parent="1">
+                    <mxGeometry x="-850" y="900" width="133.34" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-85" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;usaremos cache em várias camadas, mas com cuidado para não virar um cache inifinito e gigantes, precisamos separar po importância volume de mudança e coisa pesadas e escolher a forma de invalidar o cache&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-575" y="969.5" width="200" height="132.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-86" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;precisamos do padrão SAGA para por exemplo devolver dinheiro caso algo aconteça após a cobrança ou outra coisa.&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-575" y="862" width="220" height="82.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-89" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Resolveremos o problema idepotencia, usando chave que o cliente vai mandar, TTL, assim a API vai saber se processou algo em tais minutos.&lt;br&gt;Ah e um redis para guardar rápido e compartilhar entre instâncias da API, e depois no Postgres para auditoria&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-595" y="712" width="250" height="130" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-90" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Podemos usar ElastichSearch para fazer pesquisa, pois a função de olhar restaurantes é uma das mais acessadas, ou até mesmo lugares&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-335" y="169.5" width="200" height="132.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-92" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Vamos usar CQRS para separar querya de leitura e escrita.&lt;br&gt;&lt;br&gt;Mas inicialmente não iremos separar banco de dados de leitura e escrita&lt;br&gt;&lt;br&gt;podemos resolver o problema de lag de replicação usando fake front, dizendo que deu certo antes mesmo de saber se deu, caso dê errado, aí a gente avisa&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-350" y="460" width="220" height="192.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-93" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;podemos usar server driven UI, para atualizar as coisas sem precisar atualizar o front. Nunca mexi e parece legal, mas não vamos colocar em tudo, talvez em features novas...&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-345" y="338" width="210" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-94" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;podemos ter WebSocket em conversas, ou então em status de pedidos&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-575" y="632" width="200" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-95" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Teremos elasticidade com kubernetes, onde ele vê como as coisas estão se comportando e se precisar cria instâncias, se não preicsa mais mata.&lt;br&gt;&lt;br&gt;Conversaremos com provedores, para subir outras máquinas caso precisemos tbm,&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-565" y="460" width="200" height="160" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-96" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Conversas entre môdulos vai ser via eventos&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-335" y="100" width="200" height="49.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-98" value="&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;Podemos usar uma tabela Outbox para que ao escrever em diferente modulos podemos primeiro escrever na Outbox, e a fila tenta mandar, caso falhe, ela vai tentar de novo depois pq conitnua no outbox lá com processed = null.&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;mas vamos precisar de workers de limpeza para limpar dados antigos de vez em quando.&lt;/font&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-340" y="-100" width="215" height="189.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-100" value="&lt;font color=&quot;#ffffff&quot;&gt;tentar automatiza bastante, para diminuir a necessidade de mãos humanas para aquilo, como CI/CD e outras coisas&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-565" y="-120" width="200" height="132.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-101" value="&lt;font color=&quot;#ffffff&quot;&gt;Devemos fazer partição das tabelas mais usadas e mais acessadas para não termos problema com quantidade de coisas... Agora a forma e qual indice usar para particionar podemos olhar, talvez data...&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-565" y="-270" width="200" height="132.5" as="geometry"/>
+                </mxCell>
+                <mxCell id="zdCqv2ozAaiuYf06vWsH-102" value="&lt;font color=&quot;#ffffff&quot;&gt;vamos começar apenas 1 instância de cada banco, mas podemos depois evoluir para multiplas instâncias de leitura... Depois talvez Sharding por área ou por outro&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=2;fillWeight=4;hachureGap=8;hachureAngle=45;fillColor=none;strokeColor=#005700;shadow=0;glass=0;fontColor=#ffffff;sketch=1;curveFitting=1;jiggle=2;fillStyle=hachure;" vertex="1" parent="1">
+                    <mxGeometry x="-340" y="-210" width="200" height="102.5" as="geometry"/>
                 </mxCell>
                 <mxCell id="ZHVIvnVoHwWRqAKxdAmr-13" value="Untitled Layer" parent="0"/>
                 <mxCell id="5" parent="0"/>
                 <mxCell id="6" value="" style="group" parent="5" connectable="0" vertex="1">
-                    <mxGeometry x="-170" y="1910" width="1192.3200000000002" height="1192.3200000000002" as="geometry"/>
+                    <mxGeometry x="586.16" y="1890" width="1192.3200000000002" height="1192.3200000000002" as="geometry"/>
                 </mxCell>
                 <mxCell id="7" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;" parent="6" vertex="1">
                     <mxGeometry width="1060" height="1060" as="geometry"/>
@@ -35,428 +196,89 @@
                 <mxCell id="8" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;dashed=1;dashPattern=8 8;" parent="6" vertex="1">
                     <mxGeometry x="122.68518518518518" y="122.68518518518518" width="814.6296296296297" height="814.6296296296297" as="geometry"/>
                 </mxCell>
-                <mxCell id="9" value="API GateWay" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="6" vertex="1">
-                    <mxGeometry x="412.22222222222223" width="235.55555555555557" height="117.77777777777779" as="geometry"/>
-                </mxCell>
-                <mxCell id="10" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;" parent="6" vertex="1">
-                    <mxGeometry x="-96.16" y="-96.15" width="1252.31" height="1252.31" as="geometry"/>
-                </mxCell>
-                <mxCell id="11" value="Load balancer" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="6" vertex="1">
-                    <mxGeometry x="500" y="-70" width="60" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="12" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.077;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="6" source="10" edge="1">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points"/>
-                        <mxPoint x="50" y="529.77" as="sourcePoint"/>
-                        <mxPoint x="120" y="530" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
                 <mxCell id="13" value="Web-bff" style="whiteSpace=wrap;html=1;" parent="6" vertex="1">
                     <mxGeometry x="250" y="525" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="14" value="Pedido" style="whiteSpace=wrap;html=1;" parent="6" vertex="1">
-                    <mxGeometry x="640" y="310" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="15" value="Mensageria" style="whiteSpace=wrap;html=1;" parent="6" vertex="1">
-                    <mxGeometry x="595" y="530" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="16" value="Auth" style="whiteSpace=wrap;html=1;" parent="6" vertex="1">
-                    <mxGeometry x="380" y="250" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="17" value="Catalogo/merchant" style="whiteSpace=wrap;html=1;" parent="6" vertex="1">
-                    <mxGeometry x="510" y="730" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="18" value="Notificações" style="whiteSpace=wrap;html=1;" parent="6" vertex="1">
-                    <mxGeometry x="740" y="420" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="19" value="Pedidos" style="whiteSpace=wrap;html=1;" parent="6" vertex="1">
-                    <mxGeometry x="740" y="600" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="20" value="Geo-location" style="whiteSpace=wrap;html=1;" parent="6" vertex="1">
-                    <mxGeometry x="680" y="700" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="72" style="edgeStyle=none;html=1;entryX=0;entryY=1;entryDx=0;entryDy=0;" parent="6" source="21" target="16" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
                 <mxCell id="21" value="App-bff" style="whiteSpace=wrap;html=1;" parent="6" vertex="1">
-                    <mxGeometry x="250" y="410" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="253.84000000000003" y="420" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="22" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.013;exitY=0.389;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.093;entryY=0.385;entryDx=0;entryDy=0;entryPerimeter=0;" parent="6" source="10" edge="1">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="-20.11999999999989" y="389.5"/>
-                        </Array>
-                        <mxPoint x="-69.99996999999985" y="390.49859000000015" as="sourcePoint"/>
-                        <mxPoint x="20.304830000000038" y="390.48934999999983" as="targetPoint"/>
-                    </mxGeometry>
+                <mxCell id="9" value="API GateWay (KONG)" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" parent="6" vertex="1">
+                    <mxGeometry x="453.84" y="40" width="149.4" height="57.78" as="geometry"/>
                 </mxCell>
-                <mxCell id="23" value="Faz o balancer" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="22" connectable="0" vertex="1">
-                    <mxGeometry x="-0.1367" relative="1" as="geometry">
-                        <mxPoint x="1" as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="24" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.093;exitY=0.388;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.189;entryY=0.404;entryDx=0;entryDy=0;entryPerimeter=0;" parent="6" source="10" target="10" edge="1">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points"/>
-                        <mxPoint x="30" y="400" as="sourcePoint"/>
-                        <mxPoint x="110" y="400" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="68" value="Rate limiting&lt;div&gt;Verifica code injection&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="24" vertex="1" connectable="0">
-                    <mxGeometry x="-0.0902" y="1" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="25" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.189;exitY=0.404;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" parent="6" source="10" target="21" edge="1">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points"/>
-                        <mxPoint x="200" y="510" as="sourcePoint"/>
-                        <mxPoint x="280" y="510" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="71" value="Manda os&lt;div&gt;dados pro&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="25" vertex="1" connectable="0">
-                    <mxGeometry x="-0.1276" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="26" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.173;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" parent="6" source="10" target="13" edge="1">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points"/>
-                        <mxPoint x="240" y="580" as="sourcePoint"/>
-                        <mxPoint x="320" y="580" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="27" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="5" source="29" target="10" edge="1">
+                <mxCell id="27" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="5" source="29" target="13" edge="1">
                     <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="-379.9999999999982" y="2370" as="targetPoint"/>
+                        <mxPoint x="340" y="2490" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="28" value="&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Manda o formulário (REST)&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="27" connectable="0" vertex="1">
+                <mxCell id="28" value="&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Manda requisições (REST)&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];rotation=0;" parent="27" connectable="0" vertex="1">
                     <mxGeometry x="-0.1913" y="-1" relative="1" as="geometry">
-                        <mxPoint x="5" as="offset"/>
+                        <mxPoint x="-145" y="5" as="offset"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="29" value="Web (React)" style="whiteSpace=wrap;html=1;" parent="5" vertex="1">
-                    <mxGeometry x="-660" y="2410" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="30" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="5" source="10" edge="1">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points"/>
-                        <mxPoint x="-250" y="2439.92" as="sourcePoint"/>
-                        <mxPoint x="-170" y="2439.92" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="31" value="Faz o balancer" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="30" connectable="0" vertex="1">
-                    <mxGeometry x="-0.1367" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
+                    <mxGeometry x="120" y="2460" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="32" value="App (React Native)" style="whiteSpace=wrap;html=1;" parent="5" vertex="1">
-                    <mxGeometry x="-660" y="2240" width="120" height="60" as="geometry"/>
+                    <mxGeometry x="120" y="2290" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="33" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.015;entryY=0.389;entryDx=0;entryDy=0;entryPerimeter=0;" parent="5" source="32" target="10" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="33" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="5" source="32" target="21" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="400" y="2340" as="targetPoint"/>
+                    </mxGeometry>
                 </mxCell>
-                <mxCell id="34" value="Manda o formulário (REST)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="33" connectable="0" vertex="1">
+                <mxCell id="34" value="Manda requisições (REST)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="33" connectable="0" vertex="1">
                     <mxGeometry x="-0.0319" y="2" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
+                        <mxPoint x="-200" y="-4" as="offset"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="43" parent="0"/>
-                <mxCell id="44" value="Comprador" style="ellipse;whiteSpace=wrap;html=1;" parent="43" vertex="1">
-                    <mxGeometry x="-910" y="2230" width="120" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="45" value="Estabelecimento" style="ellipse;whiteSpace=wrap;html=1;" parent="43" vertex="1">
-                    <mxGeometry x="-910" y="2400" width="120" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="46" value="" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="43" source="44" target="32" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
+                <mxCell id="46" value="" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="43" source="ZMD-k1KkdO0GaXOnLm97-88" edge="1" target="32">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="-399.99999999999136" y="2310" as="sourcePoint"/>
+                        <mxPoint x="-270.00000000000045" y="2310" as="targetPoint"/>
+                    </mxGeometry>
                 </mxCell>
                 <mxCell id="47" value="Acessa" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="46" connectable="0" vertex="1">
                     <mxGeometry x="-0.2166" y="-3" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
+                        <mxPoint x="-79" y="-5" as="offset"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="c17DG_hq72BnOwkdbsdk-91" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="46">
+                    <mxGeometry x="0.5714" relative="1" as="geometry">
+                        <mxPoint y="-117" as="offset"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="48" value="Untitled Layer" parent="0"/>
-                <mxCell id="49" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="48" source="45" target="29" edge="1">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="50" value="Acessa" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="49" connectable="0" vertex="1">
-                    <mxGeometry x="-0.0233" y="-1" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="51" value="Cada serviço terá um banco de leitura e outro de escrita?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-2480" y="2390" width="330" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="52" value="Terá duplicação?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-2380" y="2480" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="54" value="Teria um Service Mesh entre os microserviços&lt;div&gt;para não precisarem saber cada rota de cada um&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-2150" y="2366" width="290" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="56" value="Redundância Estratégica. Para não precisar fazer vários GETs" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-2250" y="2504" width="360" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="58" value="Qual arquitetura usar em cada Microservice?&lt;div&gt;Diferentes para aprendizado?&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-1990" y="2549" width="260" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="60" value="Método de espelhamento feito&lt;div&gt;para não precisar de micro serviços conversarem muit:&lt;/div&gt;&lt;div&gt;Exemplo:&lt;/div&gt;&lt;div&gt;Ao adicionar alguém se cadastra, banco de usuários é atualziado&lt;/div&gt;&lt;div&gt;um evento é disparado e o banco de Pedidos (muitas vezes precisa de saber coisas do usuário)&lt;/div&gt;&lt;div&gt;é atualizado com o básico.&lt;/div&gt;&lt;div&gt;com filas, rabbitMQ&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-2540" y="2600" width="540" height="110" as="geometry"/>
-                </mxCell>
                 <mxCell id="62" value="usar arquiteturas por níveis de criticidade&lt;div&gt;1. DDD/Hexa/Clean&lt;/div&gt;&lt;div&gt;2.Layered Architecture (Service/Controller/Repository)&lt;/div&gt;&lt;div&gt;3.Simples sla, MVC&amp;nbsp;&amp;nbsp;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-1955" y="2610" width="310" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="63" value="Devo fazer o espelhamento com itens que mudam pouco e essenciais para o sistema" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-2160" y="2760" width="480" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="64" value="WebSocket para atualizar o preço instantâneo&lt;div&gt;Se estiver no carrinho e alguém mudar&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-2060" y="2440" width="270" height="40" as="geometry"/>
+                    <mxGeometry x="-1000" y="391.25" width="310" height="70" as="geometry"/>
                 </mxCell>
                 <mxCell id="65" value="GraphQL para facilitar front?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-2390" y="2870" width="180" height="30" as="geometry"/>
+                    <mxGeometry x="-950" y="601.25" width="180" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="66" value="&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Externo -&amp;gt; Gateway (REST/GraphQL)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Gateway -&amp;gt; BFF (REST)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;BFF -&amp;gt; micro (gRPC)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; micro (gRPC/fila)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; externo (REST)&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="48" vertex="1">
-                    <mxGeometry x="-2420" y="2780" width="230" height="90" as="geometry"/>
+                    <mxGeometry x="-970" y="631.25" width="230" height="90" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
     </diagram>
     <diagram id="jiY3-IVjcYcii_tPrBLA" name="requisitos1.C3">
-        <mxGraphModel dx="6627" dy="913" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="7488" dy="3164" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-1" value="Cache no bff com dados sanitizados&lt;div&gt;Caso mude uma fila avisa e descarta o cache&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2230" y="2290" width="270" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-2" value="o compositor deve ser inteligente para se algo cair, ter um fallback, como uma imagem placeholder" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2150" y="2830" width="550" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-3" value="1 repo (BFFs + Fronts)&lt;br&gt;1 repo (Microservices + Gateway e outros)&lt;br&gt;&lt;br&gt;&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Com 1 repo de front e BFFs podemos compartilhas&amp;nbsp;&lt;/span&gt;&lt;div style=&quot;color: rgb(192, 192, 192); scrollbar-color: rgb(75, 75, 75) rgb(27, 29, 30);&quot;&gt;interfaces e lógicas de UX.&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2200" y="2110" width="300" height="90" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-4" value="" style="edgeStyle=none;html=1;exitX=1.008;exitY=0.664;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-3" target="MNuB5gF9UauvjkVyLA6w-5">
-                    <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="-1803.076923076923" y="2170" as="sourcePoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-5" value="Ou apenas monorepo mesmo com NX" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-1905" y="2220" width="230" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-6" value="Automatizar bastante" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2420" y="2330" width="140" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-7" value="" style="group" connectable="0" vertex="1" parent="1">
-                    <mxGeometry x="-170" y="1910" width="1192.3200000000002" height="1192.3200000000002" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-8" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry width="1060" height="1060" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-9" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;dashed=1;dashPattern=8 8;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="122.68518518518518" y="122.68518518518518" width="814.6296296296297" height="814.6296296296297" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-10" value="API GateWay" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="412.22222222222223" width="235.55555555555557" height="117.77777777777779" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-11" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=none;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="-96.16" y="-96.15" width="1252.31" height="1252.31" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-12" value="Load balancer" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="500" y="-70" width="60" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-13" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.077;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-11">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points"/>
-                        <mxPoint x="50" y="529.77" as="sourcePoint"/>
-                        <mxPoint x="120" y="530" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-14" value="Web-bff" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="250" y="525" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-15" value="Pedido" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="640" y="310" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-16" value="Mensageria" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="595" y="530" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-17" value="Auth" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="380" y="250" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-18" value="Catalogo/merchant" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="510" y="730" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-19" value="Notificações" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="740" y="420" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-20" value="Pedidos" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="740" y="600" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-21" value="Geo-location" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="680" y="700" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-22" style="edgeStyle=none;html=1;entryX=0;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-23" target="MNuB5gF9UauvjkVyLA6w-17">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-23" value="App-bff" style="whiteSpace=wrap;html=1;" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-7">
-                    <mxGeometry x="250" y="410" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-24" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.013;exitY=0.389;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.093;entryY=0.385;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-11">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="-20.11999999999989" y="389.5"/>
-                        </Array>
-                        <mxPoint x="-69.99996999999985" y="390.49859000000015" as="sourcePoint"/>
-                        <mxPoint x="20.304830000000038" y="390.48934999999983" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-25" value="Faz o balancer" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-24">
-                    <mxGeometry x="-0.1367" relative="1" as="geometry">
-                        <mxPoint x="1" as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-26" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.093;exitY=0.388;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.189;entryY=0.404;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-11" target="MNuB5gF9UauvjkVyLA6w-11">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points"/>
-                        <mxPoint x="30" y="400" as="sourcePoint"/>
-                        <mxPoint x="110" y="400" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-27" value="Rate limiting&lt;div&gt;Verifica code injection&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="MNuB5gF9UauvjkVyLA6w-26">
-                    <mxGeometry x="-0.0902" y="1" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-28" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.189;exitY=0.404;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-11" target="MNuB5gF9UauvjkVyLA6w-23">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points"/>
-                        <mxPoint x="200" y="510" as="sourcePoint"/>
-                        <mxPoint x="280" y="510" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-29" value="Manda os&lt;div&gt;dados pro&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="MNuB5gF9UauvjkVyLA6w-28">
-                    <mxGeometry x="-0.1276" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-30" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0.173;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="MNuB5gF9UauvjkVyLA6w-7" source="MNuB5gF9UauvjkVyLA6w-11" target="MNuB5gF9UauvjkVyLA6w-14">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points"/>
-                        <mxPoint x="240" y="580" as="sourcePoint"/>
-                        <mxPoint x="320" y="580" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-31" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-33" target="MNuB5gF9UauvjkVyLA6w-11">
-                    <mxGeometry relative="1" as="geometry">
-                        <mxPoint x="-379.9999999999982" y="2370" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-32" value="&lt;span style=&quot;color: rgb(255, 255, 255);&quot;&gt;Manda o formulário (REST)&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-31">
-                    <mxGeometry x="-0.1913" y="-1" relative="1" as="geometry">
-                        <mxPoint x="5" as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-33" value="Web (React)" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
-                    <mxGeometry x="-660" y="2410" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-34" value="" style="edgeStyle=none;orthogonalLoop=1;jettySize=auto;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-11">
-                    <mxGeometry width="80" relative="1" as="geometry">
-                        <Array as="points"/>
-                        <mxPoint x="-250" y="2439.92" as="sourcePoint"/>
-                        <mxPoint x="-170" y="2439.92" as="targetPoint"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-35" value="Faz o balancer" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-34">
-                    <mxGeometry x="-0.1367" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-36" value="App (React Native)" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
-                    <mxGeometry x="-660" y="2240" width="120" height="60" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-37" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.015;entryY=0.389;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-36" target="MNuB5gF9UauvjkVyLA6w-11">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-38" value="Manda o formulário (REST)" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-37">
-                    <mxGeometry x="-0.0319" y="2" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-39" value="Comprador" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-                    <mxGeometry x="-910" y="2230" width="120" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-40" value="Estabelecimento" style="ellipse;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-                    <mxGeometry x="-910" y="2400" width="120" height="80" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-41" value="" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-39" target="MNuB5gF9UauvjkVyLA6w-36">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-42" value="Acessa" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-41">
-                    <mxGeometry x="-0.2166" y="-3" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-43" style="edgeStyle=none;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="MNuB5gF9UauvjkVyLA6w-40" target="MNuB5gF9UauvjkVyLA6w-33">
-                    <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-44" value="Acessa" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" connectable="0" vertex="1" parent="MNuB5gF9UauvjkVyLA6w-43">
-                    <mxGeometry x="-0.0233" y="-1" relative="1" as="geometry">
-                        <mxPoint as="offset"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-45" value="Cada serviço terá um banco de leitura e outro de escrita?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2480" y="2390" width="330" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-46" value="Terá duplicação?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2380" y="2480" width="110" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-47" value="Teria um Service Mesh entre os microserviços&lt;div&gt;para não precisarem saber cada rota de cada um&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2150" y="2366" width="290" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-48" value="Redundância Estratégica. Para não precisar fazer vários GETs" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2250" y="2504" width="360" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-49" value="Qual arquitetura usar em cada Microservice?&lt;div&gt;Diferentes para aprendizado?&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-1990" y="2549" width="260" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-50" value="Método de espelhamento feito&lt;div&gt;para não precisar de micro serviços conversarem muit:&lt;/div&gt;&lt;div&gt;Exemplo:&lt;/div&gt;&lt;div&gt;Ao adicionar alguém se cadastra, banco de usuários é atualziado&lt;/div&gt;&lt;div&gt;um evento é disparado e o banco de Pedidos (muitas vezes precisa de saber coisas do usuário)&lt;/div&gt;&lt;div&gt;é atualizado com o básico.&lt;/div&gt;&lt;div&gt;com filas, rabbitMQ&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2540" y="2600" width="540" height="110" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-51" value="usar arquiteturas por níveis de criticidade&lt;div&gt;1. DDD/Hexa/Clean&lt;/div&gt;&lt;div&gt;2.Layered Architecture (Service/Controller/Repository)&lt;/div&gt;&lt;div&gt;3.Simples sla, MVC&amp;nbsp;&amp;nbsp;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-1955" y="2610" width="310" height="70" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-52" value="Devo fazer o espelhamento com itens que mudam pouco e essenciais para o sistema" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2160" y="2760" width="480" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-53" value="WebSocket para atualizar o preço instantâneo&lt;div&gt;Se estiver no carrinho e alguém mudar&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2060" y="2440" width="270" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-54" value="GraphQL para facilitar front?" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2390" y="2870" width="180" height="30" as="geometry"/>
-                </mxCell>
-                <mxCell id="MNuB5gF9UauvjkVyLA6w-55" value="&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Externo -&amp;gt; Gateway (REST/GraphQL)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;Gateway -&amp;gt; BFF (REST)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;BFF -&amp;gt; micro (gRPC)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; micro (gRPC/fila)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212));&quot;&gt;micro -&amp;gt; externo (REST)&lt;/font&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
-                    <mxGeometry x="-2420" y="2780" width="230" height="90" as="geometry"/>
-                </mxCell>
             </root>
         </mxGraphModel>
     </diagram>
     <diagram id="EXCvLXDRrwV8vsatSMZb" name="requisitos">
-        <mxGraphModel dx="2637" dy="1098" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="2348" dy="633" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="GA8RZb50cUZnVNPxyWNl-1" value="REQUISITOS-1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=26;" vertex="1" parent="1">
+                <mxCell id="GA8RZb50cUZnVNPxyWNl-1" value="REQUISITOS-1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=26;" parent="1" vertex="1">
                     <mxGeometry x="95" y="53" width="210" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="GA8RZb50cUZnVNPxyWNl-3" value="Quantidade de Devs: 1 (ou 2?).&#xa;&#xa;Conhecimento técnico dos devs: bom, mas não muito relevante pois é projeto to Learn.&#xa;&#xa;Tempo disponível: não específica, mas grande, não precisa fazer com pressa, mas não colocar coisa demais para ficar infinito.&#xa;&#xa;Orçamento: o mínimo possível.&#xa;&#xa;Onde estão nossos clientes: Brasil inicialmente, mas pode aumentar.&#xa;&#xa;Quantos usuários serão: 100.000 compradores, e 10.000 lojas.&#xa;&#xa;Quantas req/segundo? normalmente 1000 RPS, no pico ~3000" style="rounded=0;fillColor=default;fontColor=light-dark(#000000,#FFFFFF);container=0;verticalAlign=middle;align=left;horizontal=1;labelPosition=center;verticalLabelPosition=middle;" vertex="1" parent="1">
+                <mxCell id="GA8RZb50cUZnVNPxyWNl-3" value="Quantidade de Devs: 1 (ou 2?).&#xa;&#xa;Conhecimento técnico dos devs: bom, mas não muito relevante pois é projeto to Learn.&#xa;&#xa;Tempo disponível: não específica, mas grande, não precisa fazer com pressa, mas não colocar coisa demais para ficar infinito.&#xa;&#xa;Orçamento: o mínimo possível.&#xa;&#xa;Onde estão nossos clientes: Brasil inicialmente, mas pode aumentar.&#xa;&#xa;Quantos usuários serão: 100.000 compradores, e 10.000 lojas.&#xa;&#xa;Quantas req/segundo? normalmente 1000 RPS, no pico ~3000" style="rounded=0;fillColor=default;fontColor=light-dark(#000000,#FFFFFF);container=0;verticalAlign=middle;align=left;horizontal=1;labelPosition=center;verticalLabelPosition=middle;" parent="1" vertex="1">
                     <mxGeometry x="-110" y="120" width="700" height="200" as="geometry"/>
-                </mxCell>
-                <mxCell id="GA8RZb50cUZnVNPxyWNl-4" value="REQUISITOS-1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=26;" vertex="1" parent="1">
-                    <mxGeometry x="935" y="53" width="210" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="GA8RZb50cUZnVNPxyWNl-5" value="Quantidade de Devs: 1 (ou 2?).&#xa;&#xa;Conhecimento técnico dos devs: bom, mas não muito relevante pois é projeto to Learn.&#xa;&#xa;Tempo disponível: não específica, mas grande, não precisa fazer com pressa, mas não colocar coisa demais para ficar infinito.&#xa;&#xa;Orçamento: o mínimo possível.&#xa;&#xa;Onde estão nossos clientes: Brasil inicialmente, mas pode aumentar.&#xa;&#xa;Quantos usuários serão: 100.000 compradores, e 10.000 lojas.&#xa;&#xa;Quantas req/segundo? normalmente 1000 RPS, no pico ~3000" style="rounded=0;fillColor=default;fontColor=light-dark(#000000,#FFFFFF);container=0;verticalAlign=middle;align=left;horizontal=1;labelPosition=center;verticalLabelPosition=middle;" vertex="1" parent="1">
-                    <mxGeometry x="730" y="120" width="700" height="200" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
