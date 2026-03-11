@@ -20,11 +20,14 @@ Ao mesmo tempo, não queremos usar um único conjunto de tabelas sem qualquer se
 Usaremos **um único banco de dados PostgreSQL**, com a separação lógica feita por **schemas** — um schema por serviço/bounded context.
 
 Exemplos:
+- `auth.*` — tabelas do serviço de auth e perfis
+- `establishments.*` — tabelas do serviço de estabelecimentos
+- `catalog.*` — tabelas do serviço de catálogo
+- `events.*` — tabelas do serviço de eventos
+- `locations.*` — tabelas do serviço de geolocalização
 - `orders.*` — tabelas do serviço de pedidos
-- `menu.*` — tabelas do serviço de cardápio
+- `notifications.*` — tabelas do serviço de notificações & realtime
 - `payments.*` — tabelas do serviço de pagamentos
-- `users.*` — tabelas do serviço de usuários
-- `notifications.*` — tabelas do serviço de notificações
 
 Cada serviço **só acessa seu próprio schema** diretamente. Não haverá JOINs entre schemas. Toda troca de dados entre serviços ocorre via mensagens (fila) ou API.
 
