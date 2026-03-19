@@ -1,66 +1,86 @@
-# ADR-002: Banco de Dados Único com Separação por Schemas (Estratégia Inicial)
+# ADR-002: Servidor PostgreSQL Único com Múltiplos Bancos por Serviço
 
-**Status:** Aceito  
-**Data:** 2026-03-10
+**Status:** Revisado  
+**Data original:** 2026-03-10  
+**Data da revisão:** 2026-06-01
 
 ---
 
 ## Contexto
 
-Em uma arquitetura de microserviços pura, cada serviço deveria ter seu próprio banco de dados isolado. No entanto, no estágio inicial do FoodeApp, manter múltiplas instâncias de banco de dados implica:
+O desenho original desta ADR descrevia um único banco com separação por schemas. A implementação atual no Terraform evoluiu para um modelo com **um único servidor PostgreSQL** e **múltiplos bancos lógicos**, um por serviço.
 
-- Maior custo de infraestrutura (múltiplas instâncias PostgreSQL).
-- Maior complexidade operacional (backups, monitoramento, provisionamento por instância).
-- Overhead desnecessário para um time pequeno em fase de produto.
+Isso mantém custo e operação centralizados (uma instância gerenciada), mas aumenta isolamento entre domínios em comparação ao uso de schemas dentro do mesmo banco.
 
-Ao mesmo tempo, não queremos usar um único conjunto de tabelas sem qualquer separação, pois isso criaria acoplamento na camada de dados e dificultaria a eventual migração para bancos separados.
+---
 
 ## Decisão
 
-Usaremos **um único banco de dados PostgreSQL**, com a separação lógica feita por **schemas** — um schema por serviço/bounded context.
+Usaremos **um único servidor PostgreSQL** com **um database por serviço**.
 
-Exemplos:
-- `auth.*` — tabelas do serviço de auth e perfis
-- `establishments.*` — tabelas do serviço de estabelecimentos
-- `catalog.*` — tabelas do serviço de catálogo
-- `events.*` — tabelas do serviço de eventos
-- `locations.*` — tabelas do serviço de geolocalização
-- `orders.*` — tabelas do serviço de pedidos
-- `notifications.*` — tabelas do serviço de notificações & realtime
-- `payments.*` — tabelas do serviço de pagamentos
+Exemplos atuais:
 
-Cada serviço **só acessa seu próprio schema** diretamente. Não haverá JOINs entre schemas. Toda troca de dados entre serviços ocorre via mensagens (fila) ou API.
+- `foodeapp_auth`
+- `foodeapp_establishments`
+- `foodeapp_catalog`
+- `foodeapp_events`
+- `foodeapp_locations`
+- `foodeapp_orders`
+- `foodeapp_notifications`
+- `foodeapp_payments`
+- `foodeapp_flags`
+
+Cada microserviço acessa apenas seu próprio database. Não haverá JOINs entre databases. Toda troca de dados entre serviços ocorre via API ou fila (RabbitMQ + Outbox).
+
+---
+
+## Aderência com Terraform
+
+Implementação correspondente:
+
+- 1 servidor PostgreSQL (`azurerm_postgresql_flexible_server`)
+- N databases (`azurerm_postgresql_flexible_server_database`)
+
+Ou seja: o modelo oficial passa a ser "single server, multi-database".
+
+---
 
 ## Consequências
 
 ### Positivas
 
-- Custo inicial muito menor: uma única instância de banco.
-- Operações de backup, restore e monitoramento centralizadas.
-- Facilidade de setup local para desenvolvimento.
-- A separação por schemas cria uma "fronteira lógica" que respeita os bounded contexts e facilita a migração futura para bancos separados.
-- Migrations são versionadas e organizadas por schema/serviço.
+- Melhor isolamento lógico entre serviços do que schema compartilhado.
+- Permissões por database mais simples de segregar.
+- Ainda mantém custo/operação de uma única instância gerenciada.
+- Facilita futura migração para servidor dedicado por domínio crítico.
 
-### Negativas / Trade-offs
+### Trade-offs
 
-- Não há isolamento **físico** de falhas: um problema no banco afeta todos os serviços.
-- Não é possível escalar o banco de forma independente por serviço.
-- Um schema mal gerenciado pode "vazar" e acessar outro schema, quebrando o isolamento — isso exige disciplina de code review e testes.
-- A migração para bancos separados no futuro exigirá trabalho (sincronização de dados, cutover).
+- Ainda existe ponto único de falha no nível de servidor (se o servidor cair, todos os bancos ficam indisponíveis).
+- Escalabilidade ainda é compartilhada no nível da instância.
+- Administração de migrations exige conexão por database de cada serviço.
 
-### Neutras / Observações
+### Observações
 
-- Esta é uma **decisão temporária e consciente**. O objetivo é evoluir para bancos separados por serviço conforme o produto e o time crescerem.
-- A separação por schemas é o "passo 1" que torna essa migração futura menos traumática.
-- Triggers, foreign keys e views cross-schema são **proibidos** — o isolamento existe por contrato do time, não apenas por restrição técnica.
+- Continua sendo uma estratégia intermediária entre monolito de dados e isolamento físico completo por serviço.
+- Migração futura para "1 servidor por serviço" permanece possível e menos traumática do que partir de schema único.
 
-### Regra de ouro: Transação vs Fila
+---
+
+## Regra de ouro: transação local vs integração distribuída
 
 | Escopo da alteração | Mecanismo obrigatório |
 |---|---|
-| Tabelas **dentro do mesmo schema** (mesmo microserviço) | **Transação ACID** normal do PostgreSQL |
-| Tabelas em **schemas diferentes** (microserviços distintos) | **Fila de mensagens** (RabbitMQ via Outbox — ADR-017) |
+| Dentro do mesmo database (mesmo serviço) | Transação ACID no PostgreSQL |
+| Entre serviços (databases diferentes) | Fila/evento (RabbitMQ + Outbox) ou API síncrona |
 
-O motivo não é limitação técnica — tecnicamente o PostgreSQL permite uma transação que toca dois schemas. A proibição é **arquitetural**: cada schema deve ser tratado como se já fosse um banco separado, porque será no futuro. Qualquer código que transacione entre schemas vai quebrar sem aviso quando a migração para bancos físicos individuais acontecer.
+Não usar transações distribuídas entre databases como mecanismo de acoplamento entre serviços.
 
-- Relacionado: ADR-005 (tabelas normalizadas e desnormalizadas), ADR-003 (PostgreSQL como banco escolhido), ADR-017 (Outbox), ADR-007 (SAGA para fluxos entre serviços).
+---
+
+## Relacionamentos
+
+- ADR-003 (stack PostgreSQL)
+- ADR-006 (RabbitMQ)
+- ADR-007 (SAGA)
+- ADR-017 (Outbox)

@@ -1,9 +1,43 @@
 # ADR-023 — CDN para Assets Estáticos (Imagens, JS, CSS)
 
-**Status:** Aceito  
-**Data:** 2026-03-10  
+**Status:** Revisado (implementação diverge da decisão original — ver seção abaixo)
+**Data original:** 2026-03-10 | **Data da revisão:** 2026-06-01
 **Decisores:** Time de Arquitetura  
 **Tags:** `frontend` `infraestrutura` `performance` `edge`
+
+---
+
+## ⚠️ Revisão da Decisão (2026-06-01)
+
+### Decisão Original vs Implementação Atual
+
+| Item | ADR original | **Implementação real** |
+|------|-------------|------------------------|
+| CDN | Cloudflare CDN | **Azure Front Door Standard** |
+| WAF | Cloudflare WAF | **Azure Front Door WAF (Prevention mode em prod)** |
+| DDoS | Cloudflare DDoS mitigation | **Azure DDoS Protection** |
+| TLS/DNS | Cloudflare | **Azure Front Door + Azure DNS** |
+
+### Motivos da mudança
+
+A decisão de usar **Azure Front Door Standard** em vez de Cloudflare CDN foi tomada ao implementar a infraestrutura Terraform:
+
+1. **Stack Azure-first**: toda a infraestrutura já é Azure (AKS, PostgreSQL, Redis, Key Vault, ACR) — adicionar Cloudflare criaria um segundo vendor para gerenciar, faturar e dar suporte. O Front Door elimina esse overhead.
+
+2. **Private Endpoint para a origem**: Azure Front Door suporta conectar ao backend via Azure Private Link, garantindo que o tráfego de miss do CDN nunca viaje pela internet pública até o cluster. Cloudflare CDN não oferece esse nível de isolamento de rede sem custo adicional significativo.
+
+3. **WAF integrado (ADR-016)**: o Azure Front Door Standard já inclui WAF com OWASP 3.2 e regras gerenciadas pela Microsoft, sem custo adicional de licenciamento. O Terraform já configura `waf_mode = "Prevention"` em produção.
+
+4. **Terraform provider oficial**: o Terraform `azurerm` tem suporte completo a Front Door Standard — `azurerm_cdn_frontdoor_profile`, `azurerm_cdn_frontdoor_endpoint`, `azurerm_cdn_frontdoor_origin_group` etc. Mais estável que o provider da Cloudflare para IaC complexo.
+
+5. **Billing unificado**: um único fornecedor (Microsoft Azure) para toda a infraestrutura simplifica controle de custos, SLAs e suporte.
+
+### Impacto da mudança
+
+- **ADR-020 (Terraform)**: ✅ já implementado — módulo `cdn` usa `azurerm_cdn_frontdoor_*`
+- **ADR-009 (Kong)**: sem impacto — Kong ainda gerencia APIs; Front Door cuida dos assets estáticos
+- **Purge de cache**: via Azure CLI ou API REST (`az afd endpoint purge`) em vez da API Cloudflare
+- **Custo CDN**: Azure Front Door Standard ~$35/mês + $0.081/GB de transferência de dados (vs Cloudflare que cobra por operações)
 
 ---
 

@@ -1,7 +1,8 @@
 # ADR-028: File Storage para Imagens e Arquivos de Usuário
 
-**Status:** Aceito  
-**Data:** 2026-03-10
+**Status:** Revisado  
+**Data original:** 2026-03-10  
+**Data da revisão:** 2026-06-01
 
 ---
 
@@ -9,100 +10,93 @@
 
 O FoodeApp precisa armazenar arquivos binários enviados por usuários e estabelecimentos:
 
-- **Imagens de produtos/pratos**: foto de cada item do cardápio.
-- **Logotipo e foto de capa do estabelecimento**: exibidas na listagem e na página do restaurante.
-- **Foto de perfil do comprador**: opcional.
-- **Comprovantes/documentos**: CNPJ, alvará — necessários no onboarding do estabelecimento (futuro).
+- Imagens de produtos/pratos
+- Logotipo e capa do estabelecimento
+- Foto de perfil do comprador
+- Documentos de onboarding (futuro)
 
-Arquivos binários não devem ser armazenados no PostgreSQL (performance, custo, complexidade de backup). É necessário um serviço de object storage separado.
+Arquivos binários não devem ser armazenados no PostgreSQL. É necessário object storage dedicado, integração com CDN e política de segurança para arquivos privados.
 
-Os diagramas arquiteturais mencionam **Azure Blob Storage** como opção, mas o restante da infra não está comprometido com Azure especificamente. A CDN já está definida como Cloudflare (ADR-023) — pontos de serviço de storage devem considerar a integração com essa camada.
+Na decisão original desta ADR, havia referência a Cloudflare R2. A implementação final da infraestrutura, no entanto, foi consolidada em Azure.
 
-Opções avaliadas:
-
-| Opção | Custo | Integração CDN | SDK .NET | Observações |
-|-------|-------|---------------|---------|-------------|
-| **Cloudflare R2** | Muito baixo (sem egress fee) | Nativa com Cloudflare CDN | S3-compatible | Sem custo de saída de dados |
-| **AWS S3** | Baixo | Via CloudFront ou Cloudflare | ✅ | Egress fee pode escalar |
-| **Azure Blob Storage** | Baixo | Via CDN Azure ou Cloudflare | ✅ | Mencionado nos diagramas C4 iniciais |
-| **MinIO (self-hosted)** | Hosting próprio | Via Cloudflare | S3-compatible | Mais operação, menos custo |
+---
 
 ## Decisão
 
-Usaremos **Cloudflare R2** como serviço de object storage para todos os arquivos de usuário do FoodeApp.
+Usaremos **Azure Blob Storage** como serviço de object storage do FoodeApp.
 
-### Motivos da escolha
+### Decisão original vs implementação final
 
-- **Zero egress fees**: Cloudflare R2 não cobra pela saída de dados — custo relevante quando imagens são servidas frequentemente.
-- **Integração nativa com Cloudflare CDN** (ADR-023): arquivos no R2 podem ser servidos diretamente pelo CDN do Cloudflare sem configuração adicional de origin. Evita um hop desnecessário.
-- **API S3-compatible**: o SDK .NET da AWS (`AWSSDK.S3`) funciona com R2 apenas alterando o endpoint — sem lock-in de SDK.
-- **Terraform provider** disponível (ADR-020): `cloudflare_r2_bucket` — infra como código consistente com o restante.
-- Já usamos Cloudflare para CDN e WAF (ADR-023) — consolida vendors e simplifica faturamento.
+| Item | Decisão original | Implementação final |
+|---|---|---|
+| Object storage | Cloudflare R2 | Azure Blob Storage |
+| Integração CDN | Cloudflare CDN | Azure Front Door Standard |
+| SDK .NET | S3-compatible | Azure.Storage.Blobs |
+| Provisionamento IaC | Cloudflare provider | azurerm_storage_account + containers |
 
-### Organização dos buckets
+### Motivos da escolha final
 
-| Bucket | Conteúdo | Acesso | Cache |
-|--------|---------|--------|-------|
-| `foodeapp-products` | Fotos de pratos e cardápio | Público (via CDN) | `max-age=86400` |
-| `foodeapp-merchants` | Logo e capa de estabelecimentos | Público (via CDN) | `max-age=86400` |
-| `foodeapp-users` | Fotos de perfil | Público (via CDN) | `max-age=3600` |
-| `foodeapp-documents` | CNPJ, alvará, documentos de onboarding | **Privado** (signed URL, TTL 15min) | Sem cache |
+1. **Coerência Azure-first**: o restante da infraestrutura já está em Azure (AKS, PostgreSQL, Redis, Key Vault, ACR, Front Door).
+2. **Segurança de rede**: Storage com Private Endpoint dentro da VNet, sem tráfego público direto para backend.
+3. **Operação simplificada**: um único fornecedor, menor complexidade de suporte e billing.
+4. **Integração com observabilidade**: uso do Blob também para retenção de logs do Loki em produção (`loki-logs`).
 
-### Fluxo de upload (imagens públicas)
+---
 
-```
-Frontend (React/React Native)
-    │  1. POST /api/uploads/presigned-url
-    │     → Serviço de Mídia solicita Presigned URL ao R2
-    │     → Retorna URL temporária de upload (validade: 5 min)
-    ↓
-Frontend
-    │  2. PUT diretamente no R2 via Presigned URL (bypass do backend)
-    │     → Arquivo vai diretamente do browser/app para o R2
-    ↓
-Frontend
-    │  3. POST /api/produtos/{id}/imagem com a URL final do arquivo
-    │     → Backend registra a URL no PostgreSQL
-```
+## Implementação atual
 
-**Por que Presigned URL?** O arquivo nunca passa pelo backend do FoodeApp — reduz latência, elimina carga no servidor e simplifica a infraestrutura (sem streaming de multipart no .NET).
+### Provisionamento
 
-### Processamento de imagens
+- Terraform cria `azurerm_storage_account`
+- Terraform cria containers de aplicação
+- Terraform cria Private Endpoint para acesso interno
 
-- Após o upload, um worker assíncrono (consumidor de fila — ADR-006) redimensiona a imagem para os tamanhos padrão:
-  - `thumbnail`: 150×150 (listagens)
-  - `card`: 400×300 (card do produto)
-  - `full`: 800×600 (detalhe do produto)
-- Resultado: 3 URLs armazenadas no banco por imagem. O frontend escolhe o tamanho adequado.
-- Worker usa **SixLabors.ImageSharp** (.NET) para redimensionamento.
+### Uso por tipo de dado
 
-### Nomes de arquivo e segurança
+| Container | Conteúdo | Acesso | Cache sugerido |
+|---|---|---|---|
+| `assets` | JS/CSS/estáticos do frontend | Público via Front Door | alto (immutables) |
+| `uploads` | Imagens de produto, logo, capa | Público via Front Door | médio |
+| `loki-logs` | Logs agregados (produção) | Privado interno | n/a |
 
-- Nome do arquivo sempre gerado pelo backend: `{uuid}.{ext}` — nunca o nome original do usuário.
-- Validação de Content-Type no backend antes de emitir a Presigned URL: apenas `image/jpeg`, `image/png`, `image/webp` aceitos.
-- Tamanho máximo: 10 MB por arquivo (validado na Presigned URL com content-length-range).
-- Documentos privados usam Presigned URL de download com TTL de 15 minutos — nunca URLs permanentes.
+### Fluxo de upload recomendado
+
+1. Frontend solicita URL temporária de upload ao backend.
+2. Backend gera SAS/Presigned URL para Blob.
+3. Frontend envia arquivo diretamente ao Blob.
+4. Backend registra metadados/URL no banco.
+
+Essa abordagem reduz carga no backend e evita upload binário atravessando APIs de negócio.
+
+---
+
+## Segurança e governança
+
+- Arquivos privados devem usar URL temporária com expiração curta.
+- Nome de arquivo deve ser gerado no backend (`{uuid}.{ext}`), nunca confiar no nome original do cliente.
+- Validar tipo e tamanho antes de emitir URL de upload.
+- Política de remoção para dados pessoais (LGPD) deve ser implementada por job de limpeza.
+
+---
 
 ## Consequências
 
 ### Positivas
 
-- Cloudflare R2 + CDN: imagens servidas globalmente sem custo de egress — modelo de custo previsível.
-- Presigned URL descarrega completamente os uploads do backend FoodeApp.
-- API S3-compatible permite migrar para S3/MinIO com mudança mínima de configuração.
-- Redimensionamento assíncrono não bloqueia a resposta ao usuário — UI Otimista (ADR-019) pode exibir preview antes do processamento terminar.
-- Buckets separados por categoria facilitam políticas de retenção e backup diferenciadas.
+- Melhor alinhamento com a stack atual da plataforma.
+- Menor complexidade operacional e de rede.
+- Integração direta com Front Door e observabilidade.
+- Facilidade de operação via Terraform já existente.
 
-### Negativas / Trade-offs
+### Trade-offs
 
-- Cloudflare R2 é relativamente recente comparado ao S3 — menos SLAs históricos publicados, mas tem crescido em estabilidade.
-- O worker de processamento de imagens é mais um componente para manter e escalar.
-- Presigned URL expira — o frontend deve solicitar nova URL se o upload demorar mais que 5 minutos (raro, mas precisa de tratamento de erro).
-- Documentos privados com signed URL precisam de lógica de expiração bem testada — URL expirada deve retornar 403, não 404.
+- Custo de egress do Blob existe (diferente do argumento original de R2).
+- Dependência maior de um único cloud vendor.
 
-### Neutras / Observações
+---
 
-- O schema de mídia (`media_item`) fica no schema do Serviço de Mídia — armazena `{ id, bucket, key, sizes: { thumbnail, card, full }, uploaded_at, uploaded_by }`.
-- **LGPD**: foto de perfil do usuário deve ser deletável mediante solicitação — implementar soft-delete + job de limpeza no R2.
-- Futuramente: **Cloudflare Images** pode substituir a lógica manual de redimensionamento — o Cloudflare faz on-the-fly resize via URL parameter (`?w=400&h=300`). Não implementar agora para evitar lock-in prematuro, mas a URL pattern dos arquivos deve ser compatível.
-- Custo atual estimado R2: $0.015/GB/mês de storage + $0.36/1M operações de classe A. Para um catálogo inicial de alguns milhares de pratos, custo é desprezível.
+## Relacionamentos
+
+- ADR-020 (Terraform / IaC)
+- ADR-023 (CDN com Azure Front Door)
+- ADR-018 (Observabilidade e Loki)
