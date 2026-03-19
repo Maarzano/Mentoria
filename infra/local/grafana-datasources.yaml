@@ -1,0 +1,33 @@
+################################################################################
+# Grafana — Datasources provisionados automaticamente (local dev)
+# ADR-018: Grafana consolida métricas (Prometheus) e traces (Tempo)
+################################################################################
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+
+  - name: Tempo
+    type: tempo
+    uid: tempo
+    url: http://tempo:3200
+    editable: true
+    jsonData:
+      tracesToMetricsV2:
+        datasourceUid: prometheus
+        spanStartTimeShift: "-2m"
+        spanEndTimeShift: "2m"
+      serviceMap:
+        datasourceUid: prometheus
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false
+      lokiSearch:
+        datasourceUid: ""

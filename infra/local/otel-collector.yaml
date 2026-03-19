@@ -1,0 +1,75 @@
+################################################################################
+# OpenTelemetry Collector — Configuração LOCAL (dev)
+# ADR-018: OTel Collector como intermediário entre serviços e backends
+#
+# Recebe: OTLP gRPC (4317) e OTLP HTTP (4318) dos serviços .NET
+# Exporta:
+#   - Métricas → Prometheus pull (endpoint :8889)
+#   - Traces   → Tempo (push OTLP gRPC)
+#   - Logs     → debug console (local)
+################################################################################
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Scrape direto do /metrics do svc-auth (prometheus-net) como fonte extra
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: svc-auth-prometheusnet
+          scrape_interval: 15s
+          static_configs:
+            - targets: ['svc-auth:8080']
+          metrics_path: /metrics
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 512
+
+  memory_limiter:
+    limit_mib: 256
+    check_interval: 5s
+
+exporters:
+  # Métricas disponíveis para o Prometheus fazer scraping
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: foodeapp
+
+  # Traces → Tempo via OTLP gRPC interno
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  # Console para debug em dev
+  debug:
+    verbosity: basic
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp/tempo, debug]
+
+    metrics:
+      receivers: [otlp, prometheus]
+      processors: [memory_limiter, batch]
+      exporters: [prometheus, debug]
+
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug]

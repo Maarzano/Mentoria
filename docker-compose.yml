@@ -22,11 +22,78 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=foodeapp_auth;Username=pgadmin;Password=pgadmin123;Pooling=true
+      # ADR-018: OTel SDK lê esta variável automaticamente ao usar AddOtlpExporter()
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_SERVICE_NAME: svc-auth
     depends_on:
       postgres:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
     ports:
       - "8080:8080"
 
+  # ── Observabilidade local (ADR-018) ────────────────────────────────────────
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.119.0
+    container_name: foodeapp-otel-collector
+    command: ["--config=/etc/otel/otel-collector.yaml"]
+    volumes:
+      - ./infra/local/otel-collector.yaml:/etc/otel/otel-collector.yaml:ro
+    ports:
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+      - "8889:8889"    # Prometheus exporter (o Prometheus faz scraping aqui)
+      - "13133:13133"  # Health check do collector
+    depends_on:
+      - tempo
+
+  prometheus:
+    image: prom/prometheus:v3.1.0
+    container_name: foodeapp-prometheus
+    user: "0:0"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yaml"
+      - "--storage.tsdb.path=/data"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./infra/local/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+      - prometheus_data:/data
+    ports:
+      - "9090:9090"
+    depends_on:
+      - otel-collector
+
+  tempo:
+    image: grafana/tempo:2.7.1
+    container_name: foodeapp-tempo
+    user: "0:0"
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./infra/local/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo_data:/tmp/tempo
+    ports:
+      - "3200:3200"    # Tempo HTTP (Grafana consulta aqui)
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: foodeapp-grafana
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+    volumes:
+      - ./infra/local/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - tempo
+
 volumes:
   foodeapp_postgres_auth_data:
+  prometheus_data:
+  tempo_data:
+  grafana_data:

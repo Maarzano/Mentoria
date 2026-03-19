@@ -61,6 +61,13 @@ spec:
                   key: rabbitmq-password
             - name: ConnectionStrings__Default
               value: "Host=$(POSTGRES_HOST);Database=foodeapp_auth;Username=pgadmin;Password=$(POSTGRES_PASSWORD);SslMode=Require"
+            # ADR-018: OTel Collector no cluster (namespace monitoring)
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://opentelemetry-collector.monitoring:4318"
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "http/protobuf"
+            - name: OTEL_SERVICE_NAME
+              value: "svc-auth"
           resources:
             requests:
               cpu: 100m

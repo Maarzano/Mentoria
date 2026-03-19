@@ -12,11 +12,14 @@
   <ItemGroup>
     <!-- ADR-004: CQRS via MediatR -->
     <PackageReference Include="MediatR" Version="12.4.1" />
+    <!-- OpenAPI/Swagger para desenvolvimento local -->
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     <!-- Prometheus /metrics — scraping direto pelo Prometheus (ADR-018) -->
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
     <!-- ADR-018: OpenTelemetry — traces + métricas para o OTel Collector -->
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.10.0" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.0" />
   </ItemGroup>
 

@@ -9,6 +9,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 using Prometheus;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,21 +25,54 @@ builder.Services.AddSvcAuthMessaging();          // IUserEventPublisher → User
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<RegisterUserCommandHandler>());
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "FoodeApp SvcAuth API",
+        Version = "v1",
+        Description = "API de autenticacao/perfil do FoodeApp"
+    });
+});
+
+// ── RFC 7807 ProblemDetails — respostas de erro padronizadas em toda a API ───
+builder.Services.AddProblemDetails();
+
 // ── Observabilidade (ADR-018) ─────────────────────────────────────────────────
+// O SDK do OTel lê OTEL_EXPORTER_OTLP_ENDPOINT do ambiente automaticamente.
+// Em local dev sem collector o OTLP falha silenciosamente (sem crash).
+// Em staging/produção, a variável é injetada pelo ConfigMap do K8s.
 builder.Services
     .AddOpenTelemetry()
-    .ConfigureResource(r => r.AddService("svc-auth"))
+    .ConfigureResource(r => r
+        .AddService("svc-auth")
+        .AddAttributes([new("deployment.environment", builder.Environment.EnvironmentName)]))
     .WithTracing(t => t
-        .AddAspNetCoreInstrumentation()
-        .AddOtlpExporter())
+        .AddAspNetCoreInstrumentation(o => o.RecordException = true)
+        .AddSource("Npgsql")          // Instrumentação nativa do driver — queries SQL em traces
+        .AddOtlpExporter())           // endpoint via OTEL_EXPORTER_OTLP_ENDPOINT
     .WithMetrics(m => m
         .AddAspNetCoreInstrumentation()
+        .AddRuntimeInstrumentation()  // GC, thread pool, alocações
         .AddOtlpExporter());
 
 // ── Build ─────────────────────────────────────────────────────────────────────
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "FoodeApp SvcAuth API v1");
+        options.RoutePrefix = "swagger";
+    });
+}
+
 // ── Middlewares ───────────────────────────────────────────────────────────────
+// Trata exceções não capturadas como ProblemDetails RFC 7807 (sem stacktrace em produção)
+app.UseExceptionHandler();
 // Lê headers X-User-Id / X-User-Roles injetados pelo Kong (ADR-009, ADR-026)
 app.UseMiddleware<KongHeadersMiddleware>();
 // Coleta métricas HTTP para o endpoint /metrics (prometheus-net — ADR-018)
@@ -47,10 +81,13 @@ app.UseHttpMetrics();
 // ── Schema (idempotente na subida) ────────────────────────────────────────────
 await app.Services.GetRequiredService<SchemaInitializer>().InitializeAsync();
 
-// ── Endpoints ─────────────────────────────────────────────────────────────────
+// ── Endpoints infra (sem versão — contratos fixos com K8s, ADR-011) ──────────
 app.MapHealthEndpoints();
-app.MapProfileEndpoints();
 app.MapMetrics("/metrics");
+
+// ── Endpoints de negócio v1 ───────────────────────────────────────────────────
+app.MapGroup("/v1")
+   .MapProfileEndpoints();
 
 await app.RunAsync();
 

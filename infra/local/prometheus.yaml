@@ -1,0 +1,20 @@
+################################################################################
+# Prometheus — Configuração LOCAL (dev)
+# ADR-018: Prometheus coleta métricas do OTel Collector e do svc-auth
+################################################################################
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Métricas exportadas pelo OTel Collector (inclui tudo que veio de OTLP)
+  - job_name: otel-collector
+    static_configs:
+      - targets: ['otel-collector:8889']
+
+  # Fallback direto: /metrics do svc-auth via prometheus-net (ADR-018)
+  - job_name: svc-auth
+    static_configs:
+      - targets: ['svc-auth:8080']
+    metrics_path: /metrics
