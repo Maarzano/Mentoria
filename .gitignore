@@ -15,3 +15,27 @@ crash.*
 
 # If you use terraform cloud/enterprise
 .terraform-staging/
+
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+*.rsuser
+TestResults/
+
+# Local env and Docker
+.env
+.env.*
+!.env.example
+docker-compose.override.yml
+*.local.yml
+
+# IDE and OS
+.vs/
+.vscode/
+.idea/
+*.swp
+*.tmp
+.DS_Store
+Thumbs.db

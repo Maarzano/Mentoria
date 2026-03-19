@@ -4,6 +4,24 @@ Infraestrutura completa do FoodeApp no Azure, gerenciada com Terraform e Kuberne
 
 ---
 
+## Local Dev (svc-auth)
+
+Da raiz do repositorio:
+
+```powershell
+.\infra\scripts\local-up.ps1
+.\infra\scripts\local-status.ps1
+.\infra\scripts\local-down.ps1
+```
+
+Comando unico para subir local:
+
+```powershell
+.\infra\scripts\local-up.ps1
+```
+
+---
+
 ## TL;DR — Subir / Descer rápido
 
 ```powershell

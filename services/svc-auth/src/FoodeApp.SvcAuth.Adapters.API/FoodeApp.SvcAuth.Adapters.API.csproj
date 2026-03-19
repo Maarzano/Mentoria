@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Mantém o nome do dll para o Dockerfile não precisar mudar -->
+    <AssemblyName>FoodeApp.SvcAuth</AssemblyName>
+    <RootNamespace>FoodeApp.SvcAuth</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ADR-004: CQRS via MediatR -->
+    <PackageReference Include="MediatR" Version="12.4.1" />
+    <!-- Prometheus /metrics — scraping direto pelo Prometheus (ADR-018) -->
+    <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
+    <!-- ADR-018: OpenTelemetry — traces + métricas para o OTel Collector -->
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Adapters referenciados aqui somente para wiring de DI no Program.cs -->
+    <ProjectReference Include="..\FoodeApp.SvcAuth.Application\FoodeApp.SvcAuth.Application.csproj" />
+    <ProjectReference Include="..\FoodeApp.SvcAuth.Adapters.Data\FoodeApp.SvcAuth.Adapters.Data.csproj" />
+    <ProjectReference Include="..\FoodeApp.SvcAuth.Adapters.External\FoodeApp.SvcAuth.Adapters.External.csproj" />
+    <ProjectReference Include="..\FoodeApp.SvcAuth.Adapters.Messaging\FoodeApp.SvcAuth.Adapters.Messaging.csproj" />
+  </ItemGroup>
+
+</Project>
