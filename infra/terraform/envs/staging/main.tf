@@ -1,6 +1,16 @@
 ################################################################################
-# ENV: staging
-# Chama todos os módulos com configurações de staging (menor custo, sem HA)
+# ENV: staging / prod2
+#
+# Filosofia: lean-and-scale — base mínima com autoscaling agressivo.
+# VMs B-series (burstable): acumulam créditos de CPU em idle e os gastam em pico.
+# Use esse ambiente para: testes de carga, rebalanceamento, integração, validação.
+#
+# ┌────────────────────────────────────────────────────────────────┐
+# │  Custo estimado (Brazil South, março 2026)                     │
+# │  Em repouso  (min nodes) : ~$450 / mês  (~R$ 2.500)           │
+# │  Load test   (max nodes) : ~$900 / mês  (~R$ 5.000) por 2h    │
+# │  Production  (para comparar): ~$4.000/mês (~R$ 22.000)        │
+# └────────────────────────────────────────────────────────────────┘
 ################################################################################
 
 terraform {
@@ -133,7 +143,7 @@ module "redis" {
   resource_group_name         = azurerm_resource_group.main.name
   location                    = var.location
   sku_name                    = "Standard"
-  capacity                    = 1   # 1 GB
+  capacity                    = 0   # C0 = 250 MB — era C1 (1 GB). Suficiente para staging. ~$28/mês vs $55/mês.
   family                      = "C"
   private_endpoints_subnet_id = module.networking.subnet_private_endpoints_id
   private_dns_zone_redis_id   = module.networking.private_dns_zone_redis_id
@@ -172,23 +182,27 @@ module "aks" {
   kubernetes_version  = var.kubernetes_version
 
   # System pool — kube-system
-  system_vm_size    = "Standard_D2s_v3"
-  system_node_count = 2
+  # B2ms: 2 vCPU / 8 GB RAM — era Standard_D2s_v3 (2×). Suficiente para 1 node em staging.
+  system_vm_size    = "Standard_B2ms"
+  system_node_count = 1   # 1 node: sem HA, ok para staging
 
   # Services pool — microserviços + BFFs (sem taint, destino padrão)
-  services_vm_size    = "Standard_D4s_v3"
-  services_node_count = 2
-  services_node_min   = 2
-  services_node_max   = 6
+  # B4ms: 4 vCPU / 16 GB RAM — era Standard_D4s_v3. max=10 para absorver load tests.
+  services_vm_size    = "Standard_B4ms"
+  services_node_count = 1
+  services_node_min   = 1   # ocioso: 1 node → ~$130/mês
+  services_node_max   = 10  # load test: até 10 nodes → ~$1.300/mês por X horas
 
   # Infra pool — Kong, Keycloak, RabbitMQ, Flagsmith
-  infra_vm_size    = "Standard_D2s_v3"
-  infra_node_count = 2
-  infra_node_min   = 2
-  infra_node_max   = 3
+  # B2ms: 2 vCPU / 8 GB RAM — era Standard_D2s_v3 (2×).
+  infra_vm_size    = "Standard_B2ms"
+  infra_node_count = 1
+  infra_node_min   = 1   # 1 node carrega Kong + Keycloak + RabbitMQ confortavelmente
+  infra_node_max   = 2
 
   # Monitor pool — Prometheus, Loki, Tempo, Grafana, OTel
-  monitor_vm_size    = "Standard_D4s_v3"
+  # B2ms: 2 vCPU / 8 GB RAM — era Standard_D4s_v3. Prometheus retém 7 dias (ver abaixo).
+  monitor_vm_size    = "Standard_B2ms"
   monitor_node_count = 1
   monitor_node_min   = 1
   monitor_node_max   = 2
@@ -197,7 +211,7 @@ module "aks" {
   dns_service_ip = "172.16.0.10"
 
   enable_defender    = false
-  log_retention_days = 30
+  log_retention_days = 7   # era 30 — 7 dias suficiente para staging
   tags               = local.tags
 
   depends_on = [module.networking, module.acr]

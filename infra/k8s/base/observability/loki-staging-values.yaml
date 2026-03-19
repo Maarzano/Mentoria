@@ -1,0 +1,29 @@
+################################################################################
+# Grafana Loki — overrides para STAGING / prod2
+#
+# Diferenças vs loki-values.yaml (base):
+#   - Retenção 7 dias (era 31 dias)
+#   - Volume reduzido para 5 GB (era 20 GB)
+#   - Recursos cortados pela metade (B2ms tem 8 GB total, divide com Prometheus)
+#
+# Usar via Helm:
+#   helm upgrade loki grafana/loki \
+#     -n monitoring \
+#     -f infra/k8s/base/observability/loki-values.yaml \
+#     -f infra/k8s/base/observability/loki-staging-values.yaml
+################################################################################
+
+loki:
+  limits_config:
+    retention_period: 168h         # 7 dias (era 744h = 31 dias)
+
+singleBinary:
+  resources:
+    requests:
+      cpu: 50m                     # era 100m
+      memory: 128Mi                # era 256Mi
+    limits:
+      cpu: 200m                    # era 500m
+      memory: 512Mi                # era 1Gi
+  persistence:
+    size: 5Gi                      # era 20Gi

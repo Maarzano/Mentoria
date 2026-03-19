@@ -2,35 +2,72 @@
 
 Infraestrutura completa do FoodeApp no Azure, gerenciada com Terraform e Kubernetes.
 
+---
+
+## TL;DR — Subir / Descer rápido
+
+```powershell
+# Todos os scripts ficam em infra/scripts/
+cd infra/scripts
+
+# Staging — subir tudo (primeira vez: ~30 min)
+.\staging-up.ps1
+
+# Ciclo diário: ligar de manhã, desligar à noite
+.\staging-resume.ps1     # liga as VMs (~8 min)
+.\staging-pause.ps1      # desliga as VMs (~2 min) — USE SEMPRE AO ACABAR
+
+# Produção — subir tudo (primeira vez: ~40 min)
+.\prod-up.ps1
+```
+
+> O ciclo diário de staging é: **`staging-resume` → trabalha → `staging-pause`**.
+> VMs desligadas = ~R$2.200/mês economizados.
+
+---
+
 ## Estrutura
 
 ```text
 infra/
+├── scripts/                    ← Scripts PowerShell de operação (use estes)
+│   ├── _config.ps1             ← Variáveis compartilhadas (não rodar diretamente)
+│   ├── _helpers.ps1            ← Funções utilitárias (não rodar diretamente)
+│   ├── staging-up.ps1          ← Sobe tudo no staging
+│   ├── staging-pause.ps1       ← Para VMs (az aks stop)
+│   ├── staging-resume.ps1      ← Liga VMs (az aks start)
+│   ├── staging-status.ps1      ← Status dos pods e nodes
+│   ├── staging-aks-down.ps1    ← Destroi só o AKS (Postgres/Redis sobrevivem)
+│   ├── staging-aks-up.ps1      ← Recria só o AKS + reinstala K8s
+│   ├── staging-nuke.ps1        ← Destroi TUDO (CUIDADO)
+│   ├── prod-up.ps1             ← Sobe tudo em produção
+│   ├── prod-status.ps1         ← Status de produção
+│   └── port-forward.ps1        ← Port-forward para Grafana, RabbitMQ, Keycloak...
 ├── terraform/
-│   ├── bootstrap/          ← Roda UMA vez: cria o backend do Terraform state
+│   ├── bootstrap/              ← Roda UMA vez: cria o backend do Terraform state
 │   ├── modules/
-│   │   ├── networking/     ← VNet, subnets, NSGs, private DNS zones
-│   │   ├── acr/            ← Azure Container Registry
-│   │   ├── keyvault/       ← Azure Key Vault + secrets
-│   │   ├── database/       ← PostgreSQL Flexible Server + 8 databases + PostGIS
-│   │   ├── redis/          ← Azure Cache for Redis
-│   │   ├── storage/        ← Blob Storage (4 containers)
-│   │   ├── aks/            ← AKS cluster (4 node pools: system, services, infra, monitor)
-│   │   └── cdn/            ← Azure Front Door Standard + WAF
+│   │   ├── networking/         ← VNet, subnets, NSGs, private DNS zones
+│   │   ├── acr/                ← Azure Container Registry
+│   │   ├── keyvault/           ← Azure Key Vault + secrets
+│   │   ├── database/           ← PostgreSQL Flexible Server + 8 databases + PostGIS
+│   │   ├── redis/              ← Azure Cache for Redis
+│   │   ├── storage/            ← Blob Storage (4 containers)
+│   │   ├── aks/                ← AKS cluster (4 node pools: system, services, infra, monitor)
+│   │   └── cdn/                ← Azure Front Door Standard + WAF
 │   └── envs/
-│       ├── staging/        ← Staging: menor custo, sem HA
-│       └── production/     ← Produção: HA, SKUs maiores, WAF Prevention
+│       ├── staging/            ← Staging: B-series burstable, min=1 por pool, sem HA
+│       └── production/         ← Produção: HA, SKUs maiores, WAF Prevention
 └── k8s/
     ├── base/
-    │   ├── namespaces/     ← Namespaces do cluster
-    │   ├── istio/          ← IstioOperator, mTLS STRICT, AuthorizationPolicies
-    │   ├── kong/           ← Kong Helm values + plugins (rate-limit, CORS, JWT)
-    │   ├── keycloak/       ← Keycloak Helm values
-    │   ├── rabbitmq/       ← RabbitMQ Helm values + definitions.json
-    │   └── observability/  ← Prometheus, Loki, Tempo, OTel Collector
+    │   ├── namespaces/         ← Namespaces do cluster
+    │   ├── istio/              ← IstioOperator, mTLS STRICT, AuthorizationPolicies
+    │   ├── kong/               ← Kong Helm values + plugins (rate-limit, CORS, JWT)
+    │   ├── keycloak/           ← Keycloak Helm values
+    │   ├── rabbitmq/           ← RabbitMQ Helm values + definitions.json
+    │   └── observability/      ← Prometheus, Loki, Tempo, OTel Collector
     └── overlays/
-        ├── staging/        ← Kustomize patches para staging
-        └── production/     ← Kustomize patches para produção
+        ├── staging/            ← Kustomize patches para staging
+        └── production/         ← Kustomize patches para produção
 ```
 
 ---
@@ -301,20 +338,22 @@ terraform apply plan.tfplan
 
 ## Recursos Azure Provisionados
 
-### Staging
+### Staging (prod2) — Lean & Scale
 
 | Recurso | SKU / Configuração | Custo estimado/mês |
 | ------- | ------------------ | ------------------ |
-| AKS pool `system` | D2s\_v3 × 2 (fixo) | ~R$ 300 |
-| AKS pool `services` | D4s\_v3 × 2 (min) | ~R$ 600 |
-| AKS pool `infra` | D2s\_v3 × 2 (min) | ~R$ 300 |
-| AKS pool `monitor` | D4s\_v3 × 1 (min) | ~R$ 300 |
+| AKS pool `system` | B2ms × 1 (fixo) | ~R$ 85 |
+| AKS pool `services` | B4ms × 1 (min) / ×10 (max load test) | ~R$ 130 → R$ 1.300 |
+| AKS pool `infra` | B2ms × 1 (min) | ~R$ 85 |
+| AKS pool `monitor` | B2ms × 1 (min) | ~R$ 85 |
 | PostgreSQL Flexible | B\_Standard\_B2ms | ~R$ 200 |
-| Redis Cache | Standard C1 | ~R$ 150 |
+| Redis Cache | Standard C0 (250 MB) | ~R$ 150 |
 | Azure Front Door | Standard | ~R$ 100 |
 | Blob Storage (LRS) | Standard | ~R$ 20 |
 | Container Registry | Standard | ~R$ 50 |
-| **Total estimado (mínimo)** | 7 nós no total | **~R$ 2.020/mês** |
+| **Total em repouso (rodando)** | 4 nós no total | **~R$ 905/mês** |
+| **Total pausado** (`make staging-pause`) | VMs desligadas | **~R$ 250/mês** |
+| **Total AKS destruído** (`make staging-aks-down`) | Só Postgres+Redis+etc | **~R$ 400/mês** |
 
 ### Production
 
@@ -332,6 +371,44 @@ terraform apply plan.tfplan
 
 > Valores em BRL aproximados. Custos reais variam com tráfego e uso.
 > Autoscale pode elevar o custo: staging chega a 14 nós, production a 31 nós no pico.
+
+---
+
+## Estratégia de Custo — Staging
+
+Use a estratégia certa para cada situação:
+
+| Situação | Comando | Custo/mês | Tempo para voltar |
+|---|---|---|---|
+| Fim do dia / fim de trabalho | `.\staging-pause.ps1` | ~R$ 250 | ~8 min |
+| Férias / semana sem usar | `.\staging-aks-down.ps1` | ~R$ 400 | ~30 min |
+| Reset completo / projeto encerrado | `.\staging-nuke.ps1` | R$ 0 | ~45 min |
+| Rodando idle 24/7 | (não faça isso) | ~R$ 905 | — |
+
+**Por que `staging-pause` é diferente de desligar a VM manualmente?**
+
+`az aks stop` para o cluster inteiro de forma segura: os pods são drenados, os nós são desalocados, mas o estado do cluster (etcd, configurações, deployments, helm releases) fica salvo. Quando você faz `az aks start`, o cluster volta exatamente como estava — sem precisar rodar `make staging-k8s` de novo.
+
+**Ciclo diário recomendado:**
+
+```powershell
+# Manhã: ligar
+cd infra/scripts
+.\staging-resume.ps1
+
+# Noite: desligar
+.\staging-pause.ps1
+```
+
+**Outros utilitários:**
+
+```powershell
+.\staging-status.ps1              # nodes + pods
+.\port-forward.ps1 grafana        # Grafana → localhost:3000
+.\port-forward.ps1 rabbitmq       # RabbitMQ → localhost:15672
+.\port-forward.ps1 keycloak       # Keycloak → localhost:8080
+.\port-forward.ps1 prometheus     # Prometheus → localhost:9090
+```
 
 ---
 

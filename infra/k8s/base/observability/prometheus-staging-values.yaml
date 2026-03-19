@@ -1,0 +1,64 @@
+################################################################################
+# kube-prometheus-stack — overrides para STAGING / prod2
+#
+# Diferenças vs kube-prometheus-stack-values.yaml (base):
+#   - Recursos reduzidos para caber num único nó Standard_B2ms (2 vCPU / 8 GB)
+#   - Retenção de 7 dias (era 15d) + volume menor (10 GB, era 50 GB)
+#   - Alertmanager com storage mínimo
+#   - Grafana sem persistência (dados recriáveis)
+#   - Sem node-exporter/kube-state no namespace de monitoring (staging usa defaults)
+#
+# Usar via Helm (após instalar o base):
+#   helm upgrade kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+#     -n monitoring \
+#     -f infra/k8s/base/observability/kube-prometheus-stack-values.yaml \
+#     -f infra/k8s/base/observability/prometheus-staging-values.yaml
+################################################################################
+
+prometheus:
+  prometheusSpec:
+    retention: 7d                  # era 15d
+    retentionSize: "8GB"           # era 40GB
+    resources:
+      requests:
+        cpu: 100m                  # era 300m
+        memory: 400Mi              # era 1Gi
+      limits:
+        cpu: 500m                  # era 1000m
+        memory: 1Gi                # era 4Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: managed-premium
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi        # era 50Gi
+
+alertmanager:
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 25m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: managed-premium
+          resources:
+            requests:
+              storage: 1Gi         # era 2Gi
+
+grafana:
+  persistence:
+    enabled: false                 # staging: sem persistência — dashboards recriáveis via GitOps
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi

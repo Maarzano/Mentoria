@@ -1,6 +1,20 @@
 ################################################################################
-# ENV: production
-# Chama todos os módulos com configurações de produção (HA, SKUs maiores, WAF Prevention)
+# ENV: production  — PIKA
+#
+# HA em tudo: PostgreSQL ZoneRedundant, Redis Premium com AOF, AKS multi-AZ,
+# Defender, Front Door WAF Prevention, geo-redundant backup.
+# Todas as ADRs implementadas: Istio mTLS STRICT, Kong, Prometheus/Loki/Tempo.
+#
+# ┌────────────────────────────────────────────────────────────────────────────┐
+# │  Custo estimado (Brazil South, março 2026)                                 │
+# │  AKS nodes (min):  system 3×D4s + services 3×D8s + infra 2×D4s + mon 2×E4s│
+# │    → ~$3.200/mês só em nós (sem autoscaling)                               │
+# │  PostgreSQL GP D4s_v3 + HA ZoneRedundant: ~$700/mês                        │
+# │  Redis Premium P1:   ~$300/mês                                             │
+# │  Defender, Log Analytics 90d, Front Door: ~$350/mês                        │
+# │  TOTAL estimado em repouso: ~$4.500/mês  (~R$ 25.000)                      │
+# │  TOTAL com scale-out (20 services nodes): ~$9.000/mês  (~R$ 50.000)        │
+# └────────────────────────────────────────────────────────────────────────────┘
 ################################################################################
 
 terraform {

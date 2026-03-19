@@ -1,12 +1,3 @@
-################################################################################
-# RabbitMQ — Definições de exchanges, filas e bindings
-# Importado no startup via loadDefinition (Secret: rabbitmq-definitions)
-# Este arquivo é convertido em Secret via:
-#   kubectl create secret generic rabbitmq-definitions \
-#     --from-file=load_definition.json=infra/k8s/base/rabbitmq/definitions.json \
-#     -n foodeapp-system
-################################################################################
-
 {
   "vhosts": [
     { "name": "/" }
