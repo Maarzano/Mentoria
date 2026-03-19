@@ -1,0 +1,51 @@
+################################################################################
+# Namespaces do FoodeApp
+# Aplicar com: kubectl apply -f infra/k8s/base/namespaces/
+################################################################################
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: foodeapp-production
+  labels:
+    name: foodeapp-production
+    environment: production
+    istio-injection: enabled   # Istio injeta sidecar automaticamente
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: foodeapp-staging
+  labels:
+    name: foodeapp-staging
+    environment: staging
+    istio-injection: enabled
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: foodeapp-system
+  labels:
+    name: foodeapp-system
+    # Sem istio-injection — namespace de ferramentas (Kong, Keycloak, RabbitMQ)
+    istio-injection: disabled
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-system
+  labels:
+    name: istio-system
+
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    name: monitoring
+    # Prometheus/Grafana/Loki/Tempo

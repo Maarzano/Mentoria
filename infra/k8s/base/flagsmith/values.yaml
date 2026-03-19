@@ -1,0 +1,136 @@
+################################################################################
+# Flagsmith Helm Values — Feature Flags (ADR-029)
+# helm repo add flagsmith https://flagsmith.github.io/flagsmith-chart/
+# helm install flagsmith flagsmith/flagsmith -n foodeapp-system \
+#   -f infra/k8s/base/flagsmith/values.yaml
+#
+# Flagsmith é o serviço de feature flags self-hosted que permite habilitar /
+# desabilitar funcionalidades sem redeploy (ex.: pagamento PIX, novo layout).
+# Ref: ADR-029-feature-flags.md
+################################################################################
+
+# Réplicas — overlay define 1 (staging) ou 2 (production)
+replicaCount: 1
+
+image:
+  repository: flagsmith/flagsmith
+  tag: "2.118.0"        # pinnar versão para evitar breaking changes
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8000
+
+# Banco de dados externo — usa PostgreSQL do AKS (foodeapp_flags)
+# ATENÇÃO: preencher após terraform apply com o FQDN real
+postgresql:
+  enabled: false        # NÃO usar postgresql do Helm chart (usa o Azure PostgreSQL)
+
+externalDatabase:
+  enabled: true
+  # Preencher após terraform apply:
+  #   terraform output -chdir=infra/terraform/envs/<env> postgres_fqdn
+  host: "REPLACE_WITH_POSTGRES_HOST"
+  port: 5432
+  database: "foodeapp_flags"
+  username: "pgadmin"
+  # A senha vem do secret criado pelo SecretProviderClass (Key Vault CSI)
+  password:
+    secretName: "foodeapp-common-secrets"
+    secretKey: "postgres-admin-password"
+
+# Redis para cache de flags (evita latência extra por chamada ao DB)
+redis:
+  enabled: false        # NÃO usar redis do Helm chart (usa o Azure Cache for Redis)
+
+externalRedis:
+  enabled: true
+  # Preencher após terraform apply:
+  #   terraform output -chdir=infra/terraform/envs/<env> redis_hostname
+  host: "REPLACE_WITH_REDIS_HOST"        # ex: redis-foodeapp-staging.redis.cache.windows.net
+  port: 6380
+  tls: true
+  password:
+    secretName: "foodeapp-common-secrets"
+    secretKey: "redis-primary-key"
+
+# Variáveis de ambiente da API do Flagsmith
+api:
+  # URL de acesso ao Flagsmith usada pelos SDKs das aplicações
+  # Staging:    https://flags-staging.foodeapp.com.br/api/v1
+  # Production: https://flags.foodeapp.com.br/api/v1
+  siteUrl: "REPLACE_WITH_FLAGSMITH_URL"
+
+  # Secret Django (gerar com: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())")
+  # Armazenar no Key Vault como: flagsmith-django-secret
+  djangoSecretKey:
+    secretName: "flagsmith-secrets"
+    secretKey: "django-secret-key"
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 15
+
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8000
+    initialDelaySeconds: 15
+    periodSeconds: 10
+
+# Frontend do Flagsmith (dashboard de administração)
+frontend:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: flagsmith/flagsmith-frontend
+    tag: "2.118.0"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Ingress — Kong gerencia o acesso externo
+ingress:
+  enabled: true
+  className: "kong"
+  annotations:
+    konghq.com/strip-path: "true"
+    konghq.com/protocols: "https"
+  hosts:
+    # Staging:    flags-staging.foodeapp.com.br
+    # Production: flags.foodeapp.com.br
+    - host: "REPLACE_WITH_FLAGSMITH_HOST"
+      paths:
+        - path: /
+          pathType: Prefix
+
+# Prometheus monitoring
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+
+# Segurança — não expor admin API publicamente
+adminApi:
+  enabled: false        # Disable public admin API; usar somente via port-forward
+
+# Criação automática do superusuário (apenas na primeira execução)
+# Após criação, remover estas configs e usar o dashboard para gerenciar usuários
+# O script de inicialização é executado como Job pelo Helm chart
+createDefaultOrganisation: true

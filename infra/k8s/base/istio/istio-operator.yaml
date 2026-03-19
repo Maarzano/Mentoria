@@ -1,0 +1,90 @@
+################################################################################
+# Istio — IstioOperator (profile minimal + Ingress Gateway)
+# Instalar Istio com istioctl:
+#   istioctl install -f infra/k8s/base/istio/istio-operator.yaml
+#
+# Ou via Helm:
+#   helm repo add istio https://istio-release.storage.googleapis.com/charts
+#   helm install istio-base istio/base -n istio-system --create-namespace
+#   helm install istiod istio/istiod -n istio-system -f infra/k8s/base/istio/istiod-values.yaml
+################################################################################
+
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: foodeapp-istio
+  namespace: istio-system
+spec:
+  profile: minimal
+
+  components:
+    # Ingress Gateway — ponto de entrada externo (recebe do Kong ou diretamente)
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        k8s:
+          service:
+            type: LoadBalancer
+            ports:
+              - name: http2
+                port: 80
+                targetPort: 8080
+              - name: https
+                port: 443
+                targetPort: 8443
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          hpaSpec:
+            minReplicas: 2
+            maxReplicas: 5
+
+    # Egress Gateway — controla saídas para serviços externos (Mercado Pago, etc.)
+    egressGateways:
+      - name: istio-egressgateway
+        enabled: false  # Habilitar quando houver necessidade de egress controlado
+
+  meshConfig:
+    # mTLS no modo STRICT dentro do mesh
+    defaultConfig:
+      tracing:
+        sampling: 100  # 100% em staging (reduzir para 10% em produção)
+        zipkin:
+          address: "tempo-distributor.monitoring:9411"
+
+    # Telemetria: exporta spans para Tempo
+    extensionProviders:
+      - name: tempo
+        opentelemetry:
+          service: "opentelemetry-collector.monitoring"
+          port: 4317
+
+    enableTracing: true
+
+  values:
+    global:
+      # Multicluster (desabilitado por enquanto)
+      multiCluster:
+        enabled: false
+
+      # Proxy (Envoy sidecar) configuração padrão
+      proxy:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        logLevel: warning
+        componentLogLevel: "misc:error"
+
+      # Logging de acesso do Envoy
+      accessLogFile: "/dev/stdout"
+
+    pilot:
+      traceSampling: 100

@@ -1,0 +1,26 @@
+################################################################################
+# Istio PeerAuthentication — mTLS STRICT para os namespaces do FoodeApp
+# Garante que nenhuma comunicação interna ocorre sem mTLS
+################################################################################
+
+---
+# mTLS STRICT no namespace foodeapp-production
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: foodeapp-production
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# mTLS STRICT no namespace foodeapp-staging
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default
+  namespace: foodeapp-staging
+spec:
+  mtls:
+    mode: STRICT

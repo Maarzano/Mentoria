@@ -1,0 +1,74 @@
+################################################################################
+# Istio IstioOperator — PRODUÇÃO
+# Sobrepõe istio-operator.yaml com configurações de produção
+#
+# USO:
+#   istioctl install -f infra/k8s/base/istio/istio-operator.yaml \
+#                    -f infra/k8s/base/istio/istio-operator-production.yaml
+#
+# DIFERENÇAS vs base (staging):
+#   - tracing.sampling: 100%  →  10%
+#     Motivo: 100% sampling em produção geraria ~10x mais dados de trace,
+#     sobrecarregando o Tempo e aumentando custo de storage. 10% é suficiente
+#     para detectar anomalias e latências sem volume excessivo.
+#     (Ref: Google SRE Book — representative sampling)
+#   - Ingress Gateway: min 2 réplicas → min 3 (HA real em 3 AZs)
+#   - Proxy sidecar com recursos maiores
+################################################################################
+
+apiVersion: install.istio.io/v1alpha1
+kind: IstioOperator
+metadata:
+  name: foodeapp-istio-production
+  namespace: istio-system
+spec:
+  meshConfig:
+    defaultConfig:
+      tracing:
+        sampling: 10    # 10% em produção — suficiente para SLO monitoring
+        zipkin:
+          address: "tempo-distributor.monitoring:9411"
+
+    extensionProviders:
+      - name: tempo
+        opentelemetry:
+          service: "opentelemetry-collector.monitoring"
+          port: 4317
+
+    enableTracing: true
+
+    # Timeout global para requests internos (microserviço→microserviço)
+    # Aumenta confiabilidade em produção sem ocultar serviços lentos
+    defaultHttpRetryPolicy:
+      attempts: 3
+      perTryTimeout: 5s
+      retryOn: "connect-failure,reset,resource-exhausted"
+
+  components:
+    ingressGateways:
+      - name: istio-ingressgateway
+        enabled: true
+        k8s:
+          service:
+            type: LoadBalancer
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          hpaSpec:
+            minReplicas: 3      # 1 réplica por zona de disponibilidade (brazilsouth)
+            maxReplicas: 10
+
+  values:
+    global:
+      proxy:
+        resources:
+          requests:
+            cpu: 150m           # staging: 100m | produção: 150m (mais tráfego)
+            memory: 192Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi

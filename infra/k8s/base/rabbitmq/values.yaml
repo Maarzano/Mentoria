@@ -1,0 +1,81 @@
+################################################################################
+# RabbitMQ Helm Values (Bitnami) — com MassTransit exchanges + DLQs
+# helm install rabbitmq bitnami/rabbitmq -n foodeapp-system -f infra/k8s/base/rabbitmq/values.yaml
+################################################################################
+
+auth:
+  username: foodeapp
+  # password via Secret existente
+  existingPasswordSecret: rabbitmq-secret
+  existingSecretPasswordKey: rabbitmq-password
+  erlangCookie: "FOODEAPP-ERLANG-COOKIE-CHANGE-ME"
+
+# Clustering
+replicaCount: 3
+clustering:
+  enabled: true
+  forceBoot: false
+
+# Recursos
+resources:
+  requests:
+    cpu: 300m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Persistência
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClass: "managed-premium"  # Azure Managed Disk Premium
+
+# Management UI — ClusterIP (não expor publicamente sem VPN)
+service:
+  type: ClusterIP
+  amqpPort: 5672
+  managementPort: 15672
+
+# Métricas para Prometheus
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    interval: 30s
+
+# Plugins habilitados
+plugins: "rabbitmq_management rabbitmq_peer_discovery_k8s rabbitmq_prometheus rabbitmq_shovel"
+
+# Configuração extra do RabbitMQ
+extraConfiguration: |
+  # Dead Letter Exchange padrão para todas as filas
+  # Cada exchange de domínio tem sua DLQ correspondente
+  log.console = true
+  log.console.level = info
+  
+  # Limites de memória
+  vm_memory_high_watermark.relative = 0.7
+  
+# ─── Node Pool Affinity (infra pool) ─────────────────────────────────────────────
+nodeSelector:
+  role: infra
+
+tolerations:
+  - key: workload
+    operator: Equal
+    value: infra
+    effect: NoSchedule
+
+# Inicialização: cria exchanges e bindings via definition file
+loadDefinition:
+  enabled: true
+  existingSecret: rabbitmq-definitions
+
+# Persistent messages por padrão
+advancedConfiguration: |
+  default_delivery_mode = 2
+
+# Definições importadas via Secret (veja rabbitmq-definitions.yaml)
+# Exchanges: orders, payments, locations, notifications, establishments, catalog

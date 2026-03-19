@@ -1,0 +1,132 @@
+################################################################################
+# bff-web — Backend for Frontend do Painel do Lojista (React Web)
+# Schema DB: nenhum — apenas agrega chamadas aos microserviços
+# Responsabilidade: agregação para dashboards, cardápio, gestão de estabelecimento
+# Acesso: apenas via Kong (foodeapp-system → foodeapp-production/staging)
+################################################################################
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bff-web
+  labels:
+    app: bff-web
+    azure.workload.identity/use: "true"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bff-web
+  labels:
+    app: bff-web
+    role: bff                           # role=bff → AuthorizationPolicy permite Kong chamar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bff-web
+  template:
+    metadata:
+      labels:
+        app: bff-web
+        role: bff
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: bff-web
+      containers:
+        - name: bff-web
+          image: bff-web:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: foodeapp-env-config
+          env:
+            # BFF não conecta ao banco — apenas chama microserviços internos via HTTP
+            - name: Services__Auth
+              value: "http://svc-auth.$(NAMESPACE).svc.cluster.local"
+            - name: Services__Establishments
+              value: "http://svc-establishments.$(NAMESPACE).svc.cluster.local"
+            - name: Services__Catalog
+              value: "http://svc-catalog.$(NAMESPACE).svc.cluster.local"
+            - name: Services__Events
+              value: "http://svc-events.$(NAMESPACE).svc.cluster.local"
+            - name: Services__Orders
+              value: "http://svc-orders.$(NAMESPACE).svc.cluster.local"
+            - name: Services__Payments
+              value: "http://svc-payments.$(NAMESPACE).svc.cluster.local"
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bff-web
+  labels:
+    app: bff-web
+spec:
+  selector:
+    app: bff-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: bff-web
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: bff-web
+  minReplicas: 1
+  maxReplicas: 8
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80

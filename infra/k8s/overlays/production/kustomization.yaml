@@ -1,0 +1,104 @@
+################################################################################
+# OVERLAY: production
+# Kustomization que aplica patches sobre o base para o ambiente de produção
+# kubectl apply -k infra/k8s/overlays/production/
+#
+# Após qualquer terraform apply em envs/production, atualizar:
+#   POSTGRES_HOST  → terraform output postgres_fqdn
+#   REDIS_HOST     → terraform output redis_hostname
+#   KV name patch  → terraform output key_vault_name
+#   Images newName → login ACR: az acr show --name acrfoodeappprod --query loginServer
+#
+# Para produção, usar sempre tags de versão (nunca :latest):
+#   kustomize edit set image svc-auth=acrfoodeappprod.azurecr.io/svc-auth:<sha>
+################################################################################
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: foodeapp-production
+
+resources:
+  - ../../base/services          # todos os microserviços + BFFs
+  - ../../base/namespaces/namespaces.yaml
+  - ../../base/istio/peer-authentication.yaml
+  - ../../base/istio/authorization-policies.yaml
+  - ../../base/istio/istio-operator-production.yaml  # sampling 10%, 3 réplicas gateway
+
+# Registry de produção — CI/CD substitui :latest por SHA do commit
+images:
+  - name: svc-auth
+    newName: acrfoodeappprod.azurecr.io/svc-auth
+    newTag: latest
+  - name: svc-establishments
+    newName: acrfoodeappprod.azurecr.io/svc-establishments
+    newTag: latest
+  - name: svc-catalog
+    newName: acrfoodeappprod.azurecr.io/svc-catalog
+    newTag: latest
+  - name: svc-events
+    newName: acrfoodeappprod.azurecr.io/svc-events
+    newTag: latest
+  - name: svc-location
+    newName: acrfoodeappprod.azurecr.io/svc-location
+    newTag: latest
+  - name: svc-orders
+    newName: acrfoodeappprod.azurecr.io/svc-orders
+    newTag: latest
+  - name: svc-notifications
+    newName: acrfoodeappprod.azurecr.io/svc-notifications
+    newTag: latest
+  - name: svc-payments
+    newName: acrfoodeappprod.azurecr.io/svc-payments
+    newTag: latest
+  - name: bff-web
+    newName: acrfoodeappprod.azurecr.io/bff-web
+    newTag: latest
+  - name: bff-app
+    newName: acrfoodeappprod.azurecr.io/bff-app
+    newTag: latest
+
+patches:
+  # Garante mínimo de 2 réplicas por serviço em produção
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+    target:
+      kind: Deployment
+      labelSelector: "environment=production"
+
+  # Patch no Key Vault name dos SecretProviderClasses
+  # Valor: terraform output -chdir=infra/terraform/envs/production key_vault_name
+  - patch: |-
+      - op: replace
+        path: /spec/parameters/keyvaultName
+        value: kv-foodeapp-prod
+      - op: replace
+        path: /spec/parameters/tenantId
+        value: REPLACE_WITH_AZURE_TENANT_ID
+      - op: replace
+        path: /spec/parameters/clientID
+        value: REPLACE_WITH_WORKLOAD_IDENTITY_CLIENT_ID
+    target:
+      kind: SecretProviderClass
+
+configMapGenerator:
+  - name: foodeapp-env-config
+    literals:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=Information
+      - OTEL_TRACES_SAMPLER_ARG=0.1
+      # Preencher após terraform apply:
+      #   terraform output -chdir=infra/terraform/envs/production postgres_fqdn
+      - POSTGRES_HOST=REPLACE_WITH_POSTGRES_FQDN
+      # terraform output -chdir=infra/terraform/envs/production redis_hostname
+      - REDIS_HOST=REPLACE_WITH_REDIS_HOST
+      - RABBITMQ_HOST=rabbitmq.foodeapp-system.svc.cluster.local
+      - KEYCLOAK_REALM_URL=https://auth.foodeapp.com.br/realms/foodeapp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://opentelemetry-collector.monitoring.svc.cluster.local:4317
+      - OTEL_SERVICE_NAMESPACE=foodeapp-production
+
+commonLabels:
+  environment: production
+  project: foodeapp

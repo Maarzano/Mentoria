@@ -1,0 +1,67 @@
+################################################################################
+# Grafana Loki Helm Values — aggregação de logs
+# helm repo add grafana https://grafana.github.io/helm-charts
+# helm install loki grafana/loki -n monitoring -f infra/k8s/base/observability/loki-values.yaml
+################################################################################
+
+loki:
+  commonConfig:
+    replication_factor: 1  # Aumentar para 3 em produção
+
+  storage:
+    type: filesystem  # staging; em produção usar azure (azureblob)
+
+  # Estrutura de schema (obrigatório)
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+
+  limits_config:
+    retention_period: 744h  # 31 dias
+    reject_old_samples: true
+    reject_old_samples_max_age: 168h  # 7 dias
+
+  server:
+    http_listen_port: 3100
+
+# Gateway Nginx
+gateway:
+  enabled: true
+  service:
+    type: ClusterIP
+
+# Single binary mode (staging) — em produção usar mode: distributed
+deploymentMode: SingleBinary
+
+singleBinary:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClass: managed-premium
+  nodeSelector:
+    role: monitor
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: monitor
+      effect: NoSchedule
+
+# ServiceMonitor para Prometheus scrape o próprio Loki
+monitoring:
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring

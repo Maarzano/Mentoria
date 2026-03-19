@@ -1,0 +1,99 @@
+################################################################################
+# RabbitMQ — Definições de exchanges, filas e bindings
+# Importado no startup via loadDefinition (Secret: rabbitmq-definitions)
+# Este arquivo é convertido em Secret via:
+#   kubectl create secret generic rabbitmq-definitions \
+#     --from-file=load_definition.json=infra/k8s/base/rabbitmq/definitions.json \
+#     -n foodeapp-system
+################################################################################
+
+{
+  "vhosts": [
+    { "name": "/" }
+  ],
+
+  "exchanges": [
+    { "name": "orders",         "vhost": "/", "type": "topic", "durable": true, "auto_delete": false },
+    { "name": "payments",       "vhost": "/", "type": "topic", "durable": true, "auto_delete": false },
+    { "name": "locations",      "vhost": "/", "type": "topic", "durable": true, "auto_delete": false },
+    { "name": "notifications",  "vhost": "/", "type": "topic", "durable": true, "auto_delete": false },
+    { "name": "establishments", "vhost": "/", "type": "topic", "durable": true, "auto_delete": false },
+    { "name": "catalog",        "vhost": "/", "type": "topic", "durable": true, "auto_delete": false },
+
+    { "name": "orders_dlx",         "vhost": "/", "type": "direct", "durable": true, "auto_delete": false },
+    { "name": "payments_dlx",       "vhost": "/", "type": "direct", "durable": true, "auto_delete": false },
+    { "name": "notifications_dlx",  "vhost": "/", "type": "direct", "durable": true, "auto_delete": false },
+    { "name": "establishments_dlx", "vhost": "/", "type": "direct", "durable": true, "auto_delete": false },
+    { "name": "catalog_dlx",        "vhost": "/", "type": "direct", "durable": true, "auto_delete": false }
+  ],
+
+  "queues": [
+    {
+      "name": "svc-orders.pedido-confirmado",
+      "vhost": "/", "durable": true, "auto_delete": false,
+      "arguments": { "x-dead-letter-exchange": "orders_dlx", "x-message-ttl": 86400000 }
+    },
+    {
+      "name": "svc-orders.pedido-status-alterado",
+      "vhost": "/", "durable": true, "auto_delete": false,
+      "arguments": { "x-dead-letter-exchange": "orders_dlx", "x-message-ttl": 86400000 }
+    },
+    {
+      "name": "svc-payments.pagamento-confirmado",
+      "vhost": "/", "durable": true, "auto_delete": false,
+      "arguments": { "x-dead-letter-exchange": "payments_dlx", "x-message-ttl": 86400000 }
+    },
+    {
+      "name": "svc-payments.pagamento-falhou",
+      "vhost": "/", "durable": true, "auto_delete": false,
+      "arguments": { "x-dead-letter-exchange": "payments_dlx", "x-message-ttl": 86400000 }
+    },
+    {
+      "name": "svc-notifications.pedido-confirmado",
+      "vhost": "/", "durable": true, "auto_delete": false,
+      "arguments": { "x-dead-letter-exchange": "notifications_dlx", "x-message-ttl": 86400000 }
+    },
+    {
+      "name": "svc-notifications.pagamento-confirmado",
+      "vhost": "/", "durable": true, "auto_delete": false,
+      "arguments": { "x-dead-letter-exchange": "notifications_dlx", "x-message-ttl": 86400000 }
+    },
+    {
+      "name": "svc-establishments.localizacao-atualizada",
+      "vhost": "/", "durable": true, "auto_delete": false,
+      "arguments": { "x-dead-letter-exchange": "establishments_dlx", "x-message-ttl": 86400000 }
+    },
+
+    { "name": "orders_dlq",         "vhost": "/", "durable": true, "auto_delete": false, "arguments": {} },
+    { "name": "payments_dlq",       "vhost": "/", "durable": true, "auto_delete": false, "arguments": {} },
+    { "name": "notifications_dlq",  "vhost": "/", "durable": true, "auto_delete": false, "arguments": {} },
+    { "name": "establishments_dlq", "vhost": "/", "durable": true, "auto_delete": false, "arguments": {} },
+    { "name": "catalog_dlq",        "vhost": "/", "durable": true, "auto_delete": false, "arguments": {} }
+  ],
+
+  "bindings": [
+    { "source": "orders",         "vhost": "/", "destination": "svc-orders.pedido-confirmado",          "destination_type": "queue", "routing_key": "PedidoConfirmado"            },
+    { "source": "orders",         "vhost": "/", "destination": "svc-orders.pedido-status-alterado",     "destination_type": "queue", "routing_key": "PedidoStatusAlterado"        },
+    { "source": "payments",       "vhost": "/", "destination": "svc-payments.pagamento-confirmado",     "destination_type": "queue", "routing_key": "PagamentoConfirmado"         },
+    { "source": "payments",       "vhost": "/", "destination": "svc-payments.pagamento-falhou",         "destination_type": "queue", "routing_key": "PagamentoFalhou"             },
+    { "source": "orders",         "vhost": "/", "destination": "svc-notifications.pedido-confirmado",   "destination_type": "queue", "routing_key": "PedidoConfirmado"            },
+    { "source": "payments",       "vhost": "/", "destination": "svc-notifications.pagamento-confirmado","destination_type": "queue", "routing_key": "PagamentoConfirmado"         },
+    { "source": "establishments", "vhost": "/", "destination": "svc-establishments.localizacao-atualizada","destination_type": "queue","routing_key": "EstabelecimentoLocalizacaoAtualizada"},
+
+    { "source": "orders_dlx",         "vhost": "/", "destination": "orders_dlq",         "destination_type": "queue", "routing_key": "#" },
+    { "source": "payments_dlx",       "vhost": "/", "destination": "payments_dlq",       "destination_type": "queue", "routing_key": "#" },
+    { "source": "notifications_dlx",  "vhost": "/", "destination": "notifications_dlq",  "destination_type": "queue", "routing_key": "#" },
+    { "source": "establishments_dlx", "vhost": "/", "destination": "establishments_dlq", "destination_type": "queue", "routing_key": "#" },
+    { "source": "catalog_dlx",        "vhost": "/", "destination": "catalog_dlq",        "destination_type": "queue", "routing_key": "#" }
+  ],
+
+  "permissions": [
+    {
+      "user": "foodeapp",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ]
+}

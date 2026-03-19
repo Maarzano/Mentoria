@@ -1,0 +1,190 @@
+################################################################################
+# kube-prometheus-stack Helm Values
+# helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+# helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+#   -n monitoring --create-namespace \
+#   -f infra/k8s/base/observability/kube-prometheus-stack-values.yaml
+################################################################################
+
+# ─── Prometheus ───────────────────────────────────────────────────────────────
+prometheus:
+  prometheusSpec:
+    nodeSelector:
+      role: monitor
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: monitor
+        effect: NoSchedule
+    retention: 15d
+    retentionSize: "40GB"
+
+    resources:
+      requests:
+        cpu: 300m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 4Gi
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: managed-premium
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+
+    # Scrape pods com annotation prometheus.io/scrape=true
+    additionalScrapeConfigs:
+      - job_name: "foodeapp-services"
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - foodeapp-production
+                - foodeapp-staging
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+            action: keep
+            regex: true
+          - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+            action: replace
+            target_label: __metrics_path__
+            regex: (.+)
+          - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+            action: replace
+            regex: ([^:]+)(?::\d+)?;(\d+)
+            replacement: $1:$2
+            target_label: __address__
+
+    # Alertas para FoodeApp
+    additionalAlertingRules:
+      - name: foodeapp.rules
+        groups:
+          - name: foodeapp-slos
+            rules:
+              - alert: HighErrorRate
+                expr: |
+                  sum(rate(http_requests_total{job=~"foodeapp.*",status=~"5.."}[5m]))
+                  / sum(rate(http_requests_total{job=~"foodeapp.*"}[5m])) > 0.01
+                for: 5m
+                labels:
+                  severity: critical
+                annotations:
+                  summary: "Error rate > 1% nos últimos 5 minutos"
+
+              - alert: HighLatencyP99
+                expr: |
+                  histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=~"foodeapp.*"}[5m])) by (le, job)) > 2
+                for: 5m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "Latência p99 > 2s"
+
+              - alert: DLQMessagesPresent
+                expr: |
+                  rabbitmq_queue_messages{queue=~".*_dlq"} > 0
+                for: 1m
+                labels:
+                  severity: warning
+                annotations:
+                  summary: "Mensagens na DLQ {{ $labels.queue }}"
+
+# ─── Alertmanager ─────────────────────────────────────────────────────────────
+alertmanager:
+  alertmanagerSpec:
+    nodeSelector:
+      role: monitor
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: monitor
+        effect: NoSchedule
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: managed-premium
+          resources:
+            requests:
+              storage: 2Gi
+
+# ─── Grafana ──────────────────────────────────────────────────────────────────
+grafana:
+  enabled: true
+  adminPassword: "CHANGE-ME-VIA-SECRET"
+  nodeSelector:
+    role: monitor
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: monitor
+      effect: NoSchedule
+  persistence:
+    enabled: true
+    size: 5Gi
+    storageClassName: managed-premium
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  # Datasources pré-configurados
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      url: http://loki-gateway.monitoring.svc.cluster.local
+      access: proxy
+      isDefault: false
+
+    - name: Tempo
+      type: tempo
+      url: http://tempo.monitoring.svc.cluster.local:3100
+      access: proxy
+      isDefault: false
+      jsonData:
+        tracesToLogs:
+          datasourceUid: loki
+          mapTagNames: true
+          tags:
+            - key: "service.name"
+              value: "service"
+
+  # Dashboards importados automaticamente
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: foodeapp
+          orgId: 1
+          folder: FoodeApp
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/foodeapp
+
+  # Service para acesso interno
+  service:
+    type: ClusterIP
+
+# ─── Node Exporter ────────────────────────────────────────────────────────────
+nodeExporter:
+  enabled: true
+
+# ─── kube-state-metrics ───────────────────────────────────────────────────────
+kubeStateMetrics:
+  enabled: true

@@ -1,0 +1,17 @@
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Crash log files
+crash.log
+crash.*
+
+# Exclude all .tfvars files (where secrets live)
+*.tfvars
+*.tfvars.json
+
+# If you use terraform cloud/enterprise
+.terraform-staging/

@@ -1,0 +1,146 @@
+################################################################################
+# svc-orders — Pedidos e Carrinho
+# Schema DB: foodeapp_orders | Porta: 8080
+# Responsabilidade: carrinho (Redis), ciclo do pedido, SAGA orchestrator
+# Conexões: PostgreSQL + Redis (carrinho) + RabbitMQ (SAGA)
+################################################################################
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: svc-orders
+  labels:
+    app: svc-orders
+    azure.workload.identity/use: "true"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-orders
+  labels:
+    app: svc-orders
+    role: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: svc-orders
+  template:
+    metadata:
+      labels:
+        app: svc-orders
+        role: service
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: svc-orders
+      containers:
+        - name: svc-orders
+          image: svc-orders:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: foodeapp-env-config
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: foodeapp-common-secrets
+                  key: postgres-admin-password
+            - name: REDIS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: foodeapp-common-secrets
+                  key: redis-primary-key
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: foodeapp-common-secrets
+                  key: rabbitmq-password
+            - name: ConnectionStrings__Default
+              value: "Host=$(POSTGRES_HOST);Database=foodeapp_orders;Username=pgadmin;Password=$(POSTGRES_PASSWORD);SslMode=Require"
+            # Redis para carrinho — TTL 24h por cart key (ex: cart:{userId})
+            - name: ConnectionStrings__Redis
+              value: "$(REDIS_HOST):6380,password=$(REDIS_KEY),ssl=True,abortConnect=False"
+          resources:
+            requests:
+              cpu: 300m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: secrets-store
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "foodeapp-common-secrets"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-orders
+  labels:
+    app: svc-orders
+spec:
+  selector:
+    app: svc-orders
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: svc-orders
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: svc-orders
+  minReplicas: 1
+  maxReplicas: 15             # escala high em horários de pico (almoço/jantar)
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 65
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75

@@ -1,0 +1,146 @@
+################################################################################
+# svc-location — Geolocalização
+# Schema DB: foodeapp_locations | Porta: 8080
+# Responsabilidade: GPS em tempo real (Redis hot), geo-queries com PostGIS
+# Nota: requer extensão PostGIS habilitada no PostgreSQL (azure.extensions)
+################################################################################
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: svc-location
+  labels:
+    app: svc-location
+    azure.workload.identity/use: "true"
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svc-location
+  labels:
+    app: svc-location
+    role: service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: svc-location
+  template:
+    metadata:
+      labels:
+        app: svc-location
+        role: service
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: svc-location
+      containers:
+        - name: svc-location
+          image: svc-location:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: foodeapp-env-config
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: foodeapp-common-secrets
+                  key: postgres-admin-password
+            - name: REDIS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: foodeapp-common-secrets
+                  key: redis-primary-key
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: foodeapp-common-secrets
+                  key: rabbitmq-password
+            - name: ConnectionStrings__Default
+              value: "Host=$(POSTGRES_HOST);Database=foodeapp_locations;Username=pgadmin;Password=$(POSTGRES_PASSWORD);SslMode=Require"
+            # Redis é usado para manter posições GPS "quentes" (leitura rápida)
+            - name: ConnectionStrings__Redis
+              value: "$(REDIS_HOST):6380,password=$(REDIS_KEY),ssl=True,abortConnect=False"
+          resources:
+            requests:
+              cpu: 300m
+              memory: 512Mi
+            limits:
+              cpu: 1000m             # geo-queries podem ser CPU-intensivas
+              memory: 1Gi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: secrets-store
+              mountPath: "/mnt/secrets-store"
+              readOnly: true
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: "foodeapp-common-secrets"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-location
+  labels:
+    app: svc-location
+spec:
+  selector:
+    app: svc-location
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+  type: ClusterIP
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: svc-location
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: svc-location
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 65      # menor threshold — geo-queries são CPU-intensivas
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 75

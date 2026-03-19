@@ -1,0 +1,114 @@
+################################################################################
+# Loki Helm Values — PRODUÇÃO (sobrepõe loki-values.yaml)
+#
+# USO:
+#   helm upgrade loki grafana/loki -n monitoring \
+#     -f infra/k8s/base/observability/loki-values.yaml \
+#     -f infra/k8s/base/observability/loki-production-values.yaml
+#
+# DIFERENÇAS vs base (staging):
+#   - storage.type: filesystem  →  azure (Azure Blob Storage)
+#   - replication_factor: 1     →  3
+#   - deploymentMode: SingleBinary → Distributed (HA)
+#   - persistence desativado (estado fica no Azure Blob)
+#
+# PRÉ-REQUISITO: criar o container "loki-logs" na storage account de produção
+#   terraform output -chdir=infra/terraform/envs/production storage_account_name
+#   az storage container create --account-name <name> --name loki-logs
+################################################################################
+
+loki:
+  commonConfig:
+    replication_factor: 3   # Alta disponibilidade — tolera falha de 1 pod
+
+  storage:
+    type: azure
+    azure:
+      # Preencher após terraform apply:
+      #   terraform output -chdir=infra/terraform/envs/production storage_account_name
+      accountName: "REPLACE_WITH_STORAGE_ACCOUNT_NAME"   # ex: stfoodeappprod
+      # Chave vem do Key Vault (foodeapp-storage-key) — injetada via env var
+      accountKey: "${AZURE_STORAGE_ACCOUNT_KEY}"
+      containerName: "loki-logs"
+      endpointSuffix: "core.windows.net"
+
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: azure
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+
+  limits_config:
+    retention_period: 2160h  # 90 dias em produção (vs 31 dias em staging)
+    reject_old_samples: true
+    reject_old_samples_max_age: 168h
+
+# Modo distribuído (HA) — separa componentes para escalar independentemente
+deploymentMode: Distributed
+
+# Desabilita single binary (substitui por modo distribuído)
+singleBinary:
+  replicas: 0
+
+# Ingester — persiste chunks no Azure Blob
+ingester:
+  replicas: 3
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+  persistence:
+    enabled: false  # Azure Blob gerencia persistência
+
+# Distributor — recebe logs dos clientes
+distributor:
+  replicas: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+# Querier — executa queries
+querier:
+  replicas: 2
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+# Query frontend — paraleliza e faz cache de queries
+queryFrontend:
+  replicas: 2
+
+# Compactor — compacta chunks antigos no blob storage
+compactor:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+# StorageClass desnecessária (dado fica no blob, não em PVC)
+chunksCache:
+  enabled: true
+  replicas: 1
+
+resultsCache:
+  enabled: true
+  replicas: 1

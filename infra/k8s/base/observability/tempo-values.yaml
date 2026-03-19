@@ -1,0 +1,57 @@
+################################################################################
+# Grafana Tempo Helm Values — distributed tracing
+# helm install tempo grafana/tempo -n monitoring -f infra/k8s/base/observability/tempo-values.yaml
+################################################################################
+
+tempo:
+  reportingEnabled: false
+
+  storage:
+    trace:
+      backend: local  # staging; em produção usar azure
+
+  retention: 72h  # 3 dias de traces
+
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+    zipkin:
+      endpoint: "0.0.0.0:9411"  # Compatível com Istio tracing
+
+  metricsGenerator:
+    enabled: true
+    remoteWriteUrl: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+
+tempoQuery:
+  enabled: true
+
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+
+persistence:
+  enabled: true
+  size: 20Gi
+  storageClassName: managed-premium
+
+# ─── Node Pool Affinity (monitor pool) ─────────────────────────────────────────
+nodeSelector:
+  role: monitor
+
+tolerations:
+  - key: workload
+    operator: Equal
+    value: monitor
+    effect: NoSchedule

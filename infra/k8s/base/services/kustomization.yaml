@@ -1,0 +1,21 @@
+################################################################################
+# Kustomization — Base dos microserviços do FoodeApp
+# Referenciado pelos overlays: k8s/overlays/staging e k8s/overlays/production
+# Os overlays injetam: image registry, replicas, configMap com valores de ambiente
+################################################################################
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - secret-provider-class.yaml
+  - svc-auth.yaml
+  - svc-establishments.yaml
+  - svc-catalog.yaml
+  - svc-events.yaml
+  - svc-location.yaml
+  - svc-orders.yaml
+  - svc-notifications.yaml
+  - svc-payments.yaml
+  - bff-web.yaml
+  - bff-app.yaml

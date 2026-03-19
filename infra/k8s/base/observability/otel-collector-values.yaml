@@ -1,0 +1,115 @@
+# yaml-language-server: disable
+################################################################################
+# OpenTelemetry Collector — pipeline de telemetria
+# Recebe de todos os serviços e distribui para Prometheus, Loki e Tempo
+#
+# helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
+# helm install opentelemetry-collector open-telemetry/opentelemetry-collector \
+#   -n monitoring -f infra/k8s/base/observability/otel-collector-values.yaml
+################################################################################
+
+mode: deployment  # DaemonSet em produção para coleta por nó
+file_format: helm-values
+
+replicaCount: 1
+
+# ─── Node Pool Affinity (monitor pool) ─────────────────────────────────────────
+nodeSelector:
+  role: monitor
+
+tolerations:
+  - key: workload
+    operator: Equal
+    value: monitor
+    effect: NoSchedule
+
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+    # Recebe métricas do Istio (Envoy)
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: "istio-mesh"
+            kubernetes_sd_configs:
+              - role: pod
+
+  processors:
+    batch:
+      timeout: 5s
+      send_batch_size: 1000
+
+    memory_limiter:
+      limit_mib: 256
+      spike_limit_mib: 64
+      check_interval: 5s
+
+    # Adiciona metadados K8s nos spans/logs
+    k8sattributes:
+      auth_type: "serviceAccount"
+      extract:
+        metadata:
+          - k8s.namespace.name
+          - k8s.deployment.name
+          - k8s.pod.name
+          - k8s.node.name
+          - k8s.pod.uid
+
+    resource:
+      attributes:
+        - key: service.namespace
+          value: "foodeapp"
+          action: insert
+
+  exporters:
+    # Traces → Tempo
+    otlp/tempo:
+      endpoint: "tempo.monitoring.svc.cluster.local:4317"
+      tls:
+        insecure: true
+
+    # Métricas → Prometheus (remote write)
+    prometheusremotewrite:
+      endpoint: "http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090/api/v1/write"
+
+    # Logs → Loki
+    loki:
+      endpoint: "http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
+      default_labels_enabled:
+        exporter: true
+        job: true
+
+  service:
+    pipelines:
+      traces:
+        receivers: [otlp]
+        processors: [memory_limiter, k8sattributes, resource, batch]
+        exporters: [otlp/tempo]
+
+      metrics:
+        receivers: [otlp, prometheus]
+        processors: [memory_limiter, k8sattributes, resource, batch]
+        exporters: [prometheusremotewrite]
+
+      logs:
+        receivers: [otlp]
+        processors: [memory_limiter, k8sattributes, resource, batch]
+        exporters: [loki]
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+serviceAccount:
+  create: true
+  annotations: {}

@@ -1,0 +1,98 @@
+################################################################################
+# Kong Helm Values — DB-less mode + Kong Ingress Controller
+# helm repo add kong https://charts.konghq.com
+# helm install kong kong/kong -n foodeapp-system -f infra/k8s/base/kong/values.yaml
+################################################################################
+
+# Kong Ingress Controller mode (DB-less)
+deployment:
+  kong:
+    enabled: true
+
+env:
+  database: "off"          # Modo DB-less: config via CRDs/declarativo
+  router_flavor: "expressions"
+  nginx_worker_processes: "auto"
+  proxy_access_log: "/dev/stdout"
+  proxy_error_log: "/dev/stderr"
+  admin_access_log: "/dev/stdout"
+  admin_error_log: "/dev/stderr"
+  plugins: "bundled"
+
+# Ingress Controller
+ingressController:
+  enabled: true
+  installCRDs: false   # Instalar CRDs separadamente via kubectl apply
+  watchNamespaces:
+    - foodeapp-production
+    - foodeapp-staging
+    - foodeapp-system      # necessário para rotas do Keycloak e RabbitMQ
+
+# Service do proxy (entrada pública)
+proxy:
+  enabled: true
+  type: LoadBalancer
+  http:
+    enabled: true
+    servicePort: 80
+  tls:
+    enabled: true
+    servicePort: 443
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: "/healthz"
+
+# Admin API — apenas ClusterIP (não expor publicamente)
+admin:
+  enabled: true
+  type: ClusterIP
+  http:
+    enabled: true
+    servicePort: 8001
+
+# Resources
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Réplicas
+replicaCount: 2
+
+# HPA
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+# Probes
+readinessProbe:
+  httpGet:
+    path: "/status"
+    port: 8100
+  initialDelaySeconds: 15
+  timeoutSeconds: 5
+
+livenessProbe:
+  httpGet:
+    path: "/status"
+    port: 8100
+  initialDelaySeconds: 15
+  timeoutSeconds: 5
+
+# PostgreSQL OFF — configuração via ConfigMap/CRDs
+postgresql:
+  enabled: false
+
+# ─── Node Pool Affinity (infra pool) ─────────────────────────────────────────────
+nodeSelector:
+  role: infra
+
+tolerations:
+  - key: workload
+    operator: Equal
+    value: infra
+    effect: NoSchedule

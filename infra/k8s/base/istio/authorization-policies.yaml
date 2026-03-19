@@ -1,0 +1,80 @@
+################################################################################
+# Istio AuthorizationPolicy — políticas de acesso entre serviços
+# Segurança zero-trust: só permite comunicações necessárias
+################################################################################
+
+---
+# Política padrão: negar tudo no namespace de produção
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: foodeapp-production
+spec: {}  # spec vazio = nega tudo
+
+---
+# Política padrão: negar tudo no namespace de staging
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: foodeapp-staging
+spec: {}
+
+---
+# Permite Kong (foodeapp-system) chamar BFFs
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-kong-to-bffs
+  namespace: foodeapp-production
+spec:
+  selector:
+    matchLabels:
+      role: bff
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["foodeapp-system"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+---
+# Permite BFFs chamarem microserviços internos
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-bffs-to-services
+  namespace: foodeapp-production
+spec:
+  selector:
+    matchLabels:
+      role: service
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["foodeapp-production"]
+            principals:
+              - "cluster.local/ns/foodeapp-production/sa/bff-web"
+              - "cluster.local/ns/foodeapp-production/sa/bff-app"
+
+---
+# Permite Prometheus (monitoring) fazer scrape de métricas em todos os serviços
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-prometheus-scrape
+  namespace: foodeapp-production
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["monitoring"]
+      to:
+        - operation:
+            paths: ["/metrics"]
+            methods: ["GET"]

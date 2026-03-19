@@ -1,0 +1,58 @@
+# yaml-language-server: disable
+################################################################################
+# OpenTelemetry Collector — PRODUÇÃO (sobrepõe otel-collector-values.yaml)
+#
+# USO:
+#   helm upgrade opentelemetry-collector open-telemetry/opentelemetry-collector \
+#     -n monitoring \
+#     -f infra/k8s/base/observability/otel-collector-values.yaml \
+#     -f infra/k8s/base/observability/otel-collector-production-values.yaml
+#
+# DIFERENÇAS vs base (staging):
+#   - mode: deployment  →  daemonset
+#     Motivo: DaemonSet garante um pod por nó, eliminando o risco de queda
+#     de telemetria quando um único pod cai. Em produção, cada nó do AKS
+#     precisa de seu próprio collector para capturar logs/métricas locais.
+#   - replicaCount removido (DaemonSet não usa réplicas, usa 1 pod/nó)
+#   - resources aumentados (cada pod processa mais dados em produção)
+################################################################################
+
+# DaemonSet: 1 pod por nó do AKS (nó de sistema + nós de usuário)
+mode: daemonset
+file_format: helm-values
+
+# Recursos maiores em produção — cada nó pode ter muitos pods gerando telemetria
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+# Extensão do memory_limiter para o tamanho maior de memória em produção
+config:
+  processors:
+    memory_limiter:
+      limit_mib: 800          # 80% de 1Gi
+      spike_limit_mib: 200
+      check_interval: 5s
+
+    batch:
+      timeout: 5s
+      send_batch_size: 2000   # batch maior em produção
+
+  # Garante tolerância para rodar nos nós "system" (taint CriticalAddonsOnly)
+tolerations:
+  - key: "CriticalAddonsOnly"
+    operator: "Exists"
+    effect: "NoSchedule"
+  - key: "node-role.kubernetes.io/master"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+# Affinidade: garante que corra em todos os nós, incluindo o pool de sistema
+affinity: {}
+
+# Prioridade alta para não ser evicted por falta de recursos
+priorityClassName: "system-node-critical"
