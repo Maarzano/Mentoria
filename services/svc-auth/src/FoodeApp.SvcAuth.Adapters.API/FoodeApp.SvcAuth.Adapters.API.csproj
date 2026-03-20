@@ -16,6 +16,10 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     <!-- Prometheus /metrics — scraping direto pelo Prometheus (ADR-018) -->
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
+    <!-- ADR-018: Logging estruturado JSON para Loki (observabilidade de logs) -->
+    <PackageReference Include="Serilog" Version="4.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="Serilog.Formatting.Compact" Version="2.0.0" />
     <!-- ADR-018: OpenTelemetry — traces + métricas para o OTel Collector -->
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.0" />

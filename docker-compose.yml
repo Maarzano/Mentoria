@@ -13,28 +13,13 @@ services:
       retries: 20
     volumes:
       - foodeapp_postgres_auth_data:/var/lib/postgresql/data
-
-  svc-auth:
-    build:
-      context: ./services/svc-auth
-      dockerfile: Dockerfile
-    container_name: foodeapp-svc-auth
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: Host=postgres;Port=5432;Database=foodeapp_auth;Username=pgadmin;Password=pgadmin123;Pooling=true
-      # ADR-018: OTel SDK lê esta variável automaticamente ao usar AddOtlpExporter()
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
-      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
-      OTEL_SERVICE_NAME: svc-auth
-    depends_on:
-      postgres:
-        condition: service_healthy
-      otel-collector:
-        condition: service_started
     ports:
-      - "8080:8080"
+      - "5432:5432"
 
   # ── Observabilidade local (ADR-018) ────────────────────────────────────────
+  # Para modo DEV LOCAL: svc-auth roda nativo via dotnet run/watch (não container)
+  # Para modo PROD: docker-compose.yml.prod com svc-auth containerizado
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.119.0
     container_name: foodeapp-otel-collector
@@ -76,6 +61,28 @@ services:
     ports:
       - "3200:3200"    # Tempo HTTP (Grafana consulta aqui)
 
+  loki:
+    image: grafana/loki:2.9.7
+    container_name: foodeapp-loki
+    user: "0:0"
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - ./infra/local/loki-config.yaml:/etc/loki/local-config.yaml:ro
+      - loki_data:/tmp/loki
+    ports:
+      - "3100:3100"
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: foodeapp-promtail
+    command: ["-config.file=/etc/promtail/config.yaml"]
+    volumes:
+      - ./infra/local/promtail-config.yaml:/etc/promtail/config.yaml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - loki
+
   grafana:
     image: grafana/grafana:11.4.0
     container_name: foodeapp-grafana
@@ -91,9 +98,11 @@ services:
     depends_on:
       - prometheus
       - tempo
+      - loki
 
 volumes:
   foodeapp_postgres_auth_data:
   prometheus_data:
   tempo_data:
+  loki_data:
   grafana_data:

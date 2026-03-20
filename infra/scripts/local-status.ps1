@@ -44,6 +44,7 @@ try {
     Test-Endpoint -Name "OTel Collector"   -Url "http://localhost:13133"
     Test-Endpoint -Name "Prometheus"       -Url "http://localhost:9090/-/healthy"
     Test-Endpoint -Name "Tempo"            -Url "http://localhost:3200/ready"
+    Test-Endpoint -Name "Loki"             -Url "http://localhost:3100/ready"
     Test-Endpoint -Name "Grafana"          -Url "http://localhost:3000/api/health"
 
     Write-Host ""

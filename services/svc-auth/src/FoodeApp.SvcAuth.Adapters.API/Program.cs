@@ -10,8 +10,22 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Metrics;
 using Prometheus;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Formatting.Json;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Logging estruturado (ADR-018) ─────────────────────────────────────────────
+// Serilog com JSON — Promtail coleta do stdout, Loki armazena
+builder.Host.UseSerilog((ctx, cfg) =>
+{
+    cfg
+        .MinimumLevel.Is(ctx.HostingEnvironment.IsDevelopment() ? Serilog.Events.LogEventLevel.Debug : Serilog.Events.LogEventLevel.Information)
+        .Enrich.FromLogContext()
+        .Enrich.WithProperty("service", "svc-auth")
+        .Enrich.WithProperty("environment", ctx.HostingEnvironment.EnvironmentName)
+        .WriteTo.Console(new JsonFormatter());
+});
 
 // ── Database ──────────────────────────────────────────────────────────────────
 var connectionString = ResolveConnectionString(builder.Configuration);
