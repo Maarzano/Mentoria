@@ -16,15 +16,23 @@ using Serilog.Formatting.Json;
 var builder = WebApplication.CreateBuilder(args);
 
 // ── Logging estruturado (ADR-018) ─────────────────────────────────────────────
-// Serilog com JSON — Promtail coleta do stdout, Loki armazena
+// Dev  → console legível (HH:mm:ss LEVEL SourceContext: mensagem)
+// Prod → JSON para Promtail/Loki coletar do stdout
 builder.Host.UseSerilog((ctx, cfg) =>
 {
     cfg
-        .MinimumLevel.Is(ctx.HostingEnvironment.IsDevelopment() ? Serilog.Events.LogEventLevel.Debug : Serilog.Events.LogEventLevel.Information)
+        .MinimumLevel.Is(ctx.HostingEnvironment.IsDevelopment()
+            ? Serilog.Events.LogEventLevel.Debug
+            : Serilog.Events.LogEventLevel.Information)
         .Enrich.FromLogContext()
         .Enrich.WithProperty("service", "svc-auth")
-        .Enrich.WithProperty("environment", ctx.HostingEnvironment.EnvironmentName)
-        .WriteTo.Console(new JsonFormatter());
+        .Enrich.WithProperty("environment", ctx.HostingEnvironment.EnvironmentName);
+
+    if (ctx.HostingEnvironment.IsDevelopment())
+        cfg.WriteTo.Console(
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}{NewLine}             {Message:lj}{NewLine}{Exception}");
+    else
+        cfg.WriteTo.Console(new JsonFormatter());
 });
 
 // ── Database ──────────────────────────────────────────────────────────────────

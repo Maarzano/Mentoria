@@ -34,13 +34,13 @@ try {
     docker compose ps
 
     Write-Host ""
-    Write-Host "── svc-auth ─────────────────────────────────" -ForegroundColor Cyan
+    Write-Host "-- svc-auth -----------------------------------------" -ForegroundColor Cyan
     Test-Endpoint -Name "healthz"          -Url "http://localhost:8080/healthz"
     Test-Endpoint -Name "ready"            -Url "http://localhost:8080/ready"
     Test-Endpoint -Name "metrics"          -Url "http://localhost:8080/metrics"
 
     Write-Host ""
-    Write-Host "── Observabilidade (ADR-018) ────────────────" -ForegroundColor Cyan
+    Write-Host "-- Observabilidade (ADR-018) --------------------" -ForegroundColor Cyan
     Test-Endpoint -Name "OTel Collector"   -Url "http://localhost:13133"
     Test-Endpoint -Name "Prometheus"       -Url "http://localhost:9090/-/healthy"
     Test-Endpoint -Name "Tempo"            -Url "http://localhost:3200/ready"
@@ -48,7 +48,7 @@ try {
     Test-Endpoint -Name "Grafana"          -Url "http://localhost:3000/api/health"
 
     Write-Host ""
-    Write-Host "── URLs de acesso ───────────────────────────" -ForegroundColor Cyan
+    Write-Host "-- URLs de acesso ----------------------------------" -ForegroundColor Cyan
     Write-Host "  API:        http://localhost:8080/v1/profiles" -ForegroundColor White
     Write-Host "  Prometheus: http://localhost:9090"             -ForegroundColor White
     Write-Host "  Grafana:    http://localhost:3000"             -ForegroundColor White

@@ -11,10 +11,10 @@ $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..")
 Push-Location $repoRoot
 try {
     Write-Host ""
-    Write-Host "╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║  Iniciando Infraestrutura Local (Docker)                       ║" -ForegroundColor Cyan
-    Write-Host "║  Serviços: PostgreSQL, OTel, Prometheus, Tempo, Loki, Grafana ║" -ForegroundColor Cyan
-    Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "  =============================================================" -ForegroundColor Cyan
+    Write-Host "  Iniciando Infraestrutura Local (Docker)" -ForegroundColor Cyan
+    Write-Host "  Servicos: PostgreSQL, OTel, Prometheus, Tempo, Loki, Grafana" -ForegroundColor Cyan
+    Write-Host "  =============================================================" -ForegroundColor Cyan
     Write-Host ""
 
     # Remove containers de desenvolvimento anterior mas mantém volumes
@@ -44,9 +44,9 @@ try {
     }
 
     Write-Host ""
-    Write-Host "╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "║  ✅ Infraestrutura Online                                      ║" -ForegroundColor Green
-    Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor Green
+    Write-Host "  =============================================================" -ForegroundColor Green
+    Write-Host "  Infraestrutura Online" -ForegroundColor Green
+    Write-Host "  =============================================================" -ForegroundColor Green
     Write-Host ""
     Write-Host "📍 Endereços:" -ForegroundColor Cyan
     Write-Host "   🗄️  PostgreSQL:      localhost:5432 (pgadmin/pgadmin123)" -ForegroundColor White

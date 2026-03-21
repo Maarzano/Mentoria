@@ -2,6 +2,16 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: foodeapp-postgres-auth
+    command:
+      - postgres
+      - -c
+      - log_statement=all
+      - -c
+      - log_duration=on
+      - -c
+      - log_min_duration_statement=0
+      - -c
+      - log_line_prefix=%t [%p] %u@%d 
     environment:
       POSTGRES_DB: foodeapp_auth
       POSTGRES_USER: pgadmin

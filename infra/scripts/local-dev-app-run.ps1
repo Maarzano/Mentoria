@@ -9,10 +9,10 @@ $svcAuthPath = Join-Path $repoRoot "services\svc-auth"
 Push-Location $svcAuthPath
 try {
     Write-Host ""
-    Write-Host "╔════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║  🚀 svc-auth — Modo Desenvolvimento (dotnet run)               ║" -ForegroundColor Cyan
-    Write-Host "║  Hot Reload Habilitado • Logs em tempo real                   ║" -ForegroundColor Cyan
-    Write-Host "╚════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host "  =============================================================" -ForegroundColor Cyan
+    Write-Host "  svc-auth - Modo Desenvolvimento (dotnet run)" -ForegroundColor Cyan
+    Write-Host "  Hot Reload Habilitado - Logs em tempo real" -ForegroundColor Cyan
+    Write-Host "  =============================================================" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "⚙️  Ambiente: Development" -ForegroundColor Yellow
     Write-Host "📍 Endpoint: http://localhost:8080" -ForegroundColor Yellow
