@@ -26,6 +26,23 @@ internal sealed class UserRepository(NpgsqlDataSource dataSource) : IUserReposit
         await using var reader = await cmd.ExecuteReaderAsync(ct);
         return await reader.ReadAsync(ct) ? Hydrate(reader) : null;
     }
+    public async Task<IReadOnlyList<User>> FindAllAsync(CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT id, keycloak_id, display_name, avatar_url, phone, role, created_at, updated_at
+            FROM auth.users
+            ORDER BY created_at DESC;
+            """;
+        await using var conn = await dataSource.OpenConnectionAsync(ct);
+        await using var cmd = new NpgsqlCommand(sql, conn);
+        await using var reader = await cmd.ExecuteReaderAsync(ct);
+
+        var users = new List<User>();
+        while (await reader.ReadAsync(ct))
+            users.Add(Hydrate(reader));
+
+        return users;
+    }
 
     public async Task<bool> ExistsByKeycloakIdAsync(string keycloakId, CancellationToken ct = default)
     {

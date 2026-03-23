@@ -12,4 +12,5 @@ public interface IUserRepository
     Task<User?> FindByIdAsync(Guid id, CancellationToken ct = default);
     Task<bool> ExistsByKeycloakIdAsync(string keycloakId, CancellationToken ct = default);
     Task AddAsync(User user, CancellationToken ct = default);
+    Task<IReadOnlyList<User>> FindAllAsync(CancellationToken ct = default);
 }

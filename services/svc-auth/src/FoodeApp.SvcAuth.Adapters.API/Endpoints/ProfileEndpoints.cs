@@ -2,6 +2,7 @@ using MediatR;
 using FoodeApp.SvcAuth.Application.Commands.RegisterUser;
 using FoodeApp.SvcAuth.Application.Queries.GetUserById;
 using FoodeApp.SvcAuth.Domain.Exceptions;
+using FoodeApp.SvcAuth.Application.Queries.GetAllUsers;
 
 namespace FoodeApp.SvcAuth.Adapters.API.Endpoints;
 
@@ -41,6 +42,14 @@ internal static class ProfileEndpoints
             return profile is null ? Results.NotFound() : Results.Ok(profile);
         })
         .WithName("GetUserById")
+        .WithTags("Profiles");
+
+        app.MapGet("/profiles", async (ISender mediator, CancellationToken ct) =>
+        {
+            var profiles = await mediator.Send(new GetAllUsersQuery(), ct);
+            return Results.Ok(profiles);
+        })
+        .WithName("GetAllUsers")
         .WithTags("Profiles");
     }
 
