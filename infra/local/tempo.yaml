@@ -1,6 +1,10 @@
 ################################################################################
 # Grafana Tempo — Configuração LOCAL (dev)
 # ADR-018: Tempo armazena distributed traces
+#
+# metrics_generator: Gera métricas a partir dos traces para:
+#   - Service Graph (grafo de dependências no Grafana)
+#   - Span Metrics (RED metrics derivadas dos traces)
 ################################################################################
 
 server:
@@ -17,6 +21,36 @@ ingester:
   trace_idle_period: 10s
   max_block_bytes: 1_000_000
   max_block_duration: 5m
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: local-dev
+  storage:
+    path: /tmp/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+  processor:
+    service_graphs:
+      dimensions:
+        - service.name
+      enable_client_server_prefix: true
+    span_metrics:
+      dimensions:
+        - service.name
+        - http.method
+        - http.route
+        - http.status_code
+        - db.system
+        - db.statement
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+        - service-graphs
+        - span-metrics
 
 compactor:
   compaction:

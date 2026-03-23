@@ -3,7 +3,10 @@ using FoodeApp.SvcAuth.Adapters.Data.Schema;
 using FoodeApp.SvcAuth.Adapters.Messaging.Extensions;
 using FoodeApp.SvcAuth.Adapters.API.Endpoints;
 using FoodeApp.SvcAuth.Adapters.API.Middleware;
+using FoodeApp.SvcAuth.Adapters.API.Observability;
+using FoodeApp.SvcAuth.Application.Behaviors;
 using FoodeApp.SvcAuth.Application.Commands.RegisterUser;
+using MediatR;
 using Npgsql;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -18,6 +21,11 @@ var builder = WebApplication.CreateBuilder(args);
 // ── Logging estruturado (ADR-018) ─────────────────────────────────────────────
 // Dev  → console legível (HH:mm:ss LEVEL SourceContext: mensagem)
 // Prod → JSON para Promtail/Loki coletar do stdout
+// Todos os ambientes → OTLP para o OTel Collector → Loki (com traceId/spanId)
+var otelEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]
+                   ?? Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT")
+                   ?? "http://localhost:4318";
+
 builder.Host.UseSerilog((ctx, cfg) =>
 {
     cfg
@@ -26,17 +34,31 @@ builder.Host.UseSerilog((ctx, cfg) =>
             : Serilog.Events.LogEventLevel.Information)
         .Enrich.FromLogContext()
         .Enrich.WithProperty("service", "svc-auth")
-        .Enrich.WithProperty("environment", ctx.HostingEnvironment.EnvironmentName);
+        .Enrich.WithProperty("environment", ctx.HostingEnvironment.EnvironmentName)
+        .Enrich.With(new ActivityEnricher());  // TraceId, SpanId, ParentId do Activity.Current
 
     if (ctx.HostingEnvironment.IsDevelopment())
         cfg.WriteTo.Console(
-            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext}{NewLine}             {Message:lj}{NewLine}{Exception}");
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {SourceContext} [TraceId={TraceId} SpanId={SpanId}]{NewLine}             {Message:lj}{NewLine}{Exception}");
     else
         cfg.WriteTo.Console(new JsonFormatter());
+
+    // Envia logs via OTLP para o OTel Collector → pipeline de logs → Loki
+    cfg.WriteTo.OpenTelemetry(options =>
+    {
+        options.Endpoint = $"{otelEndpoint}/v1/logs";
+        options.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.HttpProtobuf;
+        options.ResourceAttributes = new Dictionary<string, object>
+        {
+            ["service.name"] = "svc-auth",
+            ["deployment.environment"] = ctx.HostingEnvironment.EnvironmentName
+        };
+    });
 });
 
 // ── Database ──────────────────────────────────────────────────────────────────
 var connectionString = ResolveConnectionString(builder.Configuration);
+// Npgsql 10+ emite tracing automaticamente quando AddSource("Npgsql") está no TracerProvider
 var dataSource = new NpgsqlDataSourceBuilder(connectionString).Build();
 
 // ── Infra Adapters (Ports → Implementations) ──────────────────────────────────
@@ -46,6 +68,9 @@ builder.Services.AddSvcAuthMessaging();          // IUserEventPublisher → User
 // ── Application (CQRS via MediatR — ADR-004) ─────────────────────────────────
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<RegisterUserCommandHandler>());
+
+// ADR-018: Behavior de tracing — cada Command/Query handler gera um span filho no trace
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TracingPipelineBehavior<,>));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -65,18 +90,42 @@ builder.Services.AddProblemDetails();
 // O SDK do OTel lê OTEL_EXPORTER_OTLP_ENDPOINT do ambiente automaticamente.
 // Em local dev sem collector o OTLP falha silenciosamente (sem crash).
 // Em staging/produção, a variável é injetada pelo ConfigMap do K8s.
+//
+// Fluxo de traces (cada nível gera um span aninhado):
+//   1. ASP.NET Core Instrumentation → span pai (HTTP server)
+//   2. MediatR TracingPipelineBehavior → span filho (Application/handler)
+//   3. Npgsql OpenTelemetry → span neto (SQL query no PostgreSQL)
 builder.Services
     .AddOpenTelemetry()
     .ConfigureResource(r => r
         .AddService("svc-auth")
-        .AddAttributes([new("deployment.environment", builder.Environment.EnvironmentName)]))
+        .AddAttributes([
+            new("deployment.environment", builder.Environment.EnvironmentName),
+            new("service.version", typeof(Program).Assembly.GetName().Version?.ToString() ?? "0.0.0")
+        ]))
     .WithTracing(t => t
-        .AddAspNetCoreInstrumentation(o => o.RecordException = true)
-        .AddSource("Npgsql")          // Instrumentação nativa do driver — queries SQL em traces
-        .AddOtlpExporter())           // endpoint via OTEL_EXPORTER_OTLP_ENDPOINT
+        .AddAspNetCoreInstrumentation(o =>
+        {
+            o.RecordException = true;
+            o.EnrichWithHttpRequest = (activity, request) =>
+            {
+                activity.SetTag("http.request.header.user_agent", request.Headers.UserAgent.ToString());
+                if (request.Headers.TryGetValue("X-User-Id", out var userId))
+                    activity.SetTag("enduser.id", userId.ToString());
+            };
+            o.EnrichWithHttpResponse = (activity, response) =>
+            {
+                activity.SetTag("http.response.body.size", response.ContentLength);
+            };
+        })
+        .AddSource("Npgsql")                                // Spans para CADA query SQL (SELECT, INSERT, etc.)
+        .AddSource("FoodeApp.SvcAuth.Application")          // Spans do MediatR (Commands + Queries)
+        .AddOtlpExporter())
     .WithMetrics(m => m
         .AddAspNetCoreInstrumentation()
-        .AddRuntimeInstrumentation()  // GC, thread pool, alocações
+        .AddRuntimeInstrumentation()                        // GC, thread pool, alocações, JIT
+        .AddNpgsqlInstrumentation()                         // Métricas do connection pool do Npgsql
+        .AddMeter("FoodeApp.SvcAuth.Application")           // Métricas custom da Application layer
         .AddOtlpExporter());
 
 // ── Build ─────────────────────────────────────────────────────────────────────

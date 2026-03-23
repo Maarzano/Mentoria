@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <!-- Driver nativo PostgreSQL — sem ORM, SQL explícito (ADR-003) -->
-    <PackageReference Include="Npgsql" Version="8.0.4" />
+    <PackageReference Include="Npgsql" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
   </ItemGroup>
 

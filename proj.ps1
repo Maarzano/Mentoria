@@ -3,19 +3,25 @@
 # proj.ps1 - FoodeApp | CLI de Desenvolvimento Local
 #
 # COMANDOS:
-#   run    <svcs...>   Roda servico com hot reload (dotnet watch) + dicas debug
-#   list               Lista tudo com portas e status (rodando/parado/futuro)
-#   status [itens]     Saude de itens especificos ou do que esta rodando
-#   infra  [nomes]     Sobe infra Docker (todos ou especificos)
-#   logs   [nomes]     Logs Docker no terminal atual
-#   stop   [nomes]     Para containers (preserva estado)
-#   down   [nomes]     Remove containers
+#   run    <svcs...>       Roda local com hot reload (dotnet watch / npm dev)
+#   run -c <svcs...>       Roda via container Docker (Dockerfile do servico)
+#   list                   Lista tudo com portas e status
+#   status [itens]         Saude de itens especificos ou do que esta rodando
+#   infra  [nomes]         Sobe infra Docker (todos ou especificos)
+#   logs   [nomes]         Logs Docker (infra ou servico em container)
+#   stop   [nomes]         Para containers (infra e/ou servicos)
+#   down   [nomes]         Remove containers (infra e/ou servicos)
+#
+# FLAGS:
+#   -c                     Modo container (usado com 'run')
 # ==============================================================================
 
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
     [string]$Command,
+
+    [switch]$c,
 
     [Parameter(Position = 1, ValueFromRemainingArguments)]
     [string[]]$Services
@@ -38,20 +44,98 @@ if (-not (Test-Path $registryPath)) {
 }
 $registry = Get-Content $registryPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
-$script:infraNames = @(
-    "postgres", "otel-collector", "prometheus",
-    "tempo", "loki", "promtail", "grafana"
-)
+function Get-ComposeInfraMetadata {
+    param([string]$ProjectRoot)
 
-$script:infraEndpoints = [ordered]@{
-    "postgres"       = "localhost:5432"
-    "otel-collector" = "localhost:4317 (gRPC) | :4318 (HTTP) | :13133 (health)"
-    "prometheus"     = "http://localhost:9090"
-    "tempo"          = "http://localhost:3200"
-    "loki"           = "http://localhost:3100"
-    "promtail"       = "(agent interno, sem porta exposta)"
-    "grafana"        = "http://localhost:3000"
+    $fallbackNames = @(
+        "postgres", "otel-collector", "prometheus",
+        "tempo", "loki", "promtail", "grafana"
+    )
+
+    $fallbackEndpoints = [ordered]@{
+        "postgres"       = "localhost:5432"
+        "otel-collector" = "localhost:4317 | localhost:4318 | localhost:13133"
+        "prometheus"     = "localhost:9090"
+        "tempo"          = "localhost:3200"
+        "loki"           = "localhost:3100"
+        "promtail"       = "(sem porta exposta)"
+        "grafana"        = "localhost:3000"
+    }
+
+    $result = @{
+        Names = $fallbackNames
+        Endpoints = $fallbackEndpoints
+    }
+
+    Push-Location $ProjectRoot
+    try {
+        $servicesRaw = docker compose config --services 2>$null
+        if (-not $servicesRaw) { return $result }
+
+        $infraNames = @($servicesRaw | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        if ($infraNames.Count -eq 0) { return $result }
+
+        $composeConfig = $null
+        $composeJsonRaw = docker compose config --format json 2>$null
+        if ($composeJsonRaw) {
+            try { $composeConfig = $composeJsonRaw | ConvertFrom-Json } catch {}
+        }
+
+        $endpoints = [ordered]@{}
+        foreach ($name in $infraNames) {
+            $svcEndpoints = @()
+
+            if ($composeConfig -and $composeConfig.services) {
+                $serviceProp = $composeConfig.services.PSObject.Properties | Where-Object { $_.Name -eq $name } | Select-Object -First 1
+                if ($serviceProp) {
+                    $service = $serviceProp.Value
+                    $ports = @($service.ports)
+                    foreach ($port in $ports) {
+                        if (-not $port) { continue }
+                        $published = "$( $port.published )".Trim()
+                        $target = "$( $port.target )".Trim()
+                        $proto = "$( $port.protocol )".Trim()
+                        if (-not $proto) { $proto = 'tcp' }
+                        if (-not $published) { continue }
+
+                        $entry = if ($published -eq $target -and $proto -eq 'tcp') {
+                            "localhost:$published"
+                        } elseif ($published -eq $target) {
+                            "localhost:$published/$proto"
+                        } elseif ($proto -eq 'tcp') {
+                            "localhost:$published -> $target"
+                        } else {
+                            "localhost:$published -> $target/$proto"
+                        }
+
+                        $svcEndpoints += $entry
+                    }
+                }
+            }
+
+            if ($svcEndpoints -and $svcEndpoints.Count -gt 0) {
+                $endpoints[$name] = ($svcEndpoints | Select-Object -Unique) -join ' | '
+            } else {
+                $endpoints[$name] = '(sem porta exposta)'
+            }
+        }
+
+        return @{ Names = $infraNames; Endpoints = $endpoints }
+    } catch {
+        return $result
+    } finally {
+        Pop-Location
+    }
 }
+
+$composeMeta = Get-ComposeInfraMetadata -ProjectRoot $repoRoot
+$script:infraNames = $composeMeta.Names
+$script:infraEndpoints = $composeMeta.Endpoints
+
+# Modo container: -c flag
+$script:ContainerMode = [bool]$c
+$script:SVC_CONTAINER_PREFIX = "foodeapp"
+$script:DEFAULT_DOTNET_CONTAINER_PORT = 8080
 
 # ==============================================================================
 # Output Helpers
@@ -166,6 +250,244 @@ function Resolve-Target {
     $svcProp = $registry.services.PSObject.Properties | Where-Object { $_.Name -eq $Name }
     if ($svcProp) { return "service" }
     return "unknown"
+}
+
+function Wait-ComposeServiceHealthy {
+    param(
+        [string]$ServiceName,
+        [int]$TimeoutSeconds = 30
+    )
+
+    for ($i = 0; $i -lt $TimeoutSeconds; $i++) {
+        $containerId = (docker compose ps -q $ServiceName 2>$null | Select-Object -First 1)
+        if (-not $containerId) {
+            Start-Sleep -Seconds 1
+            continue
+        }
+
+        $health = docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' $containerId 2>$null
+        if ($health -eq "healthy" -or $health -eq "running") {
+            return @{ Healthy = $true; ElapsedSeconds = $i }
+        }
+
+        Start-Sleep -Seconds 1
+    }
+
+    return @{ Healthy = $false; ElapsedSeconds = $TimeoutSeconds }
+}
+
+# ==============================================================================
+# Containers de Servico (docker run a partir do Dockerfile)
+# ==============================================================================
+
+function Get-ComposeNetworkName {
+    Push-Location $repoRoot
+    try {
+        $jsonRaw = docker compose config --format json 2>$null
+        if ($jsonRaw) {
+            $cfg = $jsonRaw | ConvertFrom-Json
+            if ($cfg.name) { return "$($cfg.name)_default" }
+        }
+    } catch {} finally { Pop-Location }
+    return "foodeapp_default"
+}
+
+function Get-ServiceContainerPort {
+    param([PSObject]$Cfg)
+    if ($Cfg.containerPort) { return $Cfg.containerPort }
+    switch ($Cfg.type) {
+        "dotnet" { return $script:DEFAULT_DOTNET_CONTAINER_PORT }
+        default  { return $Cfg.port }
+    }
+}
+
+function Get-ServiceContainerName {
+    param([string]$Name)
+    return "$($script:SVC_CONTAINER_PREFIX)-$Name"
+}
+
+function Get-ServiceImageName {
+    param([string]$Name)
+    return "$($script:SVC_CONTAINER_PREFIX)/${Name}:dev"
+}
+
+function Test-ServiceContainerRunning {
+    param([string]$Name)
+    $containerName = Get-ServiceContainerName -Name $Name
+    $status = docker inspect --format='{{.State.Status}}' $containerName 2>$null
+    return ($status -eq "running")
+}
+
+function Get-ServiceContainersStatus {
+    $result = @{}
+    $lines = docker ps -a --filter "label=foodeapp.type=service" --format "{{.Names}}|{{.Status}}" 2>$null
+    if ($lines) {
+        foreach ($line in $lines) {
+            if ($line -and $line.Contains("|")) {
+                $parts = $line.Split("|", 2)
+                $containerName = $parts[0].Trim()
+                $svcName = $containerName -replace "^$([regex]::Escape($script:SVC_CONTAINER_PREFIX))-", ""
+                $result[$svcName] = $parts[1].Trim()
+            }
+        }
+    }
+    return $result
+}
+
+function Build-ContainerEnvArgs {
+    param([PSObject]$LocalEnv, [int]$ContainerPort)
+
+    # Mapeia porta publicada → nome do servico de infra
+    $portToInfra = @{}
+    foreach ($name in $script:infraNames) {
+        $ep = "$($script:infraEndpoints[$name])"
+        foreach ($m in [regex]::Matches($ep, 'localhost:(\d+)')) {
+            $portToInfra[[int]$m.Groups[1].Value] = $name
+        }
+    }
+
+    $envArgs = @()
+    foreach ($prop in $LocalEnv.PSObject.Properties) {
+        $key = $prop.Name
+        $val = $prop.Value
+
+        if ($key -eq "ASPNETCORE_URLS") {
+            # Container escuta em todas as interfaces
+            $val = "http://0.0.0.0:$ContainerPort"
+        }
+        elseif ($val -match "Host=localhost") {
+            # Connection string: Host=localhost → Host={infra}
+            if ($val -match "Port=(\d+)") {
+                $p = [int]$Matches[1]
+                if ($portToInfra.ContainsKey($p)) {
+                    $val = $val -replace "Host=localhost", "Host=$($portToInfra[$p])"
+                }
+            }
+        }
+        else {
+            # URL genérica: localhost:PORT → infraName:PORT
+            foreach ($p in @($portToInfra.Keys)) {
+                $infraName = $portToInfra[$p]
+                $val = $val -replace "localhost:$p", "${infraName}:$p"
+            }
+        }
+
+        $envArgs += "-e"
+        $envArgs += "$key=$val"
+    }
+    return $envArgs
+}
+
+function Resolve-AllDeps {
+    param(
+        [string[]]$ServiceNames,
+        [string[]]$Exclude = @()
+    )
+
+    $allDeps = @()
+    $visited = @() + $Exclude + $ServiceNames
+    $queue = New-Object System.Collections.Queue
+
+    foreach ($name in $ServiceNames) {
+        $prop = $registry.services.PSObject.Properties | Where-Object { $_.Name -eq $name }
+        if ($prop -and $prop.Value.depends) {
+            foreach ($dep in $prop.Value.depends) {
+                if ($dep -notin $visited) {
+                    $queue.Enqueue($dep)
+                    $visited += $dep
+                }
+            }
+        }
+    }
+
+    while ($queue.Count -gt 0) {
+        $dep = $queue.Dequeue()
+        $allDeps += $dep
+        $prop = $registry.services.PSObject.Properties | Where-Object { $_.Name -eq $dep }
+        if ($prop -and $prop.Value.depends) {
+            foreach ($d in $prop.Value.depends) {
+                if ($d -notin $visited) {
+                    $queue.Enqueue($d)
+                    $visited += $d
+                }
+            }
+        }
+    }
+
+    return $allDeps
+}
+
+function Invoke-ServiceContainerUp {
+    param([string]$Name)
+
+    $cfg = Get-ServiceConfig -Name $Name
+    $containerName = Get-ServiceContainerName -Name $Name
+    $imageName = Get-ServiceImageName -Name $Name
+    $svcPath = Join-Path $repoRoot $cfg.path
+    $dockerfile = Join-Path $svcPath "Dockerfile"
+
+    if (-not (Test-Path $dockerfile)) {
+        Write-ERR "$Name : Dockerfile nao encontrado em $($cfg.path)/Dockerfile"
+        return $false
+    }
+
+    # Ja esta rodando?
+    if (Test-ServiceContainerRunning -Name $Name) {
+        Write-OK "$Name ja esta rodando como container."
+        return $true
+    }
+
+    # Remove container parado se existir
+    docker rm -f $containerName 2>$null | Out-Null
+
+    # Build imagem
+    Write-Host "       [$Name] docker build..." -ForegroundColor DarkGray -NoNewline
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    docker build -t $imageName -f $dockerfile $svcPath 2>$null
+    $sw.Stop()
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host " FALHOU" -ForegroundColor Red
+        return $false
+    }
+    Write-Host " OK ($([math]::Round($sw.Elapsed.TotalSeconds, 1))s)" -ForegroundColor Green
+
+    # Network e portas
+    $network = Get-ComposeNetworkName
+    $hostPort = $cfg.port
+    $containerPort = Get-ServiceContainerPort -Cfg $cfg
+
+    # Env vars adaptadas para rede Docker
+    $envArgs = Build-ContainerEnvArgs -LocalEnv $cfg.env -ContainerPort $containerPort
+
+    # docker run
+    Write-Host "       [$Name] docker run..." -ForegroundColor DarkGray -NoNewline
+    $runArgs = @(
+        "run", "-d",
+        "--name", $containerName,
+        "--network", $network,
+        "-p", "${hostPort}:${containerPort}",
+        "--label", "foodeapp.type=service",
+        "--label", "foodeapp.service=$Name"
+    )
+    $runArgs += $envArgs
+    $runArgs += $imageName
+
+    & docker @runArgs 2>$null | Out-Null
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host " FALHOU" -ForegroundColor Red
+        return $false
+    }
+    Write-Host " OK (:$hostPort)" -ForegroundColor Green
+    return $true
+}
+
+function Stop-ServiceContainer {
+    param([string]$Name)
+    $containerName = Get-ServiceContainerName -Name $Name
+    docker stop $containerName 2>$null | Out-Null
+    docker rm $containerName 2>$null | Out-Null
 }
 
 # ==============================================================================
@@ -322,13 +644,8 @@ function Invoke-InfraUp {
         if ("postgres" -in $Targets) {
             Write-Host "       postgres" -ForegroundColor White -NoNewline
             Write-Host " aguardando health check..." -ForegroundColor DarkGray -NoNewline
-            $healthy = $false
-            for ($i = 0; $i -lt 30; $i++) {
-                $h = docker inspect --format='{{.State.Health.Status}}' foodeapp-postgres-auth 2>$null
-                if ($h -eq "healthy") { $healthy = $true; break }
-                Start-Sleep -Seconds 1
-            }
-            if ($healthy) { Write-Host " healthy (${i}s)" -ForegroundColor Green }
+            $health = Wait-ComposeServiceHealthy -ServiceName "postgres" -TimeoutSeconds 30
+            if ($health.Healthy) { Write-Host " healthy ($($health.ElapsedSeconds)s)" -ForegroundColor Green }
             else { Write-Host " timeout 30s" -ForegroundColor Yellow }
         }
 
@@ -378,16 +695,104 @@ function Invoke-Run {
     if (-not $Names -or $Names.Count -eq 0) {
         Write-Header "Rodar Servicos"
         Write-Host "  Uso: .\proj.ps1 run <servico> [servico2 ...]" -ForegroundColor Yellow
+        Write-Host "       .\proj.ps1 run -c <servico> [servico2 ...]  (via container)" -ForegroundColor Yellow
         Write-Host ""
         Write-Host "  Exemplos:" -ForegroundColor White
-        Write-GRAY "    .\proj.ps1 run svc-auth                Hot reload + logs"
-        Write-GRAY "    .\proj.ps1 run svc-auth svc-catalog    Configura debug composto"
+        Write-GRAY "    .\proj.ps1 run svc-auth                Local com hot reload"
+        Write-GRAY "    .\proj.ps1 run svc-auth svc-catalog    Debug composto (local)"
+        Write-GRAY "    .\proj.ps1 run -c svc-auth             Via container (Dockerfile)"
+        Write-GRAY "    .\proj.ps1 run svc-orders              Deps (auth) sobem como container"
         Write-Host ""
         Write-TIP "Use '.\proj.ps1 list' para ver servicos disponiveis."
+        Write-TIP "Dependencias configuradas em: infra/local/services.json (campo 'depends')"
         Write-Footer
         return
     }
 
+    $isContainer = $script:ContainerMode
+
+    # =====================================================
+    # Container mode: build image + docker run
+    # =====================================================
+    if ($isContainer) {
+        Write-Header "run -c $($Names -join ', ') (container mode)"
+
+        # Step 1: Infra
+        Write-Step 1 3 "Verificando infraestrutura Docker..."
+        Push-Location $repoRoot
+        try {
+            if (Test-InfraRunning) {
+                $docker = Get-DockerStatus
+                $upCount = ($docker.Values | Where-Object { $_ -match "Up" }).Count
+                Write-OK "Infra Docker rodando ($upCount containers UP)."
+            } else {
+                Write-WARN "Infra nao esta rodando. Subindo automaticamente..."
+                Write-Host ""
+                docker compose up -d @($script:infraNames)
+                Write-Host ""
+                Write-Host "       Aguardando PostgreSQL..." -ForegroundColor DarkGray -NoNewline
+                $pgHealth = Wait-ComposeServiceHealthy -ServiceName "postgres" -TimeoutSeconds 25
+                if ($pgHealth.Healthy) { Write-Host " healthy ($($pgHealth.ElapsedSeconds)s)" -ForegroundColor Green }
+                else { Write-Host " timeout" -ForegroundColor Yellow }
+                Write-OK "Infraestrutura online."
+            }
+        } finally { Pop-Location }
+
+        # Step 2: Dependencias
+        Write-Host ""
+        Write-Step 2 3 "Resolvendo dependencias..."
+        $deps = Resolve-AllDeps -ServiceNames $Names -Exclude $Names
+        if ($deps.Count -gt 0) {
+            Write-Host "       Dependencias: $($deps -join ', ')" -ForegroundColor DarkGray
+            foreach ($dep in $deps) {
+                $depCfg = Get-ServiceConfig -Name $dep
+                if (Test-PortListening -Port $depCfg.port) {
+                    Write-OK "$dep ja esta acessivel em :$($depCfg.port)"
+                    continue
+                }
+                Invoke-ServiceContainerUp -Name $dep | Out-Null
+            }
+        } else {
+            Write-GRAY "       Sem dependencias adicionais."
+        }
+
+        # Step 3: Start containers
+        Write-Host ""
+        Write-Step 3 3 "Subindo servicos como containers..."
+        $anyOk = $false
+        foreach ($name in $Names) {
+            $cfg = Get-ServiceConfig -Name $name
+            if (Test-PortListening -Port $cfg.port) {
+                Write-WARN "$name : porta $($cfg.port) ja em uso. Pulando."
+                continue
+            }
+            $ok = Invoke-ServiceContainerUp -Name $name
+            if ($ok) { $anyOk = $true }
+        }
+
+        if ($anyOk) {
+            Write-Host ""
+            Write-OK "Servicos containerizados!"
+            Write-Host ""
+            foreach ($name in $Names) {
+                $cfg = Get-ServiceConfig -Name $name
+                if (Test-ServiceContainerRunning -Name $name) {
+                    Write-Host "       $($name.PadRight(22)) " -ForegroundColor White -NoNewline
+                    Write-Host "http://localhost:$($cfg.port)" -ForegroundColor Green
+                }
+            }
+            Write-Host ""
+            Write-TIP "Logs:    .\proj.ps1 logs $($Names[0])"
+            Write-TIP "Status:  .\proj.ps1 status"
+            Write-TIP "Parar:   .\proj.ps1 stop $($Names[0])"
+        }
+        Write-Footer
+        return
+    }
+
+    # =====================================================
+    # Local mode: hot reload + deps como container
+    # =====================================================
     $totalSteps = 3
     if ($Names.Count -eq 1) {
         Write-Header "run $($Names[0]) (watch + hot reload)"
@@ -409,17 +814,31 @@ function Invoke-Run {
             docker compose up -d @($script:infraNames)
             Write-Host ""
             Write-Host "       Aguardando PostgreSQL..." -ForegroundColor DarkGray -NoNewline
-            $pgOk = $false
-            for ($i = 0; $i -lt 25; $i++) {
-                $h = docker inspect --format='{{.State.Health.Status}}' foodeapp-postgres-auth 2>$null
-                if ($h -eq "healthy") { $pgOk = $true; break }
-                Start-Sleep -Seconds 1
-            }
-            if ($pgOk) { Write-Host " healthy (${i}s)" -ForegroundColor Green }
+            $pgHealth = Wait-ComposeServiceHealthy -ServiceName "postgres" -TimeoutSeconds 25
+            if ($pgHealth.Healthy) { Write-Host " healthy ($($pgHealth.ElapsedSeconds)s)" -ForegroundColor Green }
             else { Write-Host " timeout" -ForegroundColor Yellow }
             Write-OK "Infraestrutura online."
         }
     } finally { Pop-Location }
+
+    # Dependencias: servicos nao listados que sao necessarios → container
+    $deps = Resolve-AllDeps -ServiceNames $Names -Exclude $Names
+    if ($deps.Count -gt 0) {
+        Write-Host ""
+        Write-Step 0 0 "Subindo dependencias como containers..."
+        Write-Host "       Dependencias: $($deps -join ', ')" -ForegroundColor DarkGray
+        foreach ($dep in $deps) {
+            $depCfg = Get-ServiceConfig -Name $dep
+            if (Test-PortListening -Port $depCfg.port) {
+                Write-OK "$dep ja esta acessivel em :$($depCfg.port)"
+                continue
+            }
+            Push-Location $repoRoot
+            try {
+                Invoke-ServiceContainerUp -Name $dep | Out-Null
+            } finally { Pop-Location }
+        }
+    }
 
     # Step 2: Prereqs
     Write-Host ""
@@ -515,9 +934,9 @@ function Invoke-Run {
         Write-Step 3 $totalSteps "$($valid.Count) servicos prontos."
         Write-Host ""
         foreach ($n in $valid) {
-            $c = Get-ServiceConfig -Name $n
+            $cc = Get-ServiceConfig -Name $n
             Write-Host "       $($n.PadRight(25))" -ForegroundColor White -NoNewline
-            Write-Host "http://localhost:$($c.port)" -ForegroundColor Green
+            Write-Host "http://localhost:$($cc.port)" -ForegroundColor Green
         }
 
         Write-Host ""
@@ -525,12 +944,14 @@ function Invoke-Run {
         Write-Host "  RODAR OS SERVICOS:" -ForegroundColor Magenta
         Write-Host "    Execute em terminais separados (ou VS Code tasks):" -ForegroundColor White
         foreach ($n in $valid) {
-            $c = Get-ServiceConfig -Name $n
-            Write-Host "      .\_proj.ps1_ run $n" -ForegroundColor DarkGray
+            Write-Host "      .\proj.ps1 run $n" -ForegroundColor DarkGray
         }
         Write-Host ""
+        Write-Host "  OU VIA CONTAINER:" -ForegroundColor Magenta
+        Write-Host "    .\proj.ps1 run -c $($valid -join ' ')" -ForegroundColor White
+        Write-Host ""
         Write-Host "  ATTACH APOS RODAR:" -ForegroundColor Magenta
-        Write-Host "    .\.proj.ps1 attach               <- detecta automatico" -ForegroundColor White
+        Write-Host "    .\proj.ps1 attach               <- detecta automatico" -ForegroundColor White
         Write-Host "    Ctrl+Shift+D -> 'Attach: Selected' -> F5" -ForegroundColor White
         Write-Host "  ============================================================" -ForegroundColor Magenta
         Write-Footer
@@ -633,6 +1054,7 @@ function Invoke-List {
     Write-Header "Inventario Completo"
 
     $docker = Get-DockerStatus
+    $svcContainers = Get-ServiceContainersStatus
 
     # --- Servicos ---
     Write-Section "Servicos de Aplicacao"
@@ -643,22 +1065,30 @@ function Invoke-List {
         $name = $prop.Name
         $cfg  = $prop.Value
         $ready = Test-ServiceReady -Name $name -Cfg $cfg
+        $deps  = if ($cfg.depends -and $cfg.depends.Count -gt 0) { " deps:$($cfg.depends -join ',')" } else { "" }
 
         if (-not $ready) {
-            Write-Host "  FUTURO  " -ForegroundColor DarkGray -NoNewline
-            Write-Host " $($name.PadRight(22)) $($cfg.type.PadRight(8)) :$($cfg.port)" -ForegroundColor DarkGray
+            Write-Host "  FUTURO    " -ForegroundColor DarkGray -NoNewline
+            Write-Host " $($name.PadRight(22)) $($cfg.type.PadRight(8)) :$($cfg.port)$deps" -ForegroundColor DarkGray
             continue
         }
 
+        $isContainer = $svcContainers.ContainsKey($name)
         $running = Test-PortListening -Port $cfg.port
-        if ($running) {
-            Write-Host "  RODANDO " -ForegroundColor Green -NoNewline
+
+        if ($isContainer) {
+            Write-Host "  CONTAINER " -ForegroundColor Magenta -NoNewline
+            Write-Host " $($name.PadRight(22)) " -ForegroundColor White -NoNewline
+            Write-Host "$($cfg.type.PadRight(8)) " -ForegroundColor White -NoNewline
+            Write-Host ":$($cfg.port)" -ForegroundColor Green
+        } elseif ($running) {
+            Write-Host "  LOCAL     " -ForegroundColor Green -NoNewline
             Write-Host " $($name.PadRight(22)) " -ForegroundColor White -NoNewline
             Write-Host "$($cfg.type.PadRight(8)) " -ForegroundColor White -NoNewline
             Write-Host ":$($cfg.port)" -ForegroundColor Green
         } else {
-            Write-Host "  PARADO  " -ForegroundColor Yellow -NoNewline
-            Write-Host " $($name.PadRight(22)) $($cfg.type.PadRight(8)) :$($cfg.port)" -ForegroundColor White
+            Write-Host "  PARADO    " -ForegroundColor Yellow -NoNewline
+            Write-Host " $($name.PadRight(22)) $($cfg.type.PadRight(8)) :$($cfg.port)$deps" -ForegroundColor White
         }
     }
 
@@ -670,14 +1100,14 @@ function Invoke-List {
         $st = $docker[$name]
 
         if ($st -and $st -match "Up") {
-            Write-Host "  UP      " -ForegroundColor Green -NoNewline
+            Write-Host "  UP        " -ForegroundColor Green -NoNewline
             Write-Host " $($name.PadRight(18)) " -ForegroundColor White -NoNewline
             Write-Host "$ep" -ForegroundColor Cyan
         } elseif ($st) {
-            Write-Host "  DOWN    " -ForegroundColor Yellow -NoNewline
+            Write-Host "  DOWN      " -ForegroundColor Yellow -NoNewline
             Write-Host " $($name.PadRight(18)) $ep" -ForegroundColor DarkGray
         } else {
-            Write-Host "  OFF     " -ForegroundColor DarkGray -NoNewline
+            Write-Host "  OFF       " -ForegroundColor DarkGray -NoNewline
             Write-Host " $($name.PadRight(18)) $ep" -ForegroundColor DarkGray
         }
     }
@@ -696,6 +1126,7 @@ function Invoke-Status {
 
     Write-Header "Status"
     $docker = Get-DockerStatus
+    $svcContainers = Get-ServiceContainersStatus
 
     if ($Targets -and $Targets.Count -gt 0) {
         # --- Itens especificos ---
@@ -707,31 +1138,35 @@ function Invoke-Status {
                     $st = $docker[$t]
                     $ep = $script:infraEndpoints[$t]
                     if ($st -and $st -match "Up") {
-                        Write-Host "  [UP]      $($t.PadRight(18)) " -ForegroundColor Green -NoNewline
+                        Write-Host "  [UP]        $($t.PadRight(18)) " -ForegroundColor Green -NoNewline
                         Write-Host "$st" -ForegroundColor White
-                        Write-Host "            $ep" -ForegroundColor DarkGray
+                        Write-Host "              $ep" -ForegroundColor DarkGray
                     } elseif ($st) {
-                        Write-Host "  [DOWN]    $($t.PadRight(18)) " -ForegroundColor Yellow -NoNewline
+                        Write-Host "  [DOWN]      $($t.PadRight(18)) " -ForegroundColor Yellow -NoNewline
                         Write-Host "$st" -ForegroundColor White
                     } else {
-                        Write-Host "  [OFF]     $($t.PadRight(18)) " -ForegroundColor DarkGray -NoNewline
+                        Write-Host "  [OFF]       $($t.PadRight(18)) " -ForegroundColor DarkGray -NoNewline
                         Write-Host "container nao existe / nao criado" -ForegroundColor DarkGray
                     }
                 }
                 "service" {
                     $cfg = Get-ServiceConfig -Name $t
                     $ready = Test-ServiceReady -Name $t -Cfg $cfg
-                    if (-not $ready) {
-                        Write-Host "  [FUTURO]  $($t.PadRight(18)) " -ForegroundColor DarkGray -NoNewline
-                        Write-Host "codigo nao implementado" -ForegroundColor DarkGray
-                        continue
-                    }
+                    $isContainer = $svcContainers.ContainsKey($t)
                     $running = Test-PortListening -Port $cfg.port
-                    if ($running) {
-                        Write-Host "  [RODANDO] $($t.PadRight(18)) " -ForegroundColor Green -NoNewline
+
+                    if ($isContainer) {
+                        Write-Host "  [CONTAINER] $($t.PadRight(18)) " -ForegroundColor Magenta -NoNewline
                         Write-Host "http://localhost:$($cfg.port)" -ForegroundColor White
+                        Write-Host "              $($svcContainers[$t])" -ForegroundColor DarkGray
+                    } elseif ($running) {
+                        Write-Host "  [LOCAL]     $($t.PadRight(18)) " -ForegroundColor Green -NoNewline
+                        Write-Host "http://localhost:$($cfg.port)" -ForegroundColor White
+                    } elseif (-not $ready) {
+                        Write-Host "  [FUTURO]    $($t.PadRight(18)) " -ForegroundColor DarkGray -NoNewline
+                        Write-Host "codigo nao implementado" -ForegroundColor DarkGray
                     } else {
-                        Write-Host "  [PARADO]  $($t.PadRight(18)) " -ForegroundColor Yellow -NoNewline
+                        Write-Host "  [PARADO]    $($t.PadRight(18)) " -ForegroundColor Yellow -NoNewline
                         Write-Host ":$($cfg.port) (porta fechada)" -ForegroundColor DarkGray
                     }
                 }
@@ -746,7 +1181,7 @@ function Invoke-Status {
         # --- Apenas o que esta rodando ---
         $anyRunning = $false
 
-        # Docker
+        # Docker infra
         $upContainers = @()
         foreach ($name in $script:infraNames) {
             $st = $docker[$name]
@@ -758,18 +1193,32 @@ function Invoke-Status {
             foreach ($name in $upContainers) {
                 $st = $docker[$name]
                 $ep = $script:infraEndpoints[$name]
-                Write-Host "  [UP]      $($name.PadRight(18)) " -ForegroundColor Green -NoNewline
+                Write-Host "  [UP]        $($name.PadRight(18)) " -ForegroundColor Green -NoNewline
                 Write-Host "$st" -ForegroundColor White
-                Write-Host "            $ep" -ForegroundColor DarkGray
+                Write-Host "              $ep" -ForegroundColor DarkGray
             }
             $anyRunning = $true
         }
 
-        # Servicos de aplicacao
+        # Servicos em container
+        if ($svcContainers.Count -gt 0) {
+            Write-Section "Servicos em Container"
+            foreach ($svcName in $svcContainers.Keys) {
+                $svcCfg = ($registry.services.PSObject.Properties | Where-Object { $_.Name -eq $svcName }).Value
+                $port = if ($svcCfg) { $svcCfg.port } else { '?' }
+                Write-Host "  [CONTAINER] $($svcName.PadRight(18)) " -ForegroundColor Magenta -NoNewline
+                Write-Host "http://localhost:$port" -ForegroundColor White
+                Write-Host "              $($svcContainers[$svcName])" -ForegroundColor DarkGray
+            }
+            $anyRunning = $true
+        }
+
+        # Servicos locais
         $runningSvcs = @()
         foreach ($prop in $registry.services.PSObject.Properties) {
             $name = $prop.Name
             $cfg  = $prop.Value
+            if ($svcContainers.ContainsKey($name)) { continue }
             if (-not (Test-ServiceReady -Name $name -Cfg $cfg)) { continue }
             if (Test-PortListening -Port $cfg.port) {
                 $runningSvcs += @{ Name = $name; Port = $cfg.port }
@@ -777,9 +1226,9 @@ function Invoke-Status {
         }
 
         if ($runningSvcs.Count -gt 0) {
-            Write-Section "Servicos de Aplicacao (rodando)"
+            Write-Section "Servicos Locais (rodando)"
             foreach ($svc in $runningSvcs) {
-                Write-Host "  [RODANDO] $($svc.Name.PadRight(18)) " -ForegroundColor Green -NoNewline
+                Write-Host "  [LOCAL]     $($svc.Name.PadRight(18)) " -ForegroundColor Green -NoNewline
                 Write-Host "http://localhost:$($svc.Port)" -ForegroundColor White
             }
             $anyRunning = $true
@@ -790,6 +1239,7 @@ function Invoke-Status {
             Write-Host ""
             Write-TIP "Suba a infra:     .\proj.ps1 infra"
             Write-TIP "Rode um servico:  .\proj.ps1 run svc-auth"
+            Write-TIP "Rode via container: .\proj.ps1 run -c svc-auth"
         }
     }
 
@@ -806,24 +1256,60 @@ function Invoke-Logs {
     Push-Location $repoRoot
     try {
         if (-not $Targets -or $Targets.Count -eq 0) {
-            Write-Header "Logs Docker (todos os containers)"
+            Write-Header "Logs Docker (infra)"
+            $svcContainers = Get-ServiceContainersStatus
+            if ($svcContainers.Count -gt 0) {
+                Write-GRAY "Servicos em container: $($svcContainers.Keys -join ', ')"
+                Write-GRAY "Use: .\proj.ps1 logs <nome-servico> para logs individuais"
+                Write-Host ""
+            }
             Write-GRAY "Ctrl+C para sair"
             Write-Host "  $("-" * 60)" -ForegroundColor DarkGray
             Write-Host ""
             docker compose logs -f --tail 50
         } else {
+            $infraTargets = @()
+            $svcTargets = @()
             foreach ($t in $Targets) {
-                if ($t -notin $script:infraNames) {
-                    Write-ERR "'$t' nao e um container de infra."
-                    Write-GRAY "Disponiveis: $($script:infraNames -join ', ')"
+                if ($t -in $script:infraNames) { $infraTargets += $t }
+                elseif ($registry.services.PSObject.Properties | Where-Object { $_.Name -eq $t }) { $svcTargets += $t }
+                else {
+                    Write-ERR "'$t' nao e um container de infra nem servico."
+                    Write-GRAY "Infra: $($script:infraNames -join ', ')"
+                    Write-GRAY "Servicos: $($registry.services.PSObject.Properties.Name -join ', ')"
                     return
                 }
             }
-            Write-Header "Logs: $($Targets -join ', ')"
-            Write-GRAY "Ctrl+C para sair"
-            Write-Host "  $("-" * 60)" -ForegroundColor DarkGray
-            Write-Host ""
-            docker compose logs -f --tail 50 @Targets
+
+            if ($svcTargets.Count -gt 0 -and $infraTargets.Count -gt 0) {
+                Write-ERR "Nao e possivel misturar logs de infra e servicos em container."
+                Write-GRAY "Execute em terminais separados."
+                return
+            }
+
+            if ($svcTargets.Count -eq 1) {
+                $containerName = Get-ServiceContainerName -Name $svcTargets[0]
+                if (-not (Test-ServiceContainerRunning -Name $svcTargets[0])) {
+                    Write-ERR "$($svcTargets[0]) nao esta rodando como container."
+                    Write-TIP "Inicie com: .\proj.ps1 run -c $($svcTargets[0])"
+                    return
+                }
+                Write-Header "Logs: $($svcTargets[0]) (container)"
+                Write-GRAY "Ctrl+C para sair"
+                Write-Host "  $("-" * 60)" -ForegroundColor DarkGray
+                Write-Host ""
+                docker logs -f --tail 50 $containerName
+            } elseif ($svcTargets.Count -gt 1) {
+                Write-ERR "Logs de servicos em container suporta apenas um por vez."
+                Write-GRAY "Use terminais separados: .\proj.ps1 logs $($svcTargets[0])"
+                return
+            } else {
+                Write-Header "Logs: $($infraTargets -join ', ')"
+                Write-GRAY "Ctrl+C para sair"
+                Write-Host "  $("-" * 60)" -ForegroundColor DarkGray
+                Write-Host ""
+                docker compose logs -f --tail 50 @infraTargets
+            }
         }
     } finally { Pop-Location }
 }
@@ -839,20 +1325,49 @@ function Invoke-Stop {
     Push-Location $repoRoot
     try {
         if ($Targets -and $Targets.Count -gt 0) {
+            $infraStops = @()
+            $svcStops = @()
             foreach ($t in $Targets) {
-                if ($t -notin $script:infraNames) {
-                    Write-ERR "'$t' nao e um container de infra."
-                    Write-GRAY "Disponiveis: $($script:infraNames -join ', ')"
-                    Write-GRAY "Para parar um servico de aplicacao, use Ctrl+C no terminal dele."
+                $type = Resolve-Target -Name $t
+                if ($type -eq "infra") { $infraStops += $t }
+                elseif ($type -eq "service") { $svcStops += $t }
+                else {
+                    Write-ERR "'$t' nao reconhecido."
                     return
                 }
             }
-            Write-Step 0 0 "Parando: $($Targets -join ', ')..."
-            docker compose stop @Targets
-            Write-Host ""
-            Write-OK "Parados: $($Targets -join ', ')"
+
+            if ($svcStops.Count -gt 0) {
+                foreach ($svc in $svcStops) {
+                    if (Test-ServiceContainerRunning -Name $svc) {
+                        Write-Step 0 0 "Parando container: $svc..."
+                        Stop-ServiceContainer -Name $svc
+                        Write-OK "$svc parado."
+                    } else {
+                        Write-GRAY "$svc nao esta rodando como container."
+                        Write-GRAY "Se esta rodando local, use Ctrl+C no terminal dele."
+                    }
+                }
+            }
+
+            if ($infraStops.Count -gt 0) {
+                Write-Step 0 0 "Parando infra: $($infraStops -join ', ')..."
+                docker compose stop @infraStops
+                Write-Host ""
+                Write-OK "Parados: $($infraStops -join ', ')"
+            }
         } else {
-            Write-Step 0 0 "Parando todos os containers..."
+            # Parar tudo: containers de servico + infra
+            $svcContainers = Get-ServiceContainersStatus
+            if ($svcContainers.Count -gt 0) {
+                Write-Step 0 0 "Parando containers de servico..."
+                foreach ($svc in $svcContainers.Keys) {
+                    Stop-ServiceContainer -Name $svc
+                }
+                Write-OK "Servicos parados: $($svcContainers.Keys -join ', ')"
+            }
+
+            Write-Step 0 0 "Parando todos os containers de infra..."
             docker compose stop
             Write-Host ""
             Write-OK "Todos containers parados."
@@ -877,20 +1392,47 @@ function Invoke-Down {
     Push-Location $repoRoot
     try {
         if ($Targets -and $Targets.Count -gt 0) {
+            $infraDowns = @()
+            $svcDowns = @()
             foreach ($t in $Targets) {
-                if ($t -notin $script:infraNames) {
-                    Write-ERR "'$t' nao e um container de infra."
-                    Write-GRAY "Disponiveis: $($script:infraNames -join ', ')"
+                $type = Resolve-Target -Name $t
+                if ($type -eq "infra") { $infraDowns += $t }
+                elseif ($type -eq "service") { $svcDowns += $t }
+                else {
+                    Write-ERR "'$t' nao reconhecido."
                     return
                 }
             }
-            Write-Step 0 0 "Parando e removendo: $($Targets -join ', ')..."
-            docker compose stop @Targets 2>$null
-            docker compose rm -f @Targets
-            Write-Host ""
-            Write-OK "Removidos: $($Targets -join ', ')"
+
+            if ($svcDowns.Count -gt 0) {
+                foreach ($svc in $svcDowns) {
+                    $containerName = Get-ServiceContainerName -Name $svc
+                    Write-Step 0 0 "Removendo container: $svc..."
+                    docker rm -f $containerName 2>$null | Out-Null
+                    Write-OK "$svc removido."
+                }
+            }
+
+            if ($infraDowns.Count -gt 0) {
+                Write-Step 0 0 "Parando e removendo infra: $($infraDowns -join ', ')..."
+                docker compose stop @infraDowns 2>$null
+                docker compose rm -f @infraDowns
+                Write-Host ""
+                Write-OK "Removidos: $($infraDowns -join ', ')"
+            }
         } else {
-            Write-Step 0 0 "Removendo todos os containers..."
+            # Remover tudo: containers de servico + infra
+            $svcContainers = Get-ServiceContainersStatus
+            if ($svcContainers.Count -gt 0) {
+                Write-Step 0 0 "Removendo containers de servico..."
+                foreach ($svc in $svcContainers.Keys) {
+                    $containerName = Get-ServiceContainerName -Name $svc
+                    docker rm -f $containerName 2>$null | Out-Null
+                }
+                Write-OK "Servicos removidos: $($svcContainers.Keys -join ', ')"
+            }
+
+            Write-Step 0 0 "Removendo todos os containers de infra..."
             docker compose down --remove-orphans
             Write-Host ""
             Write-OK "Todos containers removidos."
@@ -916,7 +1458,9 @@ function Show-Help {
     Write-Host ""
     Write-Host "  SERVICOS:" -ForegroundColor White
     Write-Host "    run    <svc...>    " -ForegroundColor Green -NoNewline
-    Write-Host "Roda com hot reload (dotnet watch / npm dev)" -ForegroundColor Gray
+    Write-Host "Roda local com hot reload (dotnet watch / npm dev)" -ForegroundColor Gray
+    Write-Host "    run -c <svc...>    " -ForegroundColor Green -NoNewline
+    Write-Host "Roda via container Docker (Dockerfile do servico)" -ForegroundColor Gray
     Write-Host "    attach [svcs...]   " -ForegroundColor Green -NoNewline
     Write-Host "Conecta debug ao processo ja rodando (F5)" -ForegroundColor Gray
     Write-Host "    list               " -ForegroundColor Green -NoNewline
@@ -924,45 +1468,530 @@ function Show-Help {
     Write-Host ""
     Write-Host "  INFRA DOCKER:" -ForegroundColor White
     Write-Host "    infra [nomes]      " -ForegroundColor Green -NoNewline
-    Write-Host "Sobe containers (todos ou especificos)" -ForegroundColor Gray
+    Write-Host "Sobe containers de infra (todos ou especificos)" -ForegroundColor Gray
     Write-Host "    logs  [nomes]      " -ForegroundColor Green -NoNewline
-    Write-Host "Logs Docker no terminal" -ForegroundColor Gray
+    Write-Host "Logs Docker (infra ou servico em container)" -ForegroundColor Gray
     Write-Host "    stop  [nomes]      " -ForegroundColor Green -NoNewline
-    Write-Host "Para containers (preserva estado)" -ForegroundColor Gray
+    Write-Host "Para containers (infra e/ou servicos)" -ForegroundColor Gray
     Write-Host "    down  [nomes]      " -ForegroundColor Green -NoNewline
-    Write-Host "Remove containers" -ForegroundColor Gray
+    Write-Host "Remove containers (infra e/ou servicos)" -ForegroundColor Gray
     Write-Host ""
     Write-Host "  DIAGNOSTICO:" -ForegroundColor White
     Write-Host "    status [itens]     " -ForegroundColor Green -NoNewline
     Write-Host "Saude do que esta rodando (ou itens especificos)" -ForegroundColor Gray
     Write-Host ""
-    Write-Host "  FLUXO RECOMENDADO (debug com hot reload):" -ForegroundColor DarkYellow
-    Write-Host "    1. .\proj.ps1 infra              " -ForegroundColor White -NoNewline
-    Write-Host "Sobe banco + observabilidade" -ForegroundColor DarkGray
-    Write-Host "    2. .\proj.ps1 run svc-auth        " -ForegroundColor White -NoNewline
-    Write-Host "Hot reload + logs no terminal" -ForegroundColor DarkGray
-    Write-Host "    3. .\proj.ps1 attach              " -ForegroundColor White -NoNewline
-    Write-Host "Detecta o que esta rodando e configura F5" -ForegroundColor DarkGray
-    Write-Host "    4. Ctrl+Shift+D -> Attach: Selected -> F5" -ForegroundColor White -NoNewline
-    Write-Host "  <- breakpoints ativos!" -ForegroundColor Green
+    Write-Host "  FLUXO LOCAL (debug com hot reload):" -ForegroundColor DarkYellow
+    Write-Host "    1. .\proj.ps1 run svc-auth        " -ForegroundColor White -NoNewline
+    Write-Host "Sobe infra + hot reload no terminal" -ForegroundColor DarkGray
+    Write-Host "    2. .\proj.ps1 attach              " -ForegroundColor White -NoNewline
+    Write-Host "Detecta rodando e configura F5" -ForegroundColor DarkGray
+    Write-Host "    3. Ctrl+Shift+D -> Attach: Selected -> F5" -ForegroundColor White -NoNewline
+    Write-Host "  <- breakpoints!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  FLUXO CONTAINER:" -ForegroundColor DarkYellow
+    Write-Host "    1. .\proj.ps1 run -c svc-auth     " -ForegroundColor White -NoNewline
+    Write-Host "Build Dockerfile + docker run" -ForegroundColor DarkGray
+    Write-Host "    2. .\proj.ps1 logs svc-auth       " -ForegroundColor White -NoNewline
+    Write-Host "Logs do container do servico" -ForegroundColor DarkGray
+    Write-Host "    3. .\proj.ps1 stop svc-auth       " -ForegroundColor White -NoNewline
+    Write-Host "Para o container do servico" -ForegroundColor DarkGray
+    Write-Host ""
+    Write-Host "  DEPENDENCIAS:" -ForegroundColor DarkYellow
+    Write-Host "    .\proj.ps1 run svc-orders         " -ForegroundColor White -NoNewline
+    Write-Host "Deps (svc-auth) sobem como container" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run svc-orders svc-auth " -ForegroundColor White -NoNewline
+    Write-Host "Ambos local, sem container extra" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  EXEMPLOS:" -ForegroundColor White
-    Write-Host "    .\proj.ps1 run svc-auth svc-catalog" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 attach                   " -ForegroundColor DarkGray -NoNewline
-    Write-Host "<- auto-detecta rodando" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 attach svc-auth svc-catalog" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run svc-auth" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run -c svc-auth svc-catalog" -ForegroundColor DarkGray
     Write-Host "    .\proj.ps1 infra postgres grafana" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 logs postgres" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 logs svc-auth" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 stop svc-auth" -ForegroundColor DarkGray
     Write-Host "    .\proj.ps1 status svc-auth postgres" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 stop otel-collector" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 down postgres" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  REFERENCIA:" -ForegroundColor DarkGray
-    Write-Host "    Portas:  " -ForegroundColor DarkGray -NoNewline
+    Write-Host "    Portas/Deps: " -ForegroundColor DarkGray -NoNewline
     Write-Host "infra/local/services.json" -ForegroundColor Cyan
-    Write-Host "    Debug:   " -ForegroundColor DarkGray -NoNewline
+    Write-Host "    Debug:       " -ForegroundColor DarkGray -NoNewline
     Write-Host "Ctrl+Shift+D -> selecione config -> F5" -ForegroundColor Cyan
-    Write-Host "    Logs:    " -ForegroundColor DarkGray -NoNewline
+    Write-Host "    Logs:        " -ForegroundColor DarkGray -NoNewline
+   Write-Host "  NOTA: ao salvar um arquivo, dotnet watch reinicia o processo." -ForegroundColor DarkGray
+    Write-Host "  Breakpoints desconectam no restart - pressione F5 para re-attach." -ForegroundColor DarkGray
+    Write-Host "  ============================================================" -ForegroundColor Magenta
+    Write-Footer
+}
+
+# ==============================================================================
+# Comando: list (inventario completo com status)
+# ==============================================================================
+
+function Invoke-List {
+    Write-Header "Inventario Completo"
+
+    $docker = Get-DockerStatus
+    $svcContainers = Get-ServiceContainersStatus
+
+    # --- Servicos ---
+    Write-Section "Servicos de Aplicacao"
+    Write-GRAY "Portas definidas em: infra/local/services.json"
+    Write-Host ""
+
+    foreach ($prop in $registry.services.PSObject.Properties) {
+        $name = $prop.Name
+        $cfg  = $prop.Value
+        $ready = Test-ServiceReady -Name $name -Cfg $cfg
+        $deps  = if ($cfg.depends -and $cfg.depends.Count -gt 0) { " deps:$($cfg.depends -join ',')" } else { "" }
+
+        if (-not $ready) {
+            Write-Host "  FUTURO    " -ForegroundColor DarkGray -NoNewline
+            Write-Host " $($name.PadRight(22)) $($cfg.type.PadRight(8)) :$($cfg.port)$deps" -ForegroundColor DarkGray
+            continue
+        }
+
+        $isContainer = $svcContainers.ContainsKey($name)
+        $running = Test-PortListening -Port $cfg.port
+
+        if ($isContainer) {
+            Write-Host "  CONTAINER " -ForegroundColor Magenta -NoNewline
+            Write-Host " $($name.PadRight(22)) " -ForegroundColor White -NoNewline
+            Write-Host "$($cfg.type.PadRight(8)) " -ForegroundColor White -NoNewline
+            Write-Host ":$($cfg.port)" -ForegroundColor Green
+        } elseif ($running) {
+            Write-Host "  LOCAL     " -ForegroundColor Green -NoNewline
+            Write-Host " $($name.PadRight(22)) " -ForegroundColor White -NoNewline
+            Write-Host "$($cfg.type.PadRight(8)) " -ForegroundColor White -NoNewline
+            Write-Host ":$($cfg.port)" -ForegroundColor Green
+        } else {
+            Write-Host "  PARADO    " -ForegroundColor Yellow -NoNewline
+            Write-Host " $($name.PadRight(22)) $($cfg.type.PadRight(8)) :$($cfg.port)$deps" -ForegroundColor White
+        }
+    }
+
+    # --- Infra ---
+    Write-Section "Infraestrutura Docker"
+
+    foreach ($name in $script:infraNames) {
+        $ep = $script:infraEndpoints[$name]
+        $st = $docker[$name]
+
+        if ($st -and $st -match "Up") {
+            Write-Host "  UP        " -ForegroundColor Green -NoNewline
+            Write-Host " $($name.PadRight(18)) " -ForegroundColor White -NoNewline
+            Write-Host "$ep" -ForegroundColor Cyan
+        } elseif ($st) {
+            Write-Host "  DOWN      " -ForegroundColor Yellow -NoNewline
+            Write-Host " $($name.PadRight(18)) $ep" -ForegroundColor DarkGray
+        } else {
+            Write-Host "  OFF       " -ForegroundColor DarkGray -NoNewline
+            Write-Host " $($name.PadRight(18)) $ep" -ForegroundColor DarkGray
+        }
+    }
+
+    Write-Footer
+}
+
+# ==============================================================================
+# Comando: status [itens]
+# Sem args  -> mostra SO o que esta rodando
+# Com args  -> mostra saude dos itens especificos
+# ==============================================================================
+
+function Invoke-Status {
+    param([string[]]$Targets)
+
+    Write-Header "Status"
+    $docker = Get-DockerStatus
+    $svcContainers = Get-ServiceContainersStatus
+
+    if ($Targets -and $Targets.Count -gt 0) {
+        # --- Itens especificos ---
+        foreach ($t in $Targets) {
+            $type = Resolve-Target -Name $t
+
+            switch ($type) {
+                "infra" {
+                    $st = $docker[$t]
+                    $ep = $script:infraEndpoints[$t]
+                    if ($st -and $st -match "Up") {
+                        Write-Host "  [UP]        $($t.PadRight(18)) " -ForegroundColor Green -NoNewline
+                        Write-Host "$st" -ForegroundColor White
+                        Write-Host "              $ep" -ForegroundColor DarkGray
+                    } elseif ($st) {
+                        Write-Host "  [DOWN]      $($t.PadRight(18)) " -ForegroundColor Yellow -NoNewline
+                        Write-Host "$st" -ForegroundColor White
+                    } else {
+                        Write-Host "  [OFF]       $($t.PadRight(18)) " -ForegroundColor DarkGray -NoNewline
+                        Write-Host "container nao existe / nao criado" -ForegroundColor DarkGray
+                    }
+                }
+                "service" {
+                    $cfg = Get-ServiceConfig -Name $t
+                    $ready = Test-ServiceReady -Name $t -Cfg $cfg
+                    $isContainer = $svcContainers.ContainsKey($t)
+                    $running = Test-PortListening -Port $cfg.port
+
+                    if ($isContainer) {
+                        Write-Host "  [CONTAINER] $($t.PadRight(18)) " -ForegroundColor Magenta -NoNewline
+                        Write-Host "http://localhost:$($cfg.port)" -ForegroundColor White
+                        Write-Host "              $($svcContainers[$t])" -ForegroundColor DarkGray
+                    } elseif ($running) {
+                        Write-Host "  [LOCAL]     $($t.PadRight(18)) " -ForegroundColor Green -NoNewline
+                        Write-Host "http://localhost:$($cfg.port)" -ForegroundColor White
+                    } elseif (-not $ready) {
+                        Write-Host "  [FUTURO]    $($t.PadRight(18)) " -ForegroundColor DarkGray -NoNewline
+                        Write-Host "codigo nao implementado" -ForegroundColor DarkGray
+                    } else {
+                        Write-Host "  [PARADO]    $($t.PadRight(18)) " -ForegroundColor Yellow -NoNewline
+                        Write-Host ":$($cfg.port) (porta fechada)" -ForegroundColor DarkGray
+                    }
+                }
+                default {
+                    Write-ERR "'$t' nao reconhecido. Use nome de servico ou container de infra."
+                    Write-GRAY "Servicos: $($registry.services.PSObject.Properties.Name -join ', ')"
+                    Write-GRAY "Infra: $($script:infraNames -join ', ')"
+                }
+            }
+        }
+    } else {
+        # --- Apenas o que esta rodando ---
+        $anyRunning = $false
+
+        # Docker infra
+        $upContainers = @()
+        foreach ($name in $script:infraNames) {
+            $st = $docker[$name]
+            if ($st -and $st -match "Up") { $upContainers += $name }
+        }
+
+        if ($upContainers.Count -gt 0) {
+            Write-Section "Docker (rodando)"
+            foreach ($name in $upContainers) {
+                $st = $docker[$name]
+                $ep = $script:infraEndpoints[$name]
+                Write-Host "  [UP]        $($name.PadRight(18)) " -ForegroundColor Green -NoNewline
+                Write-Host "$st" -ForegroundColor White
+                Write-Host "              $ep" -ForegroundColor DarkGray
+            }
+            $anyRunning = $true
+        }
+
+        # Servicos em container
+        if ($svcContainers.Count -gt 0) {
+            Write-Section "Servicos em Container"
+            foreach ($svcName in $svcContainers.Keys) {
+                $svcCfg = ($registry.services.PSObject.Properties | Where-Object { $_.Name -eq $svcName }).Value
+                $port = if ($svcCfg) { $svcCfg.port } else { '?' }
+                Write-Host "  [CONTAINER] $($svcName.PadRight(18)) " -ForegroundColor Magenta -NoNewline
+                Write-Host "http://localhost:$port" -ForegroundColor White
+                Write-Host "              $($svcContainers[$svcName])" -ForegroundColor DarkGray
+            }
+            $anyRunning = $true
+        }
+
+        # Servicos locais
+        $runningSvcs = @()
+        foreach ($prop in $registry.services.PSObject.Properties) {
+            $name = $prop.Name
+            $cfg  = $prop.Value
+            if ($svcContainers.ContainsKey($name)) { continue }
+            if (-not (Test-ServiceReady -Name $name -Cfg $cfg)) { continue }
+            if (Test-PortListening -Port $cfg.port) {
+                $runningSvcs += @{ Name = $name; Port = $cfg.port }
+            }
+        }
+
+        if ($runningSvcs.Count -gt 0) {
+            Write-Section "Servicos Locais (rodando)"
+            foreach ($svc in $runningSvcs) {
+                Write-Host "  [LOCAL]     $($svc.Name.PadRight(18)) " -ForegroundColor Green -NoNewline
+                Write-Host "http://localhost:$($svc.Port)" -ForegroundColor White
+            }
+            $anyRunning = $true
+        }
+
+        if (-not $anyRunning) {
+            Write-Host "  Nenhum servico ou container esta rodando." -ForegroundColor DarkGray
+            Write-Host ""
+            Write-TIP "Suba a infra:     .\proj.ps1 infra"
+            Write-TIP "Rode um servico:  .\proj.ps1 run svc-auth"
+            Write-TIP "Rode via container: .\proj.ps1 run -c svc-auth"
+        }
+    }
+
+    Write-Footer
+}
+
+# ==============================================================================
+# Comando: logs [nomes]
+# ==============================================================================
+
+function Invoke-Logs {
+    param([string[]]$Targets)
+
+    Push-Location $repoRoot
+    try {
+        if (-not $Targets -or $Targets.Count -eq 0) {
+            Write-Header "Logs Docker (infra)"
+            $svcContainers = Get-ServiceContainersStatus
+            if ($svcContainers.Count -gt 0) {
+                Write-GRAY "Servicos em container: $($svcContainers.Keys -join ', ')"
+                Write-GRAY "Use: .\proj.ps1 logs <nome-servico> para logs individuais"
+                Write-Host ""
+            }
+            Write-GRAY "Ctrl+C para sair"
+            Write-Host "  $("-" * 60)" -ForegroundColor DarkGray
+            Write-Host ""
+            docker compose logs -f --tail 50
+        } else {
+            $infraTargets = @()
+            $svcTargets = @()
+            foreach ($t in $Targets) {
+                if ($t -in $script:infraNames) { $infraTargets += $t }
+                elseif ($registry.services.PSObject.Properties | Where-Object { $_.Name -eq $t }) { $svcTargets += $t }
+                else {
+                    Write-ERR "'$t' nao e um container de infra nem servico."
+                    Write-GRAY "Infra: $($script:infraNames -join ', ')"
+                    Write-GRAY "Servicos: $($registry.services.PSObject.Properties.Name -join ', ')"
+                    return
+                }
+            }
+
+            if ($svcTargets.Count -gt 0 -and $infraTargets.Count -gt 0) {
+                Write-ERR "Nao e possivel misturar logs de infra e servicos em container."
+                Write-GRAY "Execute em terminais separados."
+                return
+            }
+
+            if ($svcTargets.Count -eq 1) {
+                $containerName = Get-ServiceContainerName -Name $svcTargets[0]
+                if (-not (Test-ServiceContainerRunning -Name $svcTargets[0])) {
+                    Write-ERR "$($svcTargets[0]) nao esta rodando como container."
+                    Write-TIP "Inicie com: .\proj.ps1 run -c $($svcTargets[0])"
+                    return
+                }
+                Write-Header "Logs: $($svcTargets[0]) (container)"
+                Write-GRAY "Ctrl+C para sair"
+                Write-Host "  $("-" * 60)" -ForegroundColor DarkGray
+                Write-Host ""
+                docker logs -f --tail 50 $containerName
+            } elseif ($svcTargets.Count -gt 1) {
+                Write-ERR "Logs de servicos em container suporta apenas um por vez."
+                Write-GRAY "Use terminais separados: .\proj.ps1 logs $($svcTargets[0])"
+                return
+            } else {
+                Write-Header "Logs: $($infraTargets -join ', ')"
+                Write-GRAY "Ctrl+C para sair"
+                Write-Host "  $("-" * 60)" -ForegroundColor DarkGray
+                Write-Host ""
+                docker compose logs -f --tail 50 @infraTargets
+            }
+        }
+    } finally { Pop-Location }
+}
+
+# ==============================================================================
+# Comando: stop [nomes]
+# ==============================================================================
+
+function Invoke-Stop {
+    param([string[]]$Targets)
+
+    Write-Header "Parando Containers"
+    Push-Location $repoRoot
+    try {
+        if ($Targets -and $Targets.Count -gt 0) {
+            $infraStops = @()
+            $svcStops = @()
+            foreach ($t in $Targets) {
+                $type = Resolve-Target -Name $t
+                if ($type -eq "infra") { $infraStops += $t }
+                elseif ($type -eq "service") { $svcStops += $t }
+                else {
+                    Write-ERR "'$t' nao reconhecido."
+                    return
+                }
+            }
+
+            if ($svcStops.Count -gt 0) {
+                foreach ($svc in $svcStops) {
+                    if (Test-ServiceContainerRunning -Name $svc) {
+                        Write-Step 0 0 "Parando container: $svc..."
+                        Stop-ServiceContainer -Name $svc
+                        Write-OK "$svc parado."
+                    } else {
+                        Write-GRAY "$svc nao esta rodando como container."
+                        Write-GRAY "Se esta rodando local, use Ctrl+C no terminal dele."
+                    }
+                }
+            }
+
+            if ($infraStops.Count -gt 0) {
+                Write-Step 0 0 "Parando infra: $($infraStops -join ', ')..."
+                docker compose stop @infraStops
+                Write-Host ""
+                Write-OK "Parados: $($infraStops -join ', ')"
+            }
+        } else {
+            # Parar tudo: containers de servico + infra
+            $svcContainers = Get-ServiceContainersStatus
+            if ($svcContainers.Count -gt 0) {
+                Write-Step 0 0 "Parando containers de servico..."
+                foreach ($svc in $svcContainers.Keys) {
+                    Stop-ServiceContainer -Name $svc
+                }
+                Write-OK "Servicos parados: $($svcContainers.Keys -join ', ')"
+            }
+
+            Write-Step 0 0 "Parando todos os containers de infra..."
+            docker compose stop
+            Write-Host ""
+            Write-OK "Todos containers parados."
+        }
+
+        Write-Host ""
+        Write-GRAY "Estado preservado. Dados do banco continuam intactos."
+        Write-TIP "Religar:  .\proj.ps1 infra"
+        Write-TIP "Remover:  .\proj.ps1 down"
+    } finally { Pop-Location }
+    Write-Footer
+}
+
+# ==============================================================================
+# Comando: down [nomes]
+# ==============================================================================
+
+function Invoke-Down {
+    param([string[]]$Targets)
+
+    Write-Header "Removendo Containers"
+    Push-Location $repoRoot
+    try {
+        if ($Targets -and $Targets.Count -gt 0) {
+            $infraDowns = @()
+            $svcDowns = @()
+            foreach ($t in $Targets) {
+                $type = Resolve-Target -Name $t
+                if ($type -eq "infra") { $infraDowns += $t }
+                elseif ($type -eq "service") { $svcDowns += $t }
+                else {
+                    Write-ERR "'$t' nao reconhecido."
+                    return
+                }
+            }
+
+            if ($svcDowns.Count -gt 0) {
+                foreach ($svc in $svcDowns) {
+                    $containerName = Get-ServiceContainerName -Name $svc
+                    Write-Step 0 0 "Removendo container: $svc..."
+                    docker rm -f $containerName 2>$null | Out-Null
+                    Write-OK "$svc removido."
+                }
+            }
+
+            if ($infraDowns.Count -gt 0) {
+                Write-Step 0 0 "Parando e removendo infra: $($infraDowns -join ', ')..."
+                docker compose stop @infraDowns 2>$null
+                docker compose rm -f @infraDowns
+                Write-Host ""
+                Write-OK "Removidos: $($infraDowns -join ', ')"
+            }
+        } else {
+            # Remover tudo: containers de servico + infra
+            $svcContainers = Get-ServiceContainersStatus
+            if ($svcContainers.Count -gt 0) {
+                Write-Step 0 0 "Removendo containers de servico..."
+                foreach ($svc in $svcContainers.Keys) {
+                    $containerName = Get-ServiceContainerName -Name $svc
+                    docker rm -f $containerName 2>$null | Out-Null
+                }
+                Write-OK "Servicos removidos: $($svcContainers.Keys -join ', ')"
+            }
+
+            Write-Step 0 0 "Removendo todos os containers de infra..."
+            docker compose down --remove-orphans
+            Write-Host ""
+            Write-OK "Todos containers removidos."
+        }
+
+        Write-Host ""
+        Write-GRAY "Volumes preservados (dados do banco continuam)."
+        Write-TIP "Recriar:  .\proj.ps1 infra"
+    } finally { Pop-Location }
+    Write-Footer
+}
+
+# ==============================================================================
+# Help
+# ==============================================================================
+
+function Show-Help {
+    $line = "=" * 60
+    Write-Host ""
+    Write-Host "  $line" -ForegroundColor DarkCyan
+    Write-Host "  FoodeApp | CLI de Desenvolvimento Local" -ForegroundColor Cyan
+    Write-Host "  $line" -ForegroundColor DarkCyan
+    Write-Host ""
+    Write-Host "  SERVICOS:" -ForegroundColor White
+    Write-Host "    run    <svc...>    " -ForegroundColor Green -NoNewline
+    Write-Host "Roda local com hot reload (dotnet watch / npm dev)" -ForegroundColor Gray
+    Write-Host "    run -c <svc...>    " -ForegroundColor Green -NoNewline
+    Write-Host "Roda via container Docker (Dockerfile do servico)" -ForegroundColor Gray
+    Write-Host "    attach [svcs...]   " -ForegroundColor Green -NoNewline
+    Write-Host "Conecta debug ao processo ja rodando (F5)" -ForegroundColor Gray
+    Write-Host "    list               " -ForegroundColor Green -NoNewline
+    Write-Host "Lista tudo com status e portas" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "  INFRA DOCKER:" -ForegroundColor White
+    Write-Host "    infra [nomes]      " -ForegroundColor Green -NoNewline
+    Write-Host "Sobe containers de infra (todos ou especificos)" -ForegroundColor Gray
+    Write-Host "    logs  [nomes]      " -ForegroundColor Green -NoNewline
+    Write-Host "Logs Docker (infra ou servico em container)" -ForegroundColor Gray
+    Write-Host "    stop  [nomes]      " -ForegroundColor Green -NoNewline
+    Write-Host "Para containers (infra e/ou servicos)" -ForegroundColor Gray
+    Write-Host "    down  [nomes]      " -ForegroundColor Green -NoNewline
+    Write-Host "Remove containers (infra e/ou servicos)" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "  DIAGNOSTICO:" -ForegroundColor White
+    Write-Host "    status [itens]     " -ForegroundColor Green -NoNewline
+    Write-Host "Saude do que esta rodando (ou itens especificos)" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "  FLUXO LOCAL (debug com hot reload):" -ForegroundColor DarkYellow
+    Write-Host "    1. .\proj.ps1 run svc-auth        " -ForegroundColor White -NoNewline
+    Write-Host "Sobe infra + hot reload no terminal" -ForegroundColor DarkGray
+    Write-Host "    2. .\proj.ps1 attach              " -ForegroundColor White -NoNewline
+    Write-Host "Detecta rodando e configura F5" -ForegroundColor DarkGray
+    Write-Host "    3. Ctrl+Shift+D -> Attach: Selected -> F5" -ForegroundColor White -NoNewline
+    Write-Host "  <- breakpoints!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "  FLUXO CONTAINER:" -ForegroundColor DarkYellow
+    Write-Host "    1. .\proj.ps1 run -c svc-auth     " -ForegroundColor White -NoNewline
+    Write-Host "Build Dockerfile + docker run" -ForegroundColor DarkGray
+    Write-Host "    2. .\proj.ps1 logs svc-auth       " -ForegroundColor White -NoNewline
+    Write-Host "Logs do container do servico" -ForegroundColor DarkGray
+    Write-Host "    3. .\proj.ps1 stop svc-auth       " -ForegroundColor White -NoNewline
+    Write-Host "Para o container do servico" -ForegroundColor DarkGray
+    Write-Host ""
+    Write-Host "  DEPENDENCIAS:" -ForegroundColor DarkYellow
+    Write-Host "    .\proj.ps1 run svc-orders         " -ForegroundColor White -NoNewline
+    Write-Host "Deps (svc-auth) sobem como container" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run svc-orders svc-auth " -ForegroundColor White -NoNewline
+    Write-Host "Ambos local, sem container extra" -ForegroundColor DarkGray
+    Write-Host ""
+    Write-Host "  EXEMPLOS:" -ForegroundColor White
+    Write-Host "    .\proj.ps1 run svc-auth" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run -c svc-auth svc-catalog" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 infra postgres grafana" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 logs svc-auth" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 stop svc-auth" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 status svc-auth postgres" -ForegroundColor DarkGray
+    Write-Host ""
+    Write-Host "  REFERENCIA:" -ForegroundColor DarkGray
+    Write-Host "    Portas/Deps: " -ForegroundColor DarkGray -NoNewline
+    Write-Host "infra/local/services.json" -ForegroundColor Cyan
+    Write-Host "    Debug:       " -ForegroundColor DarkGray -NoNewline
+    Write-Host "Ctrl+Shift+D -> selecione config -> F5" -ForegroundColor Cyan
+    Write-Host "    Logs:        " -ForegroundColor DarkGray -NoNewline
     Write-Host "Ctrl+Shift+P -> Tasks: Run Task -> logs: <nome>" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  $line" -ForegroundColor DarkCyan

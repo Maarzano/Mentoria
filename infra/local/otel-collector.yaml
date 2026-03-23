@@ -17,16 +17,6 @@ receivers:
       http:
         endpoint: 0.0.0.0:4318
 
-  # Scrape direto do /metrics do svc-auth (prometheus-net) como fonte extra
-  prometheus:
-    config:
-      scrape_configs:
-        - job_name: svc-auth-prometheusnet
-          scrape_interval: 15s
-          static_configs:
-            - targets: ['svc-auth:8080']
-          metrics_path: /metrics
-
 processors:
   batch:
     timeout: 1s
@@ -48,6 +38,10 @@ exporters:
     tls:
       insecure: true
 
+  # Logs → Loki via HTTP push API (Serilog → OTLP → Collector → Loki)
+  loki:
+    endpoint: http://loki:3100/loki/api/v1/push
+
   # Console para debug em dev
   debug:
     verbosity: basic
@@ -65,11 +59,11 @@ service:
       exporters: [otlp/tempo, debug]
 
     metrics:
-      receivers: [otlp, prometheus]
+      receivers: [otlp]
       processors: [memory_limiter, batch]
       exporters: [prometheus, debug]
 
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [debug]
+      exporters: [loki, debug]

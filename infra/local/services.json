@@ -6,6 +6,7 @@
             "path": "services/svc-auth",
             "entryProject": "src/FoodeApp.SvcAuth.Adapters.API/FoodeApp.SvcAuth.Adapters.API.csproj",
             "port": 8080,
+            "depends": [],
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:8080",
@@ -21,6 +22,7 @@
             "path": "services/svc-catalog",
             "entryProject": "src/FoodeApp.SvcCatalog.Adapters.API/FoodeApp.SvcCatalog.Adapters.API.csproj",
             "port": 8081,
+            "depends": ["svc-auth"],
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:8081",
@@ -36,6 +38,7 @@
             "path": "services/svc-establishments",
             "entryProject": "src/FoodeApp.SvcEstablishments.Adapters.API/FoodeApp.SvcEstablishments.Adapters.API.csproj",
             "port": 8082,
+            "depends": ["svc-auth"],
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:8082",
@@ -51,6 +54,7 @@
             "path": "services/svc-events",
             "entryProject": "src/FoodeApp.SvcEvents.Adapters.API/FoodeApp.SvcEvents.Adapters.API.csproj",
             "port": 8083,
+            "depends": ["svc-auth"],
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:8083",
@@ -66,6 +70,7 @@
             "path": "services/svc-location",
             "entryProject": "src/FoodeApp.SvcLocation.Adapters.API/FoodeApp.SvcLocation.Adapters.API.csproj",
             "port": 8084,
+            "depends": ["svc-auth"],
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:8084",
@@ -81,6 +86,7 @@
             "path": "services/svc-orders",
             "entryProject": "src/FoodeApp.SvcOrders.Adapters.API/FoodeApp.SvcOrders.Adapters.API.csproj",
             "port": 8085,
+            "depends": ["svc-auth"],
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:8085",
@@ -96,6 +102,7 @@
             "path": "services/svc-notifications",
             "entryProject": "src/FoodeApp.SvcNotifications.Adapters.API/FoodeApp.SvcNotifications.Adapters.API.csproj",
             "port": 8086,
+            "depends": ["svc-auth"],
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:8086",
@@ -111,6 +118,7 @@
             "path": "services/svc-payments",
             "entryProject": "src/FoodeApp.SvcPayments.Adapters.API/FoodeApp.SvcPayments.Adapters.API.csproj",
             "port": 8087,
+            "depends": ["svc-auth", "svc-orders"],
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:8087",
@@ -126,6 +134,7 @@
             "path": "apps/bff-web",
             "entryProject": "src/FoodeApp.BffWeb.API/FoodeApp.BffWeb.API.csproj",
             "port": 8090,
+            "depends": ["svc-auth", "svc-catalog", "svc-establishments", "svc-orders"],
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:8090",
@@ -140,6 +149,7 @@
             "path": "apps/bff-mobile",
             "entryProject": "src/FoodeApp.BffMobile.API/FoodeApp.BffMobile.API.csproj",
             "port": 8091,
+            "depends": ["svc-auth", "svc-catalog", "svc-establishments", "svc-orders"],
             "env": {
                 "ASPNETCORE_ENVIRONMENT": "Development",
                 "ASPNETCORE_URLS": "http://localhost:8091",
@@ -154,6 +164,7 @@
             "path": "apps/web",
             "entryProject": "package.json",
             "port": 3001,
+            "depends": ["bff-web"],
             "env": {
                 "PORT": "3001",
                 "REACT_APP_API_URL": "http://localhost:8090"
@@ -165,6 +176,7 @@
             "path": "apps/mobile",
             "entryProject": "package.json",
             "port": 19000,
+            "depends": ["bff-mobile"],
             "env": {
                 "EXPO_DEVTOOLS_LISTEN_ADDRESS": "0.0.0.0",
                 "REACT_NATIVE_API_URL": "http://localhost:8091"

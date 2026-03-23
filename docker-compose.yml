@@ -34,6 +34,8 @@ services:
     image: otel/opentelemetry-collector-contrib:0.119.0
     container_name: foodeapp-otel-collector
     command: ["--config=/etc/otel/otel-collector.yaml"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./infra/local/otel-collector.yaml:/etc/otel/otel-collector.yaml:ro
     ports:
@@ -43,15 +45,21 @@ services:
       - "13133:13133"  # Health check do collector
     depends_on:
       - tempo
+      - loki
 
   prometheus:
     image: prom/prometheus:v3.1.0
     container_name: foodeapp-prometheus
     user: "0:0"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command:
       - "--config.file=/etc/prometheus/prometheus.yaml"
       - "--storage.tsdb.path=/data"
+      - "--storage.tsdb.retention.time=24h"
       - "--web.enable-lifecycle"
+      - "--web.enable-remote-write-receiver"   # Recebe métricas do Tempo metrics_generator
+      - "--enable-feature=exemplar-storage"     # Armazena exemplars (links trace → métrica)
     volumes:
       - ./infra/local/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
       - prometheus_data:/data
@@ -102,6 +110,8 @@ services:
       GF_AUTH_DISABLE_LOGIN_FORM: "true"
     volumes:
       - ./infra/local/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
+      - ./infra/local/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
+      - ./infra/local/dashboards:/var/lib/grafana/dashboards:ro
       - grafana_data:/var/lib/grafana
     ports:
       - "3000:3000"

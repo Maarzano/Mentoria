@@ -1,6 +1,11 @@
 ################################################################################
 # Grafana — Datasources provisionados automaticamente (local dev)
-# ADR-018: Grafana consolida métricas (Prometheus) e traces (Tempo)
+# ADR-018: Grafana consolida métricas (Prometheus), traces (Tempo) e logs (Loki)
+#
+# Correlações configuradas:
+#   Tempo → Prometheus: métricas derivadas dos traces (service graph, span metrics)
+#   Tempo → Loki: logs correlacionados via traceId
+#   Loki  → Tempo: link de traceId no log → trace completo
 ################################################################################
 
 apiVersion: 1
@@ -12,6 +17,10 @@ datasources:
     url: http://prometheus:9090
     isDefault: true
     editable: true
+    jsonData:
+      exemplarTraceIdDestinations:
+        - name: traceID
+          datasourceUid: tempo
 
   - name: Loki
     type: loki
@@ -19,6 +28,18 @@ datasources:
     url: http://loki:3100
     editable: true
     isDefault: false
+    jsonData:
+      derivedFields:
+        - name: TraceId
+          matcherRegex: '"TraceId":"(\w+)"'
+          url: "$${__value.raw}"
+          datasourceUid: tempo
+          matcherType: regex
+        - name: traceID
+          matcherRegex: 'traceID=(\w+)'
+          url: "$${__value.raw}"
+          datasourceUid: tempo
+          matcherType: regex
 
   - name: Tempo
     type: tempo
@@ -30,6 +51,22 @@ datasources:
         datasourceUid: prometheus
         spanStartTimeShift: "-2m"
         spanEndTimeShift: "2m"
+        tags:
+          - key: service.name
+            value: service
+          - key: http.method
+          - key: http.route
+          - key: http.status_code
+          - key: db.system
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: "-1m"
+        spanEndTimeShift: "1m"
+        filterByTraceID: true
+        filterBySpanID: false
+        tags:
+          - key: service.name
+            value: service
       serviceMap:
         datasourceUid: prometheus
       nodeGraph:

@@ -1,0 +1,18 @@
+################################################################################
+# Grafana — Dashboard Provisioning (local dev)
+# ADR-018: Dashboards carregados automaticamente do diretório local
+################################################################################
+
+apiVersion: 1
+
+providers:
+  - name: 'FoodeApp'
+    orgId: 1
+    folder: 'FoodeApp'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false
