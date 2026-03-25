@@ -1,0 +1,128 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        // ==========================================
+        // Infra Docker
+        // ==========================================
+        {
+            "label": "infra: ensure",
+            "type": "shell",
+            "command": "powershell",
+            "args": ["-NoProfile", "-File", "${workspaceFolder}/proj.ps1", "infra"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "silent", "panel": "shared", "close": true },
+            "problemMatcher": [],
+            "runOptions": { "instanceLimit": 1 }
+        },
+        {
+            "label": "infra: stop",
+            "type": "shell",
+            "command": "powershell",
+            "args": ["-NoProfile", "-File", "${workspaceFolder}/proj.ps1", "stop"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        {
+            "label": "infra: down",
+            "type": "shell",
+            "command": "powershell",
+            "args": ["-NoProfile", "-File", "${workspaceFolder}/proj.ps1", "down"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        // ==========================================
+        // Status
+        // ==========================================
+        {
+            "label": "status: check",
+            "type": "shell",
+            "command": "powershell",
+            "args": ["-NoProfile", "-File", "${workspaceFolder}/proj.ps1", "status"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "shared" },
+            "problemMatcher": []
+        },
+        // ==========================================
+        // Docker Logs (terminal dedicado por container)
+        // ==========================================
+        {
+            "label": "logs: all infra",
+            "type": "shell",
+            "command": "docker",
+            "args": ["compose", "logs", "-f", "--tail", "100"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "dedicated", "group": "docker-logs" },
+            "isBackground": true,
+            "problemMatcher": [],
+            "runOptions": { "instanceLimit": 1 }
+        },
+        {
+            "label": "logs: postgres",
+            "type": "shell",
+            "command": "docker",
+            "args": ["compose", "logs", "-f", "--tail", "100", "postgres"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "dedicated", "group": "docker-logs" },
+            "isBackground": true,
+            "problemMatcher": [],
+            "runOptions": { "instanceLimit": 1 }
+        },
+        {
+            "label": "logs: otel-collector",
+            "type": "shell",
+            "command": "docker",
+            "args": ["compose", "logs", "-f", "--tail", "100", "otel-collector"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "dedicated", "group": "docker-logs" },
+            "isBackground": true,
+            "problemMatcher": [],
+            "runOptions": { "instanceLimit": 1 }
+        },
+        {
+            "label": "logs: grafana",
+            "type": "shell",
+            "command": "docker",
+            "args": ["compose", "logs", "-f", "--tail", "100", "grafana"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "dedicated", "group": "docker-logs" },
+            "isBackground": true,
+            "problemMatcher": [],
+            "runOptions": { "instanceLimit": 1 }
+        },
+        {
+            "label": "logs: tempo",
+            "type": "shell",
+            "command": "docker",
+            "args": ["compose", "logs", "-f", "--tail", "100", "tempo"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "dedicated", "group": "docker-logs" },
+            "isBackground": true,
+            "problemMatcher": [],
+            "runOptions": { "instanceLimit": 1 }
+        },
+        {
+            "label": "logs: loki",
+            "type": "shell",
+            "command": "docker",
+            "args": ["compose", "logs", "-f", "--tail", "100", "loki"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "dedicated", "group": "docker-logs" },
+            "isBackground": true,
+            "problemMatcher": [],
+            "runOptions": { "instanceLimit": 1 }
+        },
+        {
+            "label": "logs: prometheus",
+            "type": "shell",
+            "command": "docker",
+            "args": ["compose", "logs", "-f", "--tail", "100", "prometheus"],
+            "options": { "cwd": "${workspaceFolder}" },
+            "presentation": { "reveal": "always", "panel": "dedicated", "group": "docker-logs" },
+            "isBackground": true,
+            "problemMatcher": [],
+            "runOptions": { "instanceLimit": 1 }
+        },
+    ]
+}

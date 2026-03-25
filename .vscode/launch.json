@@ -1,0 +1,120 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+
+        // =====================================================================
+        // ATTACH  — conecta ao processo JA RODANDO (via proj.ps1 run)
+        // Fluxo:
+        //   1. .\proj.ps1 run svc-auth      <- inicia o servico
+        //   2. .\proj.ps1 attach            <- detecta o que esta rodando
+        //   3. Ctrl+Shift+D -> "Attach: Selected" -> F5  <- debug ativo
+        //
+        // Ou individualmente:
+        //   Ctrl+Shift+D -> "Attach: svc-auth" -> F5
+        //
+        // NOTA: dotnet watch reinicia o processo ao salvar.
+        // Quando isso ocorrer, re-pressione F5 para re-attach.
+        // =====================================================================
+
+        {
+            "name": "Attach: svc-auth",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "FoodeApp.SvcAuth",
+            "justMyCode": false
+        },
+        {
+            "name": "Attach: svc-catalog",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "FoodeApp.SvcCatalog",
+            "justMyCode": false
+        },
+        {
+            "name": "Attach: svc-establishments",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "FoodeApp.SvcEstablishments",
+            "justMyCode": false
+        },
+        {
+            "name": "Attach: svc-events",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "FoodeApp.SvcEvents",
+            "justMyCode": false
+        },
+        {
+            "name": "Attach: svc-location",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "FoodeApp.SvcLocation",
+            "justMyCode": false
+        },
+        {
+            "name": "Attach: svc-orders",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "FoodeApp.SvcOrders",
+            "justMyCode": false
+        },
+        {
+            "name": "Attach: svc-notifications",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "FoodeApp.SvcNotifications",
+            "justMyCode": false
+        },
+        {
+            "name": "Attach: svc-payments",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "FoodeApp.SvcPayments",
+            "justMyCode": false
+        },
+        {
+            "name": "Attach: bff-web",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "FoodeApp.BffWeb",
+            "justMyCode": false
+        },
+        {
+            "name": "Attach: bff-mobile",
+            "type": "coreclr",
+            "request": "attach",
+            "processName": "FoodeApp.BffMobile",
+            "justMyCode": false
+        }
+
+    ],
+    "compounds": [
+
+        // =====================================================================
+        // ATTACH COMPOUNDS — atualizado automaticamente por:
+        //   .\proj.ps1 run <svcs>     (ao iniciar servicos)
+        //   .\proj.ps1 attach         (deteccao automatica)
+        // =====================================================================
+        {
+            "name": "Attach: Selected",
+            "configurations": ["Attach: svc-auth"],
+            "stopAll": true
+        },
+        {
+            "name": "Attach: All Backend",
+            "configurations": [
+                "Attach: svc-auth",
+                "Attach: svc-catalog",
+                "Attach: svc-establishments",
+                "Attach: svc-events",
+                "Attach: svc-location",
+                "Attach: svc-orders",
+                "Attach: svc-notifications",
+                "Attach: svc-payments",
+                "Attach: bff-web",
+                "Attach: bff-mobile"
+            ],
+            "stopAll": true
+        }
+    ]
+}

@@ -32,8 +32,6 @@ docker-compose.override.yml
 *.local.yml
 
 # IDE and OS
-.vs/
-.vscode/
 .idea/
 *.swp
 *.tmp
