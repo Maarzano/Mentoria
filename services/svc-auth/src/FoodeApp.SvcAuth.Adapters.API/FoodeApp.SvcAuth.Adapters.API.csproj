@@ -14,23 +14,11 @@
     <PackageReference Include="MediatR" Version="12.4.1" />
     <!-- OpenAPI/Swagger para desenvolvimento local -->
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
-    <!-- Prometheus /metrics — scraping direto pelo Prometheus (ADR-018) -->
-    <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
-    <!-- ADR-018: Logging estruturado — JSON para Loki + OTLP para OTel Collector -->
-    <PackageReference Include="Serilog" Version="4.3.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-    <PackageReference Include="Serilog.Formatting.Compact" Version="2.0.0" />
-    <PackageReference Include="Serilog.Sinks.OpenTelemetry" Version="4.2.0" />
-    <!-- ADR-018: OpenTelemetry — traces + métricas para o OTel Collector -->
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.11.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.11.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.10.0" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.11.0" />
-    <!-- ADR-018: Npgsql OpenTelemetry — traces + métricas de queries SQL -->
-    <PackageReference Include="Npgsql.OpenTelemetry" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Shared Kernel — Settings (IOptions<T>), Observability, Database extensions -->
+    <ProjectReference Include="..\..\..\..\shared\kernel-dotnet\src\FoodeApp.Kernel\FoodeApp.Kernel.csproj" />
     <!-- Adapters referenciados aqui somente para wiring de DI no Program.cs -->
     <ProjectReference Include="..\FoodeApp.SvcAuth.Application\FoodeApp.SvcAuth.Application.csproj" />
     <ProjectReference Include="..\FoodeApp.SvcAuth.Adapters.Data\FoodeApp.SvcAuth.Adapters.Data.csproj" />

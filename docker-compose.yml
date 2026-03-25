@@ -13,18 +13,18 @@ services:
       - -c
       - log_line_prefix=%t [%p] %u@%d 
     environment:
-      POSTGRES_DB: foodeapp_auth
-      POSTGRES_USER: pgadmin
-      POSTGRES_PASSWORD: pgadmin123
+      POSTGRES_DB: ${POSTGRES_DB_AUTH}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U pgadmin -d foodeapp_auth"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_AUTH}"]
       interval: 5s
       timeout: 5s
       retries: 20
     volumes:
       - foodeapp_postgres_auth_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
 
   # ── Observabilidade local (ADR-018) ────────────────────────────────────────
   # Para modo DEV LOCAL: svc-auth roda nativo via dotnet run/watch (não container)
@@ -39,10 +39,10 @@ services:
     volumes:
       - ./infra/local/otel-collector.yaml:/etc/otel/otel-collector.yaml:ro
     ports:
-      - "4317:4317"    # OTLP gRPC
-      - "4318:4318"    # OTLP HTTP
-      - "8889:8889"    # Prometheus exporter (o Prometheus faz scraping aqui)
-      - "13133:13133"  # Health check do collector
+      - "${OTEL_GRPC_PORT:-4317}:4317"    # OTLP gRPC
+      - "${OTEL_HTTP_PORT:-4318}:4318"    # OTLP HTTP
+      - "8889:8889"                       # Prometheus exporter (o Prometheus faz scraping aqui)
+      - "13133:13133"                     # Health check do collector
     depends_on:
       - tempo
       - loki
@@ -59,12 +59,12 @@ services:
       - "--storage.tsdb.retention.time=24h"
       - "--web.enable-lifecycle"
       - "--web.enable-remote-write-receiver"   # Recebe métricas do Tempo metrics_generator
-      - "--enable-feature=exemplar-storage"     # Armazena exemplars (links trace → métrica)
+      - "--enable-feature=exemplar-storage"    # Armazena exemplars (links trace → métrica)
     volumes:
       - ./infra/local/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
       - prometheus_data:/data
     ports:
-      - "9090:9090"
+      - "${PROMETHEUS_PORT:-9090}:9090"
     depends_on:
       - otel-collector
 
@@ -77,7 +77,7 @@ services:
       - ./infra/local/tempo.yaml:/etc/tempo/tempo.yaml:ro
       - tempo_data:/tmp/tempo
     ports:
-      - "3200:3200"    # Tempo HTTP (Grafana consulta aqui)
+      - "${TEMPO_PORT:-3200}:3200"    # Tempo HTTP (Grafana consulta aqui)
 
   loki:
     image: grafana/loki:2.9.7
@@ -88,7 +88,7 @@ services:
       - ./infra/local/loki-config.yaml:/etc/loki/local-config.yaml:ro
       - loki_data:/tmp/loki
     ports:
-      - "3100:3100"
+      - "${LOKI_PORT:-3100}:3100"
 
   promtail:
     image: grafana/promtail:3.0.0
@@ -114,7 +114,7 @@ services:
       - ./infra/local/dashboards:/var/lib/grafana/dashboards:ro
       - grafana_data:/var/lib/grafana
     ports:
-      - "3000:3000"
+      - "${GRAFANA_PORT:-3000}:3000"
     depends_on:
       - prometheus
       - tempo

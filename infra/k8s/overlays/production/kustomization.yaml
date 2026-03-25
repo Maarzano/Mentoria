@@ -92,6 +92,8 @@ configMapGenerator:
       # Preencher após terraform apply:
       #   terraform output -chdir=infra/terraform/envs/production postgres_fqdn
       - POSTGRES_HOST=REPLACE_WITH_POSTGRES_FQDN
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=pgadmin
       # terraform output -chdir=infra/terraform/envs/production redis_hostname
       - REDIS_HOST=REPLACE_WITH_REDIS_HOST
       - RABBITMQ_HOST=rabbitmq.foodeapp-system.svc.cluster.local

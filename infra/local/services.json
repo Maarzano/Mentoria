@@ -6,15 +6,8 @@
             "path": "services/svc-auth",
             "entryProject": "src/FoodeApp.SvcAuth.Adapters.API/FoodeApp.SvcAuth.Adapters.API.csproj",
             "port": 8080,
-            "depends": [],
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8080",
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
-                "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-                "OTEL_SERVICE_NAME": "svc-auth",
-                "ConnectionStrings__Default": "Host=localhost;Port=5432;Database=foodeapp_auth;Username=pgadmin;Password=pgadmin123;Pooling=true"
-            }
+            "database": "POSTGRES_DB_AUTH",
+            "depends": []
         },
         "svc-catalog": {
             "type": "dotnet",
@@ -22,15 +15,8 @@
             "path": "services/svc-catalog",
             "entryProject": "src/FoodeApp.SvcCatalog.Adapters.API/FoodeApp.SvcCatalog.Adapters.API.csproj",
             "port": 8081,
-            "depends": ["svc-auth"],
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8081",
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
-                "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-                "OTEL_SERVICE_NAME": "svc-catalog",
-                "ConnectionStrings__Default": "Host=localhost;Port=5432;Database=foodeapp_auth;Username=pgadmin;Password=pgadmin123;Pooling=true"
-            }
+            "database": "POSTGRES_DB_CATALOG",
+            "depends": ["svc-auth"]
         },
         "svc-establishments": {
             "type": "dotnet",
@@ -38,15 +24,8 @@
             "path": "services/svc-establishments",
             "entryProject": "src/FoodeApp.SvcEstablishments.Adapters.API/FoodeApp.SvcEstablishments.Adapters.API.csproj",
             "port": 8082,
-            "depends": ["svc-auth"],
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8082",
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
-                "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-                "OTEL_SERVICE_NAME": "svc-establishments",
-                "ConnectionStrings__Default": "Host=localhost;Port=5432;Database=foodeapp_auth;Username=pgadmin;Password=pgadmin123;Pooling=true"
-            }
+            "database": "POSTGRES_DB_ESTABLISHMENTS",
+            "depends": ["svc-auth"]
         },
         "svc-events": {
             "type": "dotnet",
@@ -54,15 +33,8 @@
             "path": "services/svc-events",
             "entryProject": "src/FoodeApp.SvcEvents.Adapters.API/FoodeApp.SvcEvents.Adapters.API.csproj",
             "port": 8083,
-            "depends": ["svc-auth"],
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8083",
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
-                "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-                "OTEL_SERVICE_NAME": "svc-events",
-                "ConnectionStrings__Default": "Host=localhost;Port=5432;Database=foodeapp_auth;Username=pgadmin;Password=pgadmin123;Pooling=true"
-            }
+            "database": "POSTGRES_DB_EVENTS",
+            "depends": ["svc-auth"]
         },
         "svc-location": {
             "type": "dotnet",
@@ -70,15 +42,8 @@
             "path": "services/svc-location",
             "entryProject": "src/FoodeApp.SvcLocation.Adapters.API/FoodeApp.SvcLocation.Adapters.API.csproj",
             "port": 8084,
-            "depends": ["svc-auth"],
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8084",
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
-                "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-                "OTEL_SERVICE_NAME": "svc-location",
-                "ConnectionStrings__Default": "Host=localhost;Port=5432;Database=foodeapp_auth;Username=pgadmin;Password=pgadmin123;Pooling=true"
-            }
+            "database": "POSTGRES_DB_LOCATIONS",
+            "depends": ["svc-auth"]
         },
         "svc-orders": {
             "type": "dotnet",
@@ -86,15 +51,8 @@
             "path": "services/svc-orders",
             "entryProject": "src/FoodeApp.SvcOrders.Adapters.API/FoodeApp.SvcOrders.Adapters.API.csproj",
             "port": 8085,
-            "depends": ["svc-auth"],
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8085",
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
-                "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-                "OTEL_SERVICE_NAME": "svc-orders",
-                "ConnectionStrings__Default": "Host=localhost;Port=5432;Database=foodeapp_auth;Username=pgadmin;Password=pgadmin123;Pooling=true"
-            }
+            "database": "POSTGRES_DB_ORDERS",
+            "depends": ["svc-auth"]
         },
         "svc-notifications": {
             "type": "dotnet",
@@ -102,15 +60,8 @@
             "path": "services/svc-notifications",
             "entryProject": "src/FoodeApp.SvcNotifications.Adapters.API/FoodeApp.SvcNotifications.Adapters.API.csproj",
             "port": 8086,
-            "depends": ["svc-auth"],
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8086",
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
-                "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-                "OTEL_SERVICE_NAME": "svc-notifications",
-                "ConnectionStrings__Default": "Host=localhost;Port=5432;Database=foodeapp_auth;Username=pgadmin;Password=pgadmin123;Pooling=true"
-            }
+            "database": "POSTGRES_DB_NOTIFICATIONS",
+            "depends": ["svc-auth"]
         },
         "svc-payments": {
             "type": "dotnet",
@@ -118,15 +69,8 @@
             "path": "services/svc-payments",
             "entryProject": "src/FoodeApp.SvcPayments.Adapters.API/FoodeApp.SvcPayments.Adapters.API.csproj",
             "port": 8087,
-            "depends": ["svc-auth", "svc-orders"],
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8087",
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
-                "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-                "OTEL_SERVICE_NAME": "svc-payments",
-                "ConnectionStrings__Default": "Host=localhost;Port=5432;Database=foodeapp_auth;Username=pgadmin;Password=pgadmin123;Pooling=true"
-            }
+            "database": "POSTGRES_DB_PAYMENTS",
+            "depends": ["svc-auth", "svc-orders"]
         },
         "bff-web": {
             "type": "dotnet",
@@ -134,14 +78,7 @@
             "path": "apps/bff-web",
             "entryProject": "src/FoodeApp.BffWeb.API/FoodeApp.BffWeb.API.csproj",
             "port": 8090,
-            "depends": ["svc-auth", "svc-catalog", "svc-establishments", "svc-orders"],
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8090",
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
-                "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-                "OTEL_SERVICE_NAME": "bff-web"
-            }
+            "depends": ["svc-auth", "svc-catalog", "svc-establishments", "svc-orders"]
         },
         "bff-mobile": {
             "type": "dotnet",
@@ -149,14 +86,7 @@
             "path": "apps/bff-mobile",
             "entryProject": "src/FoodeApp.BffMobile.API/FoodeApp.BffMobile.API.csproj",
             "port": 8091,
-            "depends": ["svc-auth", "svc-catalog", "svc-establishments", "svc-orders"],
-            "env": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-                "ASPNETCORE_URLS": "http://localhost:8091",
-                "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4318",
-                "OTEL_EXPORTER_OTLP_PROTOCOL": "http/protobuf",
-                "OTEL_SERVICE_NAME": "bff-mobile"
-            }
+            "depends": ["svc-auth", "svc-catalog", "svc-establishments", "svc-orders"]
         },
         "web": {
             "type": "node",
@@ -164,11 +94,7 @@
             "path": "apps/web",
             "entryProject": "package.json",
             "port": 3001,
-            "depends": ["bff-web"],
-            "env": {
-                "PORT": "3001",
-                "REACT_APP_API_URL": "http://localhost:8090"
-            }
+            "depends": ["bff-web"]
         },
         "mobile": {
             "type": "node",
@@ -176,11 +102,7 @@
             "path": "apps/mobile",
             "entryProject": "package.json",
             "port": 19000,
-            "depends": ["bff-mobile"],
-            "env": {
-                "EXPO_DEVTOOLS_LISTEN_ADDRESS": "0.0.0.0",
-                "REACT_NATIVE_API_URL": "http://localhost:8091"
-            }
+            "depends": ["bff-mobile"]
         }
     }
 }

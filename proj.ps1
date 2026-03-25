@@ -44,6 +44,123 @@ if (-not (Test-Path $registryPath)) {
 }
 $registry = Get-Content $registryPath -Raw -Encoding UTF8 | ConvertFrom-Json
 
+# ==============================================================================
+# .env — Fonte unica de variaveis para dev local
+# ==============================================================================
+
+function Import-DotEnv {
+    param([string]$EnvFilePath)
+    $values = @{}
+    if (-not (Test-Path $EnvFilePath)) { return $values }
+    foreach ($line in (Get-Content $EnvFilePath -Encoding UTF8)) {
+        $trimmed = $line.Trim()
+        if (-not $trimmed -or $trimmed.StartsWith("#")) { continue }
+        $eqIdx = $trimmed.IndexOf("=")
+        if ($eqIdx -le 0) { continue }
+        $key = $trimmed.Substring(0, $eqIdx).Trim()
+        $val = $trimmed.Substring($eqIdx + 1).Trim()
+        $values[$key] = $val
+    }
+    return $values
+}
+
+function Get-ConfigValue {
+    param([string]$Key)
+    if ($script:DotEnv.ContainsKey($Key)) { return $script:DotEnv[$Key] }
+    return $null
+}
+
+function Assert-RequiredEnvVars {
+    $missing = @()
+    $secrets = @("POSTGRES_USER", "POSTGRES_PASSWORD")
+    foreach ($s in $secrets) {
+        if (-not (Get-ConfigValue -Key $s)) {
+            $missing += $s
+        }
+    }
+    if ($missing.Count -gt 0) {
+        Write-Host ""
+        Write-Host "  [ERRO] Variaveis obrigatorias nao definidas:" -ForegroundColor Red
+        foreach ($m in $missing) {
+            Write-Host "         - $m" -ForegroundColor Red
+        }
+        Write-Host ""
+        Write-Host "  Portas fazem fallback para services.json; credenciais exigem .env." -ForegroundColor Yellow
+        Write-Host "  Crie o arquivo .env na raiz do projeto (copie de .env.example)." -ForegroundColor Yellow
+        Write-Host ""
+        exit 1
+    }
+}
+
+$script:DotEnv = Import-DotEnv -EnvFilePath (Join-Path $repoRoot ".env")
+
+# Helper: resolve porta do servico a partir do .env, com fallback para services.json
+function Get-ServicePort {
+    param([string]$Name, [PSObject]$Cfg)
+    $envKey = ($Name -replace '-', '_').ToUpper() + "_PORT"
+    $envVal = Get-ConfigValue -Key $envKey
+    if ($envVal) { return [int]$envVal }
+    return $Cfg.port
+}
+
+# Helper: monta env vars para um servico .NET a partir do .env centralizado
+function Build-ServiceEnv {
+    param([string]$Name, [PSObject]$Cfg)
+
+    $port = Get-ServicePort -Name $Name -Cfg $Cfg
+
+    $env = @{
+        "ASPNETCORE_ENVIRONMENT" = "Development"
+        "ASPNETCORE_URLS"        = "http://localhost:$port"
+        "OTEL_EXPORTER_OTLP_ENDPOINT" = (Get-ConfigValue -Key "OTEL_EXPORTER_OTLP_ENDPOINT")
+        "OTEL_EXPORTER_OTLP_PROTOCOL" = (Get-ConfigValue -Key "OTEL_EXPORTER_OTLP_PROTOCOL")
+        "OTEL_SERVICE_NAME"      = $Name
+    }
+
+    # Database (se o servico declara campo "database" no services.json)
+    if ($Cfg.database) {
+        $dbName = Get-ConfigValue -Key $Cfg.database
+        $env["Database__Host"]     = Get-ConfigValue -Key "POSTGRES_HOST"
+        $env["Database__Port"]     = Get-ConfigValue -Key "POSTGRES_PORT"
+        $env["Database__Database"] = $dbName
+        $env["Database__Username"] = Get-ConfigValue -Key "POSTGRES_USER"
+        $env["Database__Password"] = Get-ConfigValue -Key "POSTGRES_PASSWORD"
+    }
+
+    # Node frontends
+    if ($Cfg.type -eq "node" -and $Name -eq "web") {
+        $bffPort = Get-ServicePort -Name "bff-web" -Cfg ($registry.services."bff-web")
+        $env["PORT"] = "$port"
+        $env["REACT_APP_API_URL"] = "http://localhost:$bffPort"
+    }
+    if ($Cfg.type -eq "node" -and $Name -eq "mobile") {
+        $bffPort = Get-ServicePort -Name "bff-mobile" -Cfg ($registry.services."bff-mobile")
+        $env["EXPO_DEVTOOLS_LISTEN_ADDRESS"] = "0.0.0.0"
+        $env["REACT_NATIVE_API_URL"] = "http://localhost:$bffPort"
+    }
+
+    return $env
+}
+
+function Invoke-WithScopedEnvironment {
+    param([hashtable]$Vars, [scriptblock]$Action)
+
+    $snapshot = @{}
+    foreach ($key in $Vars.Keys) {
+        $snapshot[$key] = [Environment]::GetEnvironmentVariable($key, "Process")
+        [Environment]::SetEnvironmentVariable($key, "$($Vars[$key])", "Process")
+    }
+
+    try {
+        & $Action
+    }
+    finally {
+        foreach ($key in $Vars.Keys) {
+            [Environment]::SetEnvironmentVariable($key, $snapshot[$key], "Process")
+        }
+    }
+}
+
 function Get-ComposeInfraMetadata {
     param([string]$ProjectRoot)
 
@@ -335,40 +452,41 @@ function Get-ServiceContainersStatus {
 }
 
 function Build-ContainerEnvArgs {
-    param([PSObject]$LocalEnv, [int]$ContainerPort)
+    param([string]$Name, [PSObject]$Cfg, [int]$ContainerPort)
+
+    # Monta env vars do servico a partir do .env centralizado
+    $localEnv = Build-ServiceEnv -Name $Name -Cfg $Cfg
 
     # Mapeia porta publicada → nome do servico de infra
     $portToInfra = @{}
-    foreach ($name in $script:infraNames) {
-        $ep = "$($script:infraEndpoints[$name])"
+    foreach ($infraName in $script:infraNames) {
+        $ep = "$($script:infraEndpoints[$infraName])"
         foreach ($m in [regex]::Matches($ep, 'localhost:(\d+)')) {
-            $portToInfra[[int]$m.Groups[1].Value] = $name
+            $portToInfra[[int]$m.Groups[1].Value] = $infraName
         }
     }
 
     $envArgs = @()
-    foreach ($prop in $LocalEnv.PSObject.Properties) {
-        $key = $prop.Name
-        $val = $prop.Value
+    foreach ($key in $localEnv.Keys) {
+        $val = $localEnv[$key]
 
         if ($key -eq "ASPNETCORE_URLS") {
             # Container escuta em todas as interfaces
             $val = "http://0.0.0.0:$ContainerPort"
         }
-        elseif ($val -match "Host=localhost") {
-            # Connection string: Host=localhost → Host={infra}
-            if ($val -match "Port=(\d+)") {
-                $p = [int]$Matches[1]
-                if ($portToInfra.ContainsKey($p)) {
-                    $val = $val -replace "Host=localhost", "Host=$($portToInfra[$p])"
-                }
+        elseif ($key -like "Database__Host" -and $val -eq "localhost") {
+            # Traduz para nome de rede do PostgreSQL no compose
+            $port = if ($localEnv["Database__Port"]) { $localEnv["Database__Port"] } else { "5432" }
+            $pgPort = [int]$port
+            if ($portToInfra.ContainsKey($pgPort)) {
+                $val = $portToInfra[$pgPort]
             }
         }
-        else {
+        elseif ($val -match "localhost:\d+") {
             # URL genérica: localhost:PORT → infraName:PORT
             foreach ($p in @($portToInfra.Keys)) {
-                $infraName = $portToInfra[$p]
-                $val = $val -replace "localhost:$p", "${infraName}:$p"
+                $infraN = $portToInfra[$p]
+                $val = $val -replace "localhost:$p", "${infraN}:$p"
             }
         }
 
@@ -440,10 +558,10 @@ function Invoke-ServiceContainerUp {
     # Remove container parado se existir
     docker rm -f $containerName 2>$null | Out-Null
 
-    # Build imagem
+    # Build imagem (contexto é a raiz do projeto para acessar shared/)
     Write-Host "       [$Name] docker build..." -ForegroundColor DarkGray -NoNewline
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
-    docker build -t $imageName -f $dockerfile $svcPath 2>$null
+    docker build -t $imageName -f $dockerfile $repoRoot 2>$null
     $sw.Stop()
 
     if ($LASTEXITCODE -ne 0) {
@@ -458,7 +576,7 @@ function Invoke-ServiceContainerUp {
     $containerPort = Get-ServiceContainerPort -Cfg $cfg
 
     # Env vars adaptadas para rede Docker
-    $envArgs = Build-ContainerEnvArgs -LocalEnv $cfg.env -ContainerPort $containerPort
+    $envArgs = Build-ContainerEnvArgs -Name $Name -Cfg $cfg -ContainerPort $containerPort
 
     # docker run
     Write-Host "       [$Name] docker run..." -ForegroundColor DarkGray -NoNewline
@@ -912,20 +1030,17 @@ function Invoke-Run {
         Write-Host "  $("-" * 60)" -ForegroundColor DarkGray
         Write-Host ""
 
-        # Set env vars
-        if ($cfg.env) {
-            $cfg.env.PSObject.Properties | ForEach-Object {
-                [System.Environment]::SetEnvironmentVariable($_.Name, $_.Value, "Process")
-            }
-        }
+        $svcEnv = Build-ServiceEnv -Name $name -Cfg $cfg
 
         # Run in foreground
         $svcPath = Join-Path $repoRoot $cfg.path
         Push-Location $svcPath
         try {
-            switch ($cfg.type) {
-                "dotnet" { dotnet watch run --project $cfg.entryProject --no-restore }
-                "node"   { npm run dev }
+            Invoke-WithScopedEnvironment -Vars $svcEnv -Action {
+                switch ($cfg.type) {
+                    "dotnet" { dotnet watch run --project $cfg.entryProject --no-restore }
+                    "node"   { npm run dev }
+                }
             }
         } finally { Pop-Location }
 
@@ -2008,11 +2123,11 @@ if (-not $Command) {
 }
 
 switch ($Command.ToLower()) {
-    "run"    { Invoke-Run      -Names   $Services }
+    "run"    { Assert-RequiredEnvVars; Invoke-Run      -Names   $Services }
     "attach" { Invoke-Attach  -Names   $Services }
     "list"   { Invoke-List }
     "status" { Invoke-Status   -Targets $Services }
-    "infra"  { Invoke-InfraUp  -Targets $Services }
+    "infra"  { Assert-RequiredEnvVars; Invoke-InfraUp  -Targets $Services }
     "logs"   { Invoke-Logs     -Targets $Services }
     "stop"   { Invoke-Stop     -Targets $Services }
     "down"   { Invoke-Down     -Targets $Services }

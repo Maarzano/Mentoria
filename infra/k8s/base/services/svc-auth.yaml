@@ -59,8 +59,16 @@ spec:
                 secretKeyRef:
                   name: foodeapp-common-secrets
                   key: rabbitmq-password
-            - name: ConnectionStrings__Default
-              value: "Host=$(POSTGRES_HOST);Database=foodeapp_auth;Username=pgadmin;Password=$(POSTGRES_PASSWORD);SslMode=Require"
+            - name: Database__Host
+              value: "$(POSTGRES_HOST)"
+            - name: Database__Port
+              value: "$(POSTGRES_PORT)"
+            - name: Database__Database
+              value: "foodeapp_auth"
+            - name: Database__Username
+              value: "$(POSTGRES_USER)"
+            - name: Database__Password
+              value: "$(POSTGRES_PASSWORD)"
             # ADR-018: OTel Collector no cluster (namespace monitoring)
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
               value: "http://opentelemetry-collector.monitoring:4318"

@@ -1,0 +1,81 @@
+################################################################################
+# OVERLAY: homelab
+# Kustomization para K3S local. Sem Istio, sem SecretProviderClass (Key Vault).
+# Infraestrutura (PG, Redis, RabbitMQ) provisionada via Terraform Helm.
+#
+# kubectl apply -k infra/k8s/overlays/homelab/
+################################################################################
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: foodeapp-homelab
+
+resources:
+  - ../../base/services
+  - namespace.yaml
+
+# Imagens vêm do registry local (importadas no K3S com ctr/crictl)
+images:
+  - name: svc-auth
+    newName: localhost:5000/svc-auth
+    newTag: latest
+  - name: svc-establishments
+    newName: localhost:5000/svc-establishments
+    newTag: latest
+  - name: svc-catalog
+    newName: localhost:5000/svc-catalog
+    newTag: latest
+  - name: svc-events
+    newName: localhost:5000/svc-events
+    newTag: latest
+  - name: svc-location
+    newName: localhost:5000/svc-location
+    newTag: latest
+  - name: svc-orders
+    newName: localhost:5000/svc-orders
+    newTag: latest
+  - name: svc-notifications
+    newName: localhost:5000/svc-notifications
+    newTag: latest
+  - name: svc-payments
+    newName: localhost:5000/svc-payments
+    newTag: latest
+  - name: bff-web
+    newName: localhost:5000/bff-web
+    newTag: latest
+  - name: bff-app
+    newName: localhost:5000/bff-app
+    newTag: latest
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+    target:
+      kind: Deployment
+      labelSelector: "environment=homelab"
+
+configMapGenerator:
+  - name: foodeapp-env-config
+    literals:
+      - ENVIRONMENT=homelab
+      - LOG_LEVEL=Debug
+      - OTEL_TRACES_SAMPLER_ARG=1.0
+      - POSTGRES_HOST=postgresql.foodeapp-system.svc.cluster.local
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=pgadmin
+      - REDIS_HOST=redis-master.foodeapp-system.svc.cluster.local
+      - REDIS_PORT=6379
+      - RABBITMQ_HOST=rabbitmq.foodeapp-system.svc.cluster.local
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=foodeapp
+      - KEYCLOAK_REALM_URL=http://keycloak.foodeapp-system.svc.cluster.local:8080/realms/foodeapp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector-opentelemetry-collector.monitoring.svc.cluster.local:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
+      - OTEL_SERVICE_NAMESPACE=foodeapp-homelab
+
+commonLabels:
+  environment: homelab
+  project: foodeapp
