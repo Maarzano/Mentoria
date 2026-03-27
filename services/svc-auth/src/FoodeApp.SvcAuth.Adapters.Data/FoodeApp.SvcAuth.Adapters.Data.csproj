@@ -7,13 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Driver nativo PostgreSQL — sem ORM, SQL explícito (ADR-003) -->
+    <!-- Driver nativo PostgreSQL — usado pelo read side (SQL raw → DTO) -->
     <PackageReference Include="Npgsql" Version="10.0.2" />
+    <!-- EF Core + provider Npgsql — usado pelo write side (Commands) -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+    <!-- Dapper para read side — mapeia SQL → DTO sem ORM (ADR-004/005) -->
+    <PackageReference Include="Dapper" Version="2.1.66" />
+    <!-- FluentMigrator para migrações de banco versionadas -->
+    <PackageReference Include="FluentMigrator" Version="6.2.0" />
+    <PackageReference Include="FluentMigrator.Runner" Version="6.2.0" />
+    <PackageReference Include="FluentMigrator.Runner.Postgres" Version="6.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\FoodeApp.SvcAuth.Domain\FoodeApp.SvcAuth.Domain.csproj" />
+    <!-- IUserReadRepository retorna Application DTOs — dependência permitida (Adapters → Application) -->
+    <ProjectReference Include="..\FoodeApp.SvcAuth.Application\FoodeApp.SvcAuth.Application.csproj" />
   </ItemGroup>
 
 </Project>

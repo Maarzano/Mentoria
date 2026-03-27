@@ -1,5 +1,6 @@
 using MediatR;
 using FoodeApp.SvcAuth.Application.DTOs;
+using FoodeApp.SvcAuth.Domain.Primitives;
 
 namespace FoodeApp.SvcAuth.Application.Commands.RegisterUser;
 
@@ -13,4 +14,4 @@ public sealed record RegisterUserCommand(
     string DisplayName,
     string Role,
     string? AvatarUrl,
-    string? Phone) : IRequest<UserProfileDto>;
+    string? Phone) : IRequest<Result<UserProfileDto>>;

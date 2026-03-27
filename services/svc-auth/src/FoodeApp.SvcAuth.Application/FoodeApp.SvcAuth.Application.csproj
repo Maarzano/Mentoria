@@ -9,6 +9,11 @@
   <ItemGroup>
     <!-- ADR-004: CQRS via MediatR — Commands e Queries em handlers separados -->
     <PackageReference Include="MediatR" Version="12.4.1" />
+    <!-- Abstração de logging — implementada pelo Serilog em runtime (ADR-018) -->
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+    <!-- Validação de input na camada Application -->
+    <PackageReference Include="FluentValidation" Version="11.11.0" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
   </ItemGroup>
 
   <ItemGroup>

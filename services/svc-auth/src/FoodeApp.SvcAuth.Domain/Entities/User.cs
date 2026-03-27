@@ -1,4 +1,6 @@
+using FoodeApp.SvcAuth.Domain.Errors;
 using FoodeApp.SvcAuth.Domain.Events;
+using FoodeApp.SvcAuth.Domain.Primitives;
 using FoodeApp.SvcAuth.Domain.ValueObjects;
 
 namespace FoodeApp.SvcAuth.Domain.Entities;
@@ -16,7 +18,7 @@ public sealed class User
     public string KeycloakId { get; private set; } = default!;
     public string DisplayName { get; private set; } = default!;
     public string? AvatarUrl { get; private set; }
-    public string? Phone { get; private set; }
+    public PhoneNumber? Phone { get; private set; }
     public UserRole Role { get; private set; }
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset UpdatedAt { get; private set; }
@@ -26,18 +28,35 @@ public sealed class User
     private User() { }
 
     /// <summary>
-    /// Factory de criação: valida invariantes do domínio e levanta o domain event.
+    /// Factory de criação: valida invariantes do domínio, cria value objects
+    /// a partir dos inputs brutos e levanta o domain event.
     /// </summary>
-    public static User Register(
+    public static Result<User> Register(
         Guid id,
         string keycloakId,
         string displayName,
-        UserRole role,
+        string role,
         string? avatarUrl = null,
         string? phone = null)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(keycloakId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(displayName);
+        if (string.IsNullOrWhiteSpace(keycloakId))
+            return UserErrors.InvalidKeycloakId;
+
+        if (string.IsNullOrWhiteSpace(displayName))
+            return UserErrors.InvalidDisplayName;
+
+        var roleResult = UserRoleExtensions.TryParse(role);
+        if (roleResult.IsFailure)
+            return roleResult.Error;
+
+        PhoneNumber? phoneObj = null;
+        if (!string.IsNullOrWhiteSpace(phone))
+        {
+            var phoneResult = PhoneNumber.Create(phone);
+            if (phoneResult.IsFailure)
+                return phoneResult.Error;
+            phoneObj = phoneResult.Value;
+        }
 
         var user = new User
         {
@@ -45,39 +64,15 @@ public sealed class User
             KeycloakId = keycloakId.Trim(),
             DisplayName = displayName.Trim(),
             AvatarUrl = string.IsNullOrWhiteSpace(avatarUrl) ? null : avatarUrl.Trim(),
-            Phone = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim(),
-            Role = role,
+            Phone = phoneObj,
+            Role = roleResult.Value,
             CreatedAt = DateTimeOffset.UtcNow,
             UpdatedAt = DateTimeOffset.UtcNow,
         };
 
-        user._domainEvents.Add(new UserRegisteredEvent(id, keycloakId, displayName, role));
+        user._domainEvents.Add(new UserRegisteredEvent(id, keycloakId, displayName, roleResult.Value));
         return user;
     }
-
-    /// <summary>
-    /// Factory de reconstituição: chamada exclusivamente pela camada de persistência
-    /// para rehidratar o agregado a partir do banco — não levanta domain events.
-    /// </summary>
-    public static User Rehydrate(
-        Guid id,
-        string keycloakId,
-        string displayName,
-        string? avatarUrl,
-        string? phone,
-        UserRole role,
-        DateTimeOffset createdAt,
-        DateTimeOffset updatedAt) => new()
-    {
-        Id = id,
-        KeycloakId = keycloakId,
-        DisplayName = displayName,
-        AvatarUrl = avatarUrl,
-        Phone = phone,
-        Role = role,
-        CreatedAt = createdAt,
-        UpdatedAt = updatedAt,
-    };
 
     public void ClearDomainEvents() => _domainEvents.Clear();
 }

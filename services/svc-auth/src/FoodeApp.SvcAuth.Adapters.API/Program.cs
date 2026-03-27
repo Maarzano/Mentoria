@@ -1,9 +1,11 @@
+using FluentMigrator.Runner;
+using FluentValidation;
 using FoodeApp.Kernel.Configuration;
 using FoodeApp.Kernel.Extensions;
 using FoodeApp.SvcAuth.Adapters.Data.Extensions;
-using FoodeApp.SvcAuth.Adapters.Data.Schema;
 using FoodeApp.SvcAuth.Adapters.Messaging.Extensions;
 using FoodeApp.SvcAuth.Adapters.API.Endpoints;
+using FoodeApp.SvcAuth.Adapters.API.Infrastructure;
 using FoodeApp.SvcAuth.Adapters.API.Middleware;
 using FoodeApp.SvcAuth.Application.Behaviors;
 using FoodeApp.SvcAuth.Application.Commands.RegisterUser;
@@ -33,12 +35,20 @@ builder.Services.AddSvcAuthData();
 // ── Messaging ─────────────────────────────────────────────────────────────────
 builder.Services.AddSvcAuthMessaging();
 
+// ── FluentValidation ──────────────────────────────────────────────────────────
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterUserCommandValidator>();
+
 // ── Application (CQRS via MediatR — ADR-004) ─────────────────────────────────
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblyContaining<RegisterUserCommandHandler>());
+
+// Pipeline behaviors — ordem: Validation → Logging → Tracing → Handler
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingPipelineBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TracingPipelineBehavior<,>));
 
 // ── API ───────────────────────────────────────────────────────────────────────
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -77,8 +87,12 @@ app.UseExceptionHandler();
 app.UseMiddleware<KongHeadersMiddleware>();
 app.UseHttpMetrics();
 
-// ── Schema (idempotente na subida) ────────────────────────────────────────────
-await app.Services.GetRequiredService<SchemaInitializer>().InitializeAsync();
+// ── Migrações (FluentMigrator) ────────────────────────────────────────────────
+using (var scope = app.Services.CreateScope())
+{
+    var runner = scope.ServiceProvider.GetRequiredService<IMigrationRunner>();
+    runner.MigrateUp();
+}
 
 // ── Endpoints infra (sem versão — contratos fixos com K8s, ADR-011) ──────────
 app.MapHealthEndpoints();

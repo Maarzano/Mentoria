@@ -1,42 +1,52 @@
 using MediatR;
 using FoodeApp.SvcAuth.Application.DTOs;
+using FoodeApp.SvcAuth.Application.Mappings;
+using FoodeApp.SvcAuth.Application.Ports;
 using FoodeApp.SvcAuth.Domain.Entities;
-using FoodeApp.SvcAuth.Domain.Exceptions;
+using FoodeApp.SvcAuth.Domain.Errors;
 using FoodeApp.SvcAuth.Domain.Ports;
-using FoodeApp.SvcAuth.Domain.ValueObjects;
+using FoodeApp.SvcAuth.Domain.Primitives;
 
 namespace FoodeApp.SvcAuth.Application.Commands.RegisterUser;
 
 public sealed class RegisterUserCommandHandler(
-    IUserRepository userRepository,
-    IUserEventPublisher eventPublisher)
-    : IRequestHandler<RegisterUserCommand, UserProfileDto>
+    IUserWriteRepository writeRepository,
+    IUserReadRepository readRepository,
+    IUserEventPublisher eventPublisher,
+    IUnitOfWork unitOfWork)
+    : IRequestHandler<RegisterUserCommand, Result<UserProfileDto>>
 {
-    public async Task<UserProfileDto> Handle(RegisterUserCommand command, CancellationToken ct)
+    public async Task<Result<UserProfileDto>> Handle(RegisterUserCommand command, CancellationToken ct)
     {
-        if (await userRepository.ExistsByKeycloakIdAsync(command.KeycloakId, ct))
-            throw new UserAlreadyExistsException(command.KeycloakId);
+        if (await readRepository.ExistsByKeycloakIdAsync(command.KeycloakId, ct))
+            return UserErrors.AlreadyExists(command.KeycloakId);
 
-        var role = UserRoleExtensions.Parse(command.Role);
-        var user = User.Register(Guid.NewGuid(), command.KeycloakId, command.DisplayName, role, command.AvatarUrl, command.Phone);
+        var userResult = User.Register(
+            Guid.NewGuid(), command.KeycloakId, command.DisplayName,
+            command.Role, command.AvatarUrl, command.Phone);
 
-        await userRepository.AddAsync(user, ct);
+        if (userResult.IsFailure)
+            return userResult.Error;
 
-        foreach (var @event in user.DomainEvents)
-            await eventPublisher.PublishUserRegisteredAsync(@event, ct);
+        var user = userResult.Value;
 
-        user.ClearDomainEvents();
+        await unitOfWork.BeginAsync(ct);
+        try
+        {
+            await writeRepository.AddAsync(user, ct);
 
-        return ToDto(user);
+            foreach (var @event in user.DomainEvents)
+                await eventPublisher.PublishUserRegisteredAsync(@event, ct);
+
+            user.ClearDomainEvents();
+            await unitOfWork.CommitAsync(ct);
+        }
+        catch
+        {
+            await unitOfWork.RollbackAsync(ct);
+            throw;
+        }
+
+        return user.ToUserProfileDto();
     }
-
-    private static UserProfileDto ToDto(User user) => new(
-        user.Id,
-        user.KeycloakId,
-        user.DisplayName,
-        user.AvatarUrl,
-        user.Phone,
-        user.Role.ToDbValue(),
-        user.CreatedAt,
-        user.UpdatedAt);
 }

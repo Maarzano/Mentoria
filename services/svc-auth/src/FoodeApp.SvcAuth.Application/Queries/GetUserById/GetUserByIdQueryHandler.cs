@@ -1,26 +1,16 @@
 using MediatR;
 using FoodeApp.SvcAuth.Application.DTOs;
-using FoodeApp.SvcAuth.Domain.Ports;
-using FoodeApp.SvcAuth.Domain.ValueObjects;
+using FoodeApp.SvcAuth.Application.Ports;
+using FoodeApp.SvcAuth.Domain.Primitives;
 
 namespace FoodeApp.SvcAuth.Application.Queries.GetUserById;
 
-public sealed class GetUserByIdQueryHandler(IUserRepository userRepository)
-    : IRequestHandler<GetUserByIdQuery, UserProfileDto?>
+public sealed class GetUserByIdQueryHandler(IUserReadRepository readRepository)
+    : IRequestHandler<GetUserByIdQuery, Result<UserProfileDto?>>
 {
-    public async Task<UserProfileDto?> Handle(GetUserByIdQuery query, CancellationToken ct)
+    public async Task<Result<UserProfileDto?>> Handle(GetUserByIdQuery query, CancellationToken ct)
     {
-        var user = await userRepository.FindByIdAsync(query.Id, ct);
-        if (user is null) return null;
-
-        return new UserProfileDto(
-            user.Id,
-            user.KeycloakId,
-            user.DisplayName,
-            user.AvatarUrl,
-            user.Phone,
-            user.Role.ToDbValue(),
-            user.CreatedAt,
-            user.UpdatedAt);
+        var dto = await readRepository.FindByIdAsync(query.Id, ct);
+        return Result<UserProfileDto?>.Success(dto);
     }
 }

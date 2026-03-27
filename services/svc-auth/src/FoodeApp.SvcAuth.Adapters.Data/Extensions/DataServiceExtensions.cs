@@ -1,20 +1,33 @@
+﻿using FluentMigrator.Runner;
 using FoodeApp.SvcAuth.Adapters.Data.Repositories;
-using FoodeApp.SvcAuth.Adapters.Data.Schema;
+using FoodeApp.SvcAuth.Application.Ports;
 using FoodeApp.SvcAuth.Domain.Ports;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 
 namespace FoodeApp.SvcAuth.Adapters.Data.Extensions;
 
 public static class DataServiceExtensions
 {
-    /// <summary>
-    /// Registra todos os adaptadores de dados no container de DI.
-    /// O NpgsqlDataSource já está registrado pelo AddFoodeAppDatabase() do Kernel.
-    /// </summary>
     public static IServiceCollection AddSvcAuthData(this IServiceCollection services)
     {
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddSingleton<SchemaInitializer>();
+        services.AddDbContext<AuthDbContext>((sp, options) =>
+        {
+            var dataSource = sp.GetRequiredService<NpgsqlDataSource>();
+            options.UseNpgsql(dataSource);
+        });
+
+        services.AddScoped<IUserWriteRepository, UserWriteRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<IUserReadRepository, UserReadRepository>();
+
+        services.AddFluentMigratorCore()
+            .ConfigureRunner(runner => runner
+                .AddPostgres()
+                .ScanIn(typeof(DataServiceExtensions).Assembly).For.Migrations())
+            .AddLogging(lb => lb.AddFluentMigratorConsole());
+
         return services;
     }
 }
