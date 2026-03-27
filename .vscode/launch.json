@@ -21,70 +21,70 @@
             "type": "coreclr",
             "request": "attach",
             "processName": "FoodeApp.SvcAuth",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Attach: svc-catalog",
             "type": "coreclr",
             "request": "attach",
             "processName": "FoodeApp.SvcCatalog",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Attach: svc-establishments",
             "type": "coreclr",
             "request": "attach",
             "processName": "FoodeApp.SvcEstablishments",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Attach: svc-events",
             "type": "coreclr",
             "request": "attach",
             "processName": "FoodeApp.SvcEvents",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Attach: svc-location",
             "type": "coreclr",
             "request": "attach",
             "processName": "FoodeApp.SvcLocation",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Attach: svc-orders",
             "type": "coreclr",
             "request": "attach",
             "processName": "FoodeApp.SvcOrders",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Attach: svc-notifications",
             "type": "coreclr",
             "request": "attach",
             "processName": "FoodeApp.SvcNotifications",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Attach: svc-payments",
             "type": "coreclr",
             "request": "attach",
             "processName": "FoodeApp.SvcPayments",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Attach: bff-web",
             "type": "coreclr",
             "request": "attach",
             "processName": "FoodeApp.BffWeb",
-            "justMyCode": false
+            "justMyCode": true
         },
         {
             "name": "Attach: bff-mobile",
             "type": "coreclr",
             "request": "attach",
             "processName": "FoodeApp.BffMobile",
-            "justMyCode": false
+            "justMyCode": true
         }
 
     ],
