@@ -176,7 +176,7 @@ O **displayName e foto** do comprador serão visíveis para o lojista quando che
 
 ### 4.2 Descobrir Food Trucks
 
-Duas formas de navegação:
+Três formas de navegação:
 
 ```
 1. POR EVENTO
@@ -189,6 +189,11 @@ Duas formas de navegação:
    → App mostra mapa com food trucks abertos por perto
    → Comprador filtra por raio/tipo/favoritos
    → Entra em um food truck → vê cardápio
+
+3. POR BUSCA GLOBAL (ver seção 4.7)
+   → Busca por nome de restaurante, item ou evento
+   → Filtra resultados
+   → Acessa o que encontrou
 ```
 
 - O comprador pode **seguir** um food truck → recebe **push notification** quando o food truck abrir
@@ -234,14 +239,40 @@ Tela de status do pedido (tempo real via WebSocket):
 Pedido FINALIZADO
     → App espera 30 minutos
     → Pop-up de avaliação do estabelecimento aparece na tela do comprador
-    → Nota (estrelas) + comentário opcional
-    → Avaliação vinculada ao estabelecimento (exibida na página da loja)
+    → Comprador dá nota (1 a 5 estrelas) + comentário opcional
+    → Avaliação é **vinculada àquele pedido** (1 avaliação por pedido)
+    → Avaliação aparece **na página do estabelecimento** (agregada com histórico)
+    → Nota de cada pedido é visível para o lojista no detalhe do pedido
 ```
+
+Exemplo de agregação:
+- Estabelecimento com 50 pedidos finalizados, 47 avaliados → nota média = 4.3 ⭐
 
 ### 4.6 Histórico
 
 - Lista de pedidos anteriores com status, data, valor, itens
 - Filtros por período e estabelecimento
+- **Mostra avaliação dada** (se o pedido foi avaliado)
+
+### 4.7 Busca Global
+
+```
+Comprador usa barra de busca:
+    → Digita query (ex: "hamburger", "pizza rápida", "foodtruck eventos")
+    → Sistema retorna 3 tipos de resultados:
+       ├─ Restaurantes (por nome, descrição)
+       ├─ Itens do cardápio (por nome, descrição)
+       └─ Eventos (por nome, descrição, localização)
+    → Comprador clica no resultado
+       ├─ Se restaurante → ver cardápio ativo
+       ├─ Se item → navega à loja que vende + cardápio com categoria
+       └─ Se evento → ver detalhe e food trucks vinculados
+```
+
+- Busca é **case-insensitive** e suporta **busca textual completa** (PostgreSQL full-text)
+- Resultados priorizados por **relevância** (nome match > descrição match)
+- **Pré-filtros opcionais**: aberto agora, raio de distância, rating mínimo
+- Sem limite de resultados inicialmente (paginado se necessário)
 
 ---
 
@@ -287,8 +318,20 @@ Pedido FINALIZADO
 | Regra | Descrição |
 |-------|-----------|
 | **Delay de 30 minutos** | Pop-up de avaliação aparece 30 minutos após pedido FINALIZADO |
-| **Vinculada ao estabelecimento** | Avaliação é do estabelecimento, não do item |
-| **1 avaliação por pedido** | Comprador avalia uma vez por pedido |
+| **Vinculada ao pedido e ao estabelecimento** | Avaliação é registrada por pedido, mas agregada/exibida por estabelecimento |
+| **1 avaliação por pedido** | Comprador avalia uma vez por pedido (se avaliado já, não aparece pop-up novamente) |
+| **Nota e comentário** | Nota de 1 a 5 estrelas (obrigatório) + comentário opcional |
+| **Histórico no pedido** | Lojista vê a avaliação ao clicar no detalhe do pedido |
+| **Agregação na loja** | Nota média calculada de todos os pedidos avaliados; exibida na página do estabelecimento |
+
+### Busca Global
+
+| Regra | Descrição |
+|-------|-----------|
+| **3 tipos de resultado** | Restaurantes, Itens (com restaurante de origem), Eventos |
+| **Busca textual** | Case-insensitive, suporta full-text search via PostgreSQL (nome + descrição) |
+| **Priorização** | Match no nome > match na descrição |
+| **Pré-filtros opcionais** | Aberto agora, raio de distância (km), rating mínimo, tipo de estabelecimento |
 
 ---
 
