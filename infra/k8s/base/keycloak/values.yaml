@@ -4,7 +4,7 @@
 # helm install keycloak bitnami/keycloak -n foodeapp-system -f infra/k8s/base/keycloak/values.yaml
 ################################################################################
 
-auth:
+users:
   adminUser: admin
   # adminPassword: configurado via Secret (veja keycloak-secret.yaml)
   existingSecret: keycloak-admin-secret
@@ -17,7 +17,7 @@ postgresql:
 externalDatabase:
   host: ""         # Preencher com FQDN do PostgreSQL (output do Terraform)
   port: 5432
-  database: foodeapp_auth
+  database: foodeapp_users
   user: pgadmin
   # password via secret:
   existingSecret: keycloak-db-secret

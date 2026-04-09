@@ -22,7 +22,7 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
                │          Istio mTLS           │
          ──────┴───────────────────────────────┴──────
         │                  Microserviços               │
-        │   auth    establishments  events   catalog   │
+        │   users    establishments  events   catalog   │
         │   orders  payments       location  notif.    │
          ──────────────────────────────────────────────
                │
@@ -37,7 +37,7 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
 
 | # | Serviço | Schema DB | Atores | Responsabilidade Principal |
 |---|---------|-----------|--------|---------------------------|
-| 1 | `svc-auth` | `auth` | Lojista, Usuário | Auth pós-Keycloak: perfis, favoritos |
+| 1 | `svc-users` | `users` | Lojista, Usuário | users pós-Keycloak: perfis, favoritos |
 | 2 | `svc-establishments` | `establishments` | Lojista | Cadastro, config e estado das lojas |
 | 3 | `svc-catalog` | `catalog` | Lojista, Usuário | Cardápios, categorias e itens |
 | 4 | `svc-events` | `events` | Lojista, Usuário | Eventos/feiras e vínculo com estabelecimentos |
@@ -54,11 +54,11 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
 
 ---
 
-### 1. `svc-auth` — Auth & Perfis
+### 1. `svc-users` — users & Perfis
 
-**Schema:** `auth`
+**Schema:** `users`
 
-**Contexto:** O Keycloak (ADR-026) é o responsável pela autenticação — emissão de JWT, login social (Google/Apple), gerenciamento de senhas e sessões. O `svc-auth` é responsável pelos dados de *aplicação* gerados após o cadastro no Keycloak: perfil, preferências e favoritos. Não executa nenhuma operação de autenticação diretamente.
+**Contexto:** O Keycloak (ADR-026) é o responsável pela autenticação — emissão de JWT, login social (Google/Apple), gerenciamento de senhas e sessões. O `svc-users` é responsável pelos dados de *aplicação* gerados após o cadastro no Keycloak: perfil, preferências e favoritos. Não executa nenhuma operação de autenticação diretamente.
 
 **Quem usa:**
 - Lojista: cria perfil após conta no Keycloak
@@ -73,7 +73,7 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
 
 ```sql
 -- Perfil de aplicação vinculado ao usuário do Keycloak
-auth.users (
+users.users (
   id             UUID PRIMARY KEY,
   keycloak_id    UUID NOT NULL UNIQUE,   -- claim 'sub' do JWT
   display_name   VARCHAR(100) NOT NULL,
@@ -85,9 +85,9 @@ auth.users (
 )
 
 -- Lojas favoritadas pelo consumidor
-auth.favorites (
+users.favorites (
   id                UUID PRIMARY KEY,
-  user_id           UUID NOT NULL REFERENCES auth.users(id),
+  user_id           UUID NOT NULL REFERENCES users.users(id),
   establishment_id  UUID NOT NULL,       -- ID em svc-establishments (sem FK cross-schema)
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE(user_id, establishment_id)
@@ -117,7 +117,7 @@ auth.favorites (
 ```sql
 establishments.establishments (
   id                    UUID PRIMARY KEY,
-  owner_user_id         UUID NOT NULL,       -- ID em auth.users
+  owner_user_id         UUID NOT NULL,       -- ID em users.users
   name                  VARCHAR(150) NOT NULL,
   slug                  VARCHAR(150) NOT NULL UNIQUE,
   description           TEXT,
@@ -248,7 +248,7 @@ events.events (
   longitude           DECIMAL(10, 7),
   start_at            TIMESTAMPTZ NOT NULL,
   end_at              TIMESTAMPTZ NOT NULL,
-  created_by_user_id  UUID NOT NULL,   -- ID em auth.users (lojista criador)
+  created_by_user_id  UUID NOT NULL,   -- ID em users.users (lojista criador)
   banner_url          TEXT,
   is_active           BOOLEAN NOT NULL DEFAULT TRUE,
   created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -341,7 +341,7 @@ TTL: 24h (sobrescrito a cada update do lojista)
 ```sql
 orders.orders (
   id                UUID PRIMARY KEY,
-  user_id           UUID NOT NULL,            -- ID em auth.users
+  user_id           UUID NOT NULL,            -- ID em users.users
   establishment_id  UUID NOT NULL,            -- ID em svc-establishments
   status            VARCHAR(30) NOT NULL,     -- PENDENTE | ACEITO | REJEITADO | EM_PREPARO | PRONTO | FINALIZADO | CANCELADO
   total_amount      NUMERIC(10, 2) NOT NULL,
@@ -440,7 +440,7 @@ establishment:{loja_id}   → novos pedidos e atualizações (lojista)
 ```sql
 notifications.device_tokens (
   id             UUID PRIMARY KEY,
-  user_id        UUID NOT NULL,          -- ID em auth.users
+  user_id        UUID NOT NULL,          -- ID em users.users
   token          TEXT NOT NULL,
   platform       VARCHAR(10) NOT NULL,   -- 'android' | 'ios' | 'web'
   is_active      BOOLEAN NOT NULL DEFAULT TRUE,
@@ -569,7 +569,7 @@ PUT  /orders/:id/status          → avança status do pedido
 **Atende:** App React Native — consumidor final
 
 **Serviços que agrega:**
-- `svc-auth` — perfil e favoritos do usuário
+- `svc-users` — perfil e favoritos do usuário
 - `svc-location` + `svc-establishments` — mapa de lojas próximas
 - `svc-events` — descoberta de eventos
 - `svc-catalog` — cardápio e itens da loja selecionada
@@ -586,7 +586,7 @@ POST /cart/items                 → adicionar item ao carrinho
 POST /checkout                   → cria pedido a partir do carrinho
 GET  /orders/:id                 → status do pedido
 GET  /orders/history             → pedidos anteriores
-GET  /favorites                  → lojas favoritadas (via svc-auth)
+GET  /favorites                  → lojas favoritadas (via svc-users)
 POST /favorites/:establishment_id → favoritar/desfavoritar loja
 ```
 
@@ -598,15 +598,15 @@ POST /favorites/:establishment_id → favoritar/desfavoritar loja
 
 | Origem | Destino | Motivo |
 |--------|---------|--------|
-| `bff-web` | `svc-auth`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agrega dados para o painel |
-| `bff-app` | `svc-auth`, `svc-location`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agrega dados para o app |
+| `bff-web` | `svc-users`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agrega dados para o painel |
+| `bff-app` | `svc-users`, `svc-location`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agrega dados para o app |
 | `svc-orders` | `svc-catalog` | Valida disponibilidade e obtém snapshot de preço (carrinho + checkout) |
 
 ### Assíncrona (RabbitMQ + Outbox — ADR-006, ADR-017)
 
 | Exchange / Evento | Produz | Consome |
 |-------------------|--------|---------|
-| `auth.user_registered` | `svc-auth` | `svc-notifications` (registrar preferências padrão) |
+| `users.user_registered` | `svc-users` | `svc-notifications` (registrar preferências padrão) |
 | `establishment.opened` / `establishment.closed` | `svc-establishments` | `svc-notifications` (hub WebSocket) |
 | `establishment.location_updated` | `svc-location` | `svc-notifications` (hub WebSocket + push se app fechado) |
 | `order.created` | `svc-orders` | `svc-payments` (SAGA), `svc-notifications` |
@@ -651,7 +651,7 @@ Usuário faz checkout (bff-app → svc-orders, que lê o carrinho do Redis)
 | Cenário | Onde fica |
 |---------|-----------|
 | Autenticação (login/logout/tokens) | **Keycloak** (externo) — ADR-026 |
-| Perfil de usuário pós-cadastro e favoritos | `svc-auth` |
+| Perfil de usuário pós-cadastro e favoritos | `svc-users` |
 | Configuração da loja | `svc-establishments` |
 | Cardápio e itens | `svc-catalog` |
 | Carrinho pré-pedido | `svc-orders` (Redis, gerido pelo mesmo serviço) |
@@ -669,7 +669,7 @@ Usuário faz checkout (bff-app → svc-orders, que lê o carrinho do Redis)
 
 ```
 postgres/
-├── auth.*              → svc-auth
+├── users.*              → svc-users
 ├── establishments.*    → svc-establishments
 ├── catalog.*           → svc-catalog
 ├── events.*            → svc-events

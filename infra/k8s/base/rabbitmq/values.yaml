@@ -3,7 +3,7 @@
 # helm install rabbitmq bitnami/rabbitmq -n foodeapp-system -f infra/k8s/base/rabbitmq/values.yaml
 ################################################################################
 
-auth:
+users:
   username: foodeapp
   # password via Secret existente
   existingPasswordSecret: rabbitmq-secret

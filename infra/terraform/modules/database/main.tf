@@ -78,7 +78,7 @@ resource "azurerm_postgresql_flexible_server_configuration" "log_min_duration_st
 
 locals {
   databases = [
-    "foodeapp_auth",
+    "foodeapp_users",
     "foodeapp_establishments",
     "foodeapp_catalog",
     "foodeapp_events",

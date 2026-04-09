@@ -52,7 +52,7 @@ config:
 
     # Adiciona metadados K8s nos spans/logs
     k8sattributes:
-      auth_type: "serviceAccount"
+      users_type: "serviceAccount"
       extract:
         metadata:
           - k8s.namespace.name

@@ -21,7 +21,7 @@ metadata:
   name: bff-app
   labels:
     app: bff-app
-    role: bff                           # role=bff → AuthorizationPolicy permite Kong chamar
+    role: bff                           # role=bff → usersorizationPolicy permite Kong chamar
 spec:
   replicas: 1
   selector:
@@ -50,8 +50,8 @@ spec:
             - configMapRef:
                 name: foodeapp-env-config
           env:
-            - name: Services__Auth
-              value: "http://svc-auth.$(NAMESPACE).svc.cluster.local"
+            - name: Services__users
+              value: "http://svc-users.$(NAMESPACE).svc.cluster.local"
             - name: Services__Establishments
               value: "http://svc-establishments.$(NAMESPACE).svc.cluster.local"
             - name: Services__Catalog

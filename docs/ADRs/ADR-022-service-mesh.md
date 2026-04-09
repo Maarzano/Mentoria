@@ -72,7 +72,7 @@ RabbitMQ: tráfego assíncrono entre serviços (fila — ADR-006)
 - Observabilidade granular da rede interna sem instrumentação manual — complementa o OTel (ADR-018).
 - Retry e circuit breaking na camada de rede são complementares (não substitutos) ao Polly (ADR-016): o Istio cobre falhas de rede; o Polly cobre falhas de negócio e lógica de aplicação.
 - Canary deployments são triviais via configuração declarativa, sem alterar Deployments do Kubernetes.
-- Policies de segurança (`AuthorizationPolicy`) permitem controlar quais serviços podem falar com quais — princípio do menor privilégio na rede interna.
+- Policies de segurança (`usersorizationPolicy`) permitem controlar quais serviços podem falar com quais — princípio do menor privilégio na rede interna.
 
 ### Negativas / Trade-offs
 
@@ -90,5 +90,5 @@ RabbitMQ: tráfego assíncrono entre serviços (fila — ADR-006)
   - Istio foi escolhido pela maturidade, ampla adoção e integração com a stack de observabilidade já definida (ADR-018).
 - O Istio **não substitui** o Polly (ADR-016) — os dois coexistem. O Istio atua na camada de rede (infraestrutura); o Polly atua na camada de aplicação (lógica de retry de negócio, fallbacks específicos).
 - O sidecar do Istio é injetado automaticamente em pods de namespaces marcados com `istio-injection: enabled` — sem necessidade de alterar os Dockerfiles ou Deployments dos serviços.
-- Relate ao IaC (ADR-020): a configuração do Istio (`VirtualService`, `DestinationRule`, `AuthorizationPolicy`) deve ser versionada e aplicada via Terraform ou Helm.
+- Relate ao IaC (ADR-020): a configuração do Istio (`VirtualService`, `DestinationRule`, `usersorizationPolicy`) deve ser versionada e aplicada via Terraform ou Helm.
 - Relacionado: ADR-001 (microserviços), ADR-009 (Kong — apenas externo), ADR-011 (Kubernetes), ADR-016 (resiliência na camada de aplicação), ADR-018 (observabilidade).

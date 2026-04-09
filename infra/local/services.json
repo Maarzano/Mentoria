@@ -1,12 +1,12 @@
 {
     "services": {
-        "svc-auth": {
+        "svc-users": {
             "type": "dotnet",
-            "displayName": "Auth & Perfis",
-            "path": "services/svc-auth",
-            "entryProject": "src/FoodeApp.SvcAuth.Adapters.API/FoodeApp.SvcAuth.Adapters.API.csproj",
+            "displayName": "users & Perfis",
+            "path": "services/svc-users",
+            "entryProject": "src/FoodeApp.Svcusers.Adapters.API/FoodeApp.Svcusers.Adapters.API.csproj",
             "port": 8080,
-            "database": "POSTGRES_DB_AUTH",
+            "database": "POSTGRES_DB_users",
             "depends": []
         },
         "svc-catalog": {
@@ -16,7 +16,7 @@
             "entryProject": "src/FoodeApp.SvcCatalog.Adapters.API/FoodeApp.SvcCatalog.Adapters.API.csproj",
             "port": 8081,
             "database": "POSTGRES_DB_CATALOG",
-            "depends": ["svc-auth"]
+            "depends": ["svc-users"]
         },
         "svc-establishments": {
             "type": "dotnet",
@@ -25,7 +25,7 @@
             "entryProject": "src/FoodeApp.SvcEstablishments.Adapters.API/FoodeApp.SvcEstablishments.Adapters.API.csproj",
             "port": 8082,
             "database": "POSTGRES_DB_ESTABLISHMENTS",
-            "depends": ["svc-auth"]
+            "depends": ["svc-users"]
         },
         "svc-events": {
             "type": "dotnet",
@@ -34,7 +34,7 @@
             "entryProject": "src/FoodeApp.SvcEvents.Adapters.API/FoodeApp.SvcEvents.Adapters.API.csproj",
             "port": 8083,
             "database": "POSTGRES_DB_EVENTS",
-            "depends": ["svc-auth"]
+            "depends": ["svc-users"]
         },
         "svc-location": {
             "type": "dotnet",
@@ -43,7 +43,7 @@
             "entryProject": "src/FoodeApp.SvcLocation.Adapters.API/FoodeApp.SvcLocation.Adapters.API.csproj",
             "port": 8084,
             "database": "POSTGRES_DB_LOCATIONS",
-            "depends": ["svc-auth"]
+            "depends": ["svc-users"]
         },
         "svc-orders": {
             "type": "dotnet",
@@ -52,7 +52,7 @@
             "entryProject": "src/FoodeApp.SvcOrders.Adapters.API/FoodeApp.SvcOrders.Adapters.API.csproj",
             "port": 8085,
             "database": "POSTGRES_DB_ORDERS",
-            "depends": ["svc-auth"]
+            "depends": ["svc-users"]
         },
         "svc-notifications": {
             "type": "dotnet",
@@ -61,7 +61,7 @@
             "entryProject": "src/FoodeApp.SvcNotifications.Adapters.API/FoodeApp.SvcNotifications.Adapters.API.csproj",
             "port": 8086,
             "database": "POSTGRES_DB_NOTIFICATIONS",
-            "depends": ["svc-auth"]
+            "depends": ["svc-users"]
         },
         "svc-payments": {
             "type": "dotnet",
@@ -70,7 +70,7 @@
             "entryProject": "src/FoodeApp.SvcPayments.Adapters.API/FoodeApp.SvcPayments.Adapters.API.csproj",
             "port": 8087,
             "database": "POSTGRES_DB_PAYMENTS",
-            "depends": ["svc-auth", "svc-orders"]
+            "depends": ["svc-users", "svc-orders"]
         },
         "bff-web": {
             "type": "dotnet",
@@ -78,7 +78,7 @@
             "path": "apps/bff-web",
             "entryProject": "src/FoodeApp.BffWeb.API/FoodeApp.BffWeb.API.csproj",
             "port": 8090,
-            "depends": ["svc-auth", "svc-catalog", "svc-establishments", "svc-orders"]
+            "depends": ["svc-users", "svc-catalog", "svc-establishments", "svc-orders"]
         },
         "bff-mobile": {
             "type": "dotnet",
@@ -86,7 +86,7 @@
             "path": "apps/bff-mobile",
             "entryProject": "src/FoodeApp.BffMobile.API/FoodeApp.BffMobile.API.csproj",
             "port": 8091,
-            "depends": ["svc-auth", "svc-catalog", "svc-establishments", "svc-orders"]
+            "depends": ["svc-users", "svc-catalog", "svc-establishments", "svc-orders"]
         },
         "web": {
             "type": "node",

@@ -10,7 +10,7 @@
 #   Images newName → login ACR: az acr show --name acrfoodeappprod --query loginServer
 #
 # Para produção, usar sempre tags de versão (nunca :latest):
-#   kustomize edit set image svc-auth=acrfoodeappprod.azurecr.io/svc-auth:<sha>
+#   kustomize edit set image svc-users=acrfoodeappprod.azurecr.io/svc-users:<sha>
 ################################################################################
 
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -21,14 +21,14 @@ namespace: foodeapp-production
 resources:
   - ../../base/services          # todos os microserviços + BFFs
   - ../../base/namespaces/namespaces.yaml
-  - ../../base/istio/peer-authentication.yaml
-  - ../../base/istio/authorization-policies.yaml
+  - ../../base/istio/peer-usersentication.yaml
+  - ../../base/istio/usersorization-policies.yaml
   - ../../base/istio/istio-operator-production.yaml  # sampling 10%, 3 réplicas gateway
 
 # Registry de produção — CI/CD substitui :latest por SHA do commit
 images:
-  - name: svc-auth
-    newName: acrfoodeappprod.azurecr.io/svc-auth
+  - name: svc-users
+    newName: acrfoodeappprod.azurecr.io/svc-users
     newTag: latest
   - name: svc-establishments
     newName: acrfoodeappprod.azurecr.io/svc-establishments
@@ -97,7 +97,7 @@ configMapGenerator:
       # terraform output -chdir=infra/terraform/envs/production redis_hostname
       - REDIS_HOST=REPLACE_WITH_REDIS_HOST
       - RABBITMQ_HOST=rabbitmq.foodeapp-system.svc.cluster.local
-      - KEYCLOAK_REALM_URL=https://auth.foodeapp.com.br/realms/foodeapp
+      - KEYCLOAK_REALM_URL=https://users.foodeapp.com.br/realms/foodeapp
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://opentelemetry-collector.monitoring.svc.cluster.local:4317
       - OTEL_SERVICE_NAMESPACE=foodeapp-production
 

@@ -5,22 +5,22 @@
         // =====================================================================
         // ATTACH  — conecta ao processo JA RODANDO (via proj.ps1 run)
         // Fluxo:
-        //   1. .\proj.ps1 run svc-auth      <- inicia o servico
+        //   1. .\proj.ps1 run svc-users      <- inicia o servico
         //   2. .\proj.ps1 attach            <- detecta o que esta rodando
         //   3. Ctrl+Shift+D -> "Attach: Selected" -> F5  <- debug ativo
         //
         // Ou individualmente:
-        //   Ctrl+Shift+D -> "Attach: svc-auth" -> F5
+        //   Ctrl+Shift+D -> "Attach: svc-users" -> F5
         //
         // NOTA: dotnet watch reinicia o processo ao salvar.
         // Quando isso ocorrer, re-pressione F5 para re-attach.
         // =====================================================================
 
         {
-            "name": "Attach: svc-auth",
+            "name": "Attach: svc-users",
             "type": "coreclr",
             "request": "attach",
-            "processName": "FoodeApp.SvcAuth",
+            "processName": "FoodeApp.Svcusers",
             "justMyCode": true
         },
         {
@@ -97,13 +97,13 @@
         // =====================================================================
         {
             "name": "Attach: Selected",
-            "configurations": ["Attach: svc-auth"],
+            "configurations": ["Attach: svc-users"],
             "stopAll": true
         },
         {
             "name": "Attach: All Backend",
             "configurations": [
-                "Attach: svc-auth",
+                "Attach: svc-users",
                 "Attach: svc-catalog",
                 "Attach: svc-establishments",
                 "Attach: svc-events",

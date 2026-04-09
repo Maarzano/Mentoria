@@ -12,28 +12,28 @@ O FoodeApp possui múltiplos tipos de usuário (Comprador, Estabelecimento, Entr
 1. **Se autenticam**: provam quem são.
 2. **São autorizados**: o sistema decide o que podem fazer.
 
-Os diagramas arquiteturais indicam a presença de um "Sistema de login" externo e OAuth como abordagem. As opções avaliadas foram:
+Os diagramas arquiteturais indicam a presença de um "Sistema de login" externo e Ousers como abordagem. As opções avaliadas foram:
 
 | Abordagem | Prós | Contras |
 |-----------|------|---------|
-| **Auth próprio (usuario + senha)** | Controle total | Alta responsabilidade de segurança, gestão de senhas, MFA, rotação de tokens |
-| **OAuth 2.0 Social (Google, Apple)** | UX fluida, sem senha para gerenciar | Dependência de terceiros, Apple obrigatório para iOS App Store |
-| **Keycloak (Identity Provider self-hosted)** | Controle total + OAuth2/OIDC padrão + social login integrado | Mais um componente a operar |
-| **Auth0 / Cognito (SaaS)** | Zero operação, MFA, social login embutido | Custo recorrente, lock-in de vendor |
+| **users próprio (usuario + senha)** | Controle total | Alta responsabilidade de segurança, gestão de senhas, MFA, rotação de tokens |
+| **Ousers 2.0 Social (Google, Apple)** | UX fluida, sem senha para gerenciar | Dependência de terceiros, Apple obrigatório para iOS App Store |
+| **Keycloak (Identity Provider self-hosted)** | Controle total + Ousers2/OIDC padrão + social login integrado | Mais um componente a operar |
+| **users0 / Cognito (SaaS)** | Zero operação, MFA, social login embutido | Custo recorrente, lock-in de vendor |
 
 O Kong (ADR-009) já está na borda validando JWT — portanto a estratégia de autenticação precisa ser compatível com validação de token no gateway.
 
 ## Decisão
 
-Adotaremos **Keycloak** como Identity Provider (IdP) central do FoodeApp, implementando **OAuth 2.0 + OIDC (OpenID Connect)** para autenticação e **JWT com claims de role/permissão** para autorização.
+Adotaremos **Keycloak** como Identity Provider (IdP) central do FoodeApp, implementando **Ousers 2.0 + OIDC (OpenID Connect)** para autenticação e **JWT com claims de role/permissão** para autorização.
 
 ### Fluxos de autenticação
 
-| Canal | Fluxo OAuth 2.0 |
+| Canal | Fluxo Ousers 2.0 |
 |-------|----------------|
-| Web (React) | Authorization Code + PKCE |
-| Mobile (React Native) | Authorization Code + PKCE |
-| Painel estabelecimento | Authorization Code + PKCE |
+| Web (React) | usersorization Code + PKCE |
+| Mobile (React Native) | usersorization Code + PKCE |
+| Painel estabelecimento | usersorization Code + PKCE |
 | Service-to-service (interno) | Client Credentials (sem usuário) |
 
 ### Login social suportado inicialmente
@@ -63,7 +63,7 @@ Adotaremos **Keycloak** como Identity Provider (IdP) central do FoodeApp, implem
 
 ```
 Cliente (Web/App)
-    │  1. Authorization Code + PKCE → Keycloak
+    │  1. usersorization Code + PKCE → Keycloak
     │  2. Keycloak retorna access_token (JWT) + refresh_token
     ↓
 Kong API Gateway (ADR-009)
@@ -96,10 +96,10 @@ BFF / Microserviços
 
 ### Positivas
 
-- OIDC/OAuth 2.0 são padrões abertos — sem lock-in no protocolo.
-- Keycloak concentra toda a complexidade de auth: MFA, rate limiting de login, bloqueio de brute-force, RBAC, social login.
+- OIDC/Ousers 2.0 são padrões abertos — sem lock-in no protocolo.
+- Keycloak concentra toda a complexidade de users: MFA, rate limiting de login, bloqueio de brute-force, RBAC, social login.
 - Os microserviços ficam completamente desacoplados da lógica de autenticação — recebem apenas os claims no header.
-- PKCE previne interceptação de authorization code em apps mobile/SPA sem backend secret.
+- PKCE previne interceptação de usersorization code em apps mobile/SPA sem backend secret.
 - Social login reduz atrito no cadastro (especialmente para compradores).
 - Sign in with Apple atende requisito obrigatório da App Store.
 

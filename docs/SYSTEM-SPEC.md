@@ -1,7 +1,7 @@
 # FoodeApp — Especificação do Sistema
 
 > **Versão:** 1.0 · **Data:** 2026-03-30  
-> **Baseado em:** 29 ADRs, modules.md, CONFIGURATION.md, svc-auth (código), infra (docker-compose, k8s, terraform), wireframes e diagramas C4.
+> **Baseado em:** 29 ADRs, modules.md, CONFIGURATION.md, svc-users (código), infra (docker-compose, k8s, terraform), wireframes e diagramas C4.
 
 ---
 
@@ -53,7 +53,7 @@ Comprador paga via app (crédito, débito ou PIX)
 
 - **1 único Identity Provider** — Keycloak com 1 Realm (`foodeapp`)
 - **2 Realm Roles** — `comprador` e `lojista` (no mesmo realm, sem realms separados)
-- **1 microserviço de perfil** — `svc-auth` armazena perfil de aplicação de ambos os roles
+- **1 microserviço de perfil** — `svc-users` armazena perfil de aplicação de ambos os roles
 - **Separação por BFF** — `bff-web` serve apenas funcionalidades do lojista; `bff-app` serve apenas funcionalidades do comprador
 - **Autorização** — Kong valida JWT do Keycloak e injeta `X-User-Id` e `X-User-Roles` nos headers; cada endpoint/BFF verifica o role
 
@@ -67,7 +67,7 @@ Comprador paga via app (crédito, débito ou PIX)
 Lojista acessa site → Keycloak (login com Google, Apple ou email/senha)
     → Callback com JWT contendo sub + role=lojista
     → Kong valida JWT, injeta X-User-Id
-    → bff-web chama svc-auth: POST /v1/profiles/me (upsert do perfil)
+    → bff-web chama svc-users: POST /v1/profiles/me (upsert do perfil)
     → Perfil criado com displayName, avatar, phone, role=lojista
 ```
 
@@ -168,7 +168,7 @@ Lojista está em um evento/feira:
 ```
 Comprador abre app → Keycloak (Google, Apple ou email/senha)
     → JWT com sub + role=comprador
-    → bff-app chama svc-auth: POST /v1/profiles/me
+    → bff-app chama svc-users: POST /v1/profiles/me
     → Perfil com displayName, foto (avatar)
 ```
 
@@ -304,7 +304,7 @@ Pedido FINALIZADO
 | **Database** | PostgreSQL 16 (1 database por microserviço) |
 | **Cache/State** | Redis (carrinho, geolocalização, backplane WebSocket, idempotência) |
 | **Mensageria** | RabbitMQ (via MassTransit) |
-| **Identity Provider** | Keycloak (OAuth 2.0 + OIDC) |
+| **Identity Provider** | Keycloak (Ousers 2.0 + OIDC) |
 | **API Gateway** | Kong (JWT validation, rate limiting, routing) |
 | **Service Mesh** | Istio (mTLS, observabilidade interna, retry) |
 | **Observabilidade** | OpenTelemetry + Prometheus + Loki + Tempo + Grafana |
@@ -362,7 +362,7 @@ Pedido FINALIZADO
     ║                    KUBERNETES + ISTIO (mTLS)                     ║
     ║                                                                  ║
     ║  ┌──────────┐  ┌────────────────┐  ┌───────────┐  ┌───────────┐ ║
-    ║  │ svc-auth │  │svc-establish.  │  │svc-catalog│  │svc-events │ ║
+    ║  │ svc-users │  │svc-establish.  │  │svc-catalog│  │svc-events │ ║
     ║  └─────┬────┘  └───────┬────────┘  └─────┬─────┘  └─────┬─────┘ ║
     ║        │               │                 │               │       ║
     ║  ┌─────┴────┐  ┌──────┴───────┐  ┌──────┴──────┐  ┌─────┴────┐ ║
@@ -396,7 +396,7 @@ FoodeApp/
 │   ├── web/                  # Frontend React (Lojista)
 │   └── mobile/               # Frontend React Native (Comprador)
 ├── services/
-│   ├── svc-auth/             # Perfis pós-Keycloak
+│   ├── svc-users/             # Perfis pós-Keycloak
 │   ├── svc-establishments/   # Cadastro e gestão de lojas
 │   ├── svc-catalog/          # Cardápios, categorias, itens
 │   ├── svc-events/           # Eventos/feiras
@@ -444,22 +444,22 @@ services/svc-{nome}/
 
 | # | Serviço | Porta | Database | Schema | Depende de | Responsabilidade |
 |---|---------|-------|----------|--------|-----------|-----------------|
-| 1 | `svc-auth` | 8080 | `foodeapp_auth` | `auth` | — | Perfis pós-Keycloak, favoritos |
-| 2 | `svc-catalog` | 8081 | `foodeapp_catalog` | `catalog` | svc-auth | Cardápios, categorias, itens |
-| 3 | `svc-establishments` | 8082 | `foodeapp_establishments` | `establishments` | svc-auth | Cadastro e gestão de lojas |
-| 4 | `svc-events` | 8083 | `foodeapp_events` | `events` | svc-auth | Eventos/feiras, vinculação |
-| 5 | `svc-location` | 8084 | `foodeapp_locations` | `locations` | svc-auth | GPS em tempo real |
-| 6 | `svc-orders` | 8085 | `foodeapp_orders` | `orders` | svc-auth | Carrinho (Redis), pedidos, SAGA |
-| 7 | `svc-notifications` | 8086 | `foodeapp_notifications` | `notifications` | svc-auth | Push/Email/WhatsApp + SignalR |
-| 8 | `svc-payments` | 8087 | `foodeapp_payments` | `payments` | svc-auth, svc-orders | Mercado Pago, estornos |
-| — | `bff-web` | 8090 | — | — | auth, catalog, establishments, orders | Agregador Lojista |
-| — | `bff-app` | 8091 | — | — | auth, catalog, establishments, orders, location, events | Agregador Comprador |
+| 1 | `svc-users` | 8080 | `foodeapp_users` | `users` | — | Perfis pós-Keycloak, favoritos |
+| 2 | `svc-catalog` | 8081 | `foodeapp_catalog` | `catalog` | svc-users | Cardápios, categorias, itens |
+| 3 | `svc-establishments` | 8082 | `foodeapp_establishments` | `establishments` | svc-users | Cadastro e gestão de lojas |
+| 4 | `svc-events` | 8083 | `foodeapp_events` | `events` | svc-users | Eventos/feiras, vinculação |
+| 5 | `svc-location` | 8084 | `foodeapp_locations` | `locations` | svc-users | GPS em tempo real |
+| 6 | `svc-orders` | 8085 | `foodeapp_orders` | `orders` | svc-users | Carrinho (Redis), pedidos, SAGA |
+| 7 | `svc-notifications` | 8086 | `foodeapp_notifications` | `notifications` | svc-users | Push/Email/WhatsApp + SignalR |
+| 8 | `svc-payments` | 8087 | `foodeapp_payments` | `payments` | svc-users, svc-orders | Mercado Pago, estornos |
+| — | `bff-web` | 8090 | — | — | users, catalog, establishments, orders | Agregador Lojista |
+| — | `bff-app` | 8091 | — | — | users, catalog, establishments, orders, location, events | Agregador Comprador |
 | — | `web` | 3001 | — | — | bff-web | Frontend React (Lojista) |
 | — | `mobile` | 19000 | — | — | bff-mobile | Frontend React Native (Comprador) |
 
 ### Detalhamento
 
-#### `svc-auth` — Perfis & Favoritos
+#### `svc-users` — Perfis & Favoritos
 
 - Armazena perfil de aplicação pós-login no Keycloak (display name, avatar, phone, role)
 - Gerencia favoritos do comprador (lojas favoritadas)
@@ -543,10 +543,10 @@ services/svc-{nome}/
 - **Zero foreign keys** entre schemas
 - Troca de dados entre serviços = via RabbitMQ ou HTTP
 
-### `auth.*`
+### `users.*`
 
 ```sql
-auth.users (
+users.users (
     id             UUID PRIMARY KEY,
     keycloak_id    UUID NOT NULL UNIQUE,    -- claim 'sub' do JWT
     display_name   VARCHAR(100) NOT NULL,
@@ -557,15 +557,15 @@ auth.users (
     updated_at     TIMESTAMPTZ NOT NULL
 )
 
-auth.favorites (
+users.favorites (
     id                UUID PRIMARY KEY,
-    user_id           UUID NOT NULL REFERENCES auth.users(id),
+    user_id           UUID NOT NULL REFERENCES users.users(id),
     establishment_id  UUID NOT NULL,        -- ID externo (sem FK cross-schema)
     created_at        TIMESTAMPTZ NOT NULL,
     UNIQUE(user_id, establishment_id)
 )
 
-auth.outbox_messages (...)   -- padrão Outbox (ADR-017)
+users.outbox_messages (...)   -- padrão Outbox (ADR-017)
 ```
 
 ### `establishments.*`
@@ -842,15 +842,15 @@ establishments.reviews (
 
 | Origem | Destino | Quando |
 |--------|---------|--------|
-| `bff-web` | `svc-auth`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agregar dados para o lojista |
-| `bff-app` | `svc-auth`, `svc-location`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agregar dados para o comprador |
+| `bff-web` | `svc-users`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agregar dados para o lojista |
+| `bff-app` | `svc-users`, `svc-location`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agregar dados para o comprador |
 | `svc-orders` | `svc-catalog` | Validar disponibilidade e obter snapshot de preço no checkout |
 
 ### Comunicação Assíncrona (RabbitMQ + Outbox)
 
 | Evento | Produtor | Consumidor | Ação |
 |--------|----------|------------|------|
-| `auth.user_registered` | svc-auth | svc-notifications | Registrar preferências padrão |
+| `users.user_registered` | svc-users | svc-notifications | Registrar preferências padrão |
 | `establishment.opened` | svc-establishments | svc-notifications | Push para seguidores |
 | `establishment.closed` | svc-establishments | svc-notifications | Atualizar hub |
 | `establishment.location_updated` | svc-location | svc-notifications | WebSocket + push |
@@ -916,7 +916,7 @@ establishments.reviews (
 
 | Componente | Container | Porta |
 |------------|-----------|-------|
-| PostgreSQL 16 | `foodeapp-postgres-auth` | 5432 |
+| PostgreSQL 16 | `foodeapp-postgres-users` | 5432 |
 | OTel Collector | `foodeapp-otel-collector` | 4317 (gRPC), 4318 (HTTP) |
 | Prometheus | `foodeapp-prometheus` | 9090 |
 | Tempo | `foodeapp-tempo` | 3200 |
@@ -935,7 +935,7 @@ Serviços .NET rodam **nativamente** (`dotnet run`) no dev local, não em contai
 | RabbitMQ | Terraform (Helm: bitnami/rabbitmq) | exchanges + DLQs pré-configurados |
 | Kong | Kustomize (Helm values) | JWT plugin, rate limiting |
 | Keycloak | Kustomize (Helm values) | Realm foodeapp |
-| Istio | Manifests estáticos | mTLS, AuthorizationPolicies |
+| Istio | Manifests estáticos | mTLS, usersorizationPolicies |
 | Flagsmith | Kustomize (Helm values) | Feature flags |
 | Observabilidade | Terraform (Helm) | Full stack (Prometheus, Loki, Tempo, OTel, Grafana) |
 | Microserviços | Kustomize | 8 services + 2 BFFs, ConfigMaps por serviço |
@@ -961,7 +961,7 @@ Serviços .NET rodam **nativamente** (`dotnet run`) no dev local, não em contai
 |-------|---------|---------|
 | `.env` | `POSTGRES_HOST=localhost` | proj.ps1 (PowerShell), dotenv.net (.NET), docker-compose |
 | K8s | `Database__Host=postgres.foodeapp.svc` | ConfigMap → env var do pod |
-| appsettings.json | `Database.Database=foodeapp_auth` | Valor intrínseco ao serviço |
+| appsettings.json | `Database.Database=foodeapp_users` | Valor intrínseco ao serviço |
 
 ---
 
@@ -979,7 +979,7 @@ Serviços .NET rodam **nativamente** (`dotnet run`) no dev local, não em contai
 | **K8s manifests** | 10 services + namespaces + Kong + Keycloak + RabbitMQ + Istio + Flagsmith |
 | **Terraform** | 3 ambientes (homelab, staging, production) + 8 módulos |
 | **Shared Kernel** | DatabaseSettings, ObservabilitySettings, KeycloakSettings, RedisSettings, RabbitMqSettings + extensions |
-| **Grafana Dashboard** | svc-auth-overview.json com painel de métricas, logs e traces |
+| **Grafana Dashboard** | svc-users-overview.json com painel de métricas, logs e traces |
 | **services.json** | Registro de todos os serviços com portas e dependências |
 | **Wireframes** | Excalidraw com telas do sistema |
 | **Diagramas C4** | Contexto e container level |
@@ -988,7 +988,7 @@ Serviços .NET rodam **nativamente** (`dotnet run`) no dev local, não em contai
 
 | Item | Status | Detalhes |
 |------|--------|---------|
-| **svc-auth** | ~80% | Domain ✅, Application ✅, API ✅, Data ✅. Faltam: Keycloak real, MassTransit/Outbox, testes de integração |
+| **svc-users** | ~80% | Domain ✅, Application ✅, API ✅, Data ✅. Faltam: Keycloak real, MassTransit/Outbox, testes de integração |
 
 ### Não Iniciado ⬜
 
@@ -1010,7 +1010,7 @@ Serviços .NET rodam **nativamente** (`dotnet run`) no dev local, não em contai
 | Integração Redis |
 | Integração Mercado Pago |
 
-### `svc-auth` — Detalhe do Estado Atual
+### `svc-users` — Detalhe do Estado Atual
 
 ```
 Adapters.API/
@@ -1053,12 +1053,12 @@ Domain/
     └── Error                ✅ Record com Code, Message, ErrorKind
 
 Adapters.Data/
-├── AuthDbContext            ✅ EF Core com mappings (snake_case, PhoneNumber converter, UserRole converter)
+├── usersDbContext            ✅ EF Core com mappings (snake_case, PhoneNumber converter, UserRole converter)
 ├── UnitOfWork               ✅ Transaction wrapper sobre DbContext
 ├── Repositories/
 │   ├── UserWriteRepository  ✅ EF Core (Add)
 │   └── UserReadRepository   ✅ Dapper (SQL direto, DTO direto)
-├── Migrations/M001          ✅ FluentMigrator: auth schema + users + outbox_messages
+├── Migrations/M001          ✅ FluentMigrator: users schema + users + outbox_messages
 └── Extensions/              ✅ DataServiceExtensions (DI registration)
 
 Adapters.Messaging/
@@ -1089,11 +1089,11 @@ Lojista cria conta → cria loja → monta cardápio → ativa
 
 ### Slice 1 — Lojista Configura Loja (Testar no HomeLab)
 
-**Objetivo:** Pipeline completa testável: Auth → Establishment → Catalog
+**Objetivo:** Pipeline completa testável: users → Establishment → Catalog
 
 | Fase | Serviço | Escopo |
 |------|---------|--------|
-| 1 | svc-auth | Completar: Keycloak integration (ou manter headers fake inicialmente) |
+| 1 | svc-users | Completar: Keycloak integration (ou manter headers fake inicialmente) |
 | 2 | svc-establishments | Novo: CRUD de loja + toggle abrir/fechar |
 | 3 | svc-catalog | Novo: CRUD cardápio + categorias + itens + regra de 1 ativo |
 | 4 | Deploy | Build imagens + kustomize homelab + verificar Grafana |
@@ -1141,7 +1141,7 @@ Lojista cria conta → cria loja → monta cardápio → ativa
 | ADR-023 | CDN (Azure Front Door) | Assets estáticos |
 | ADR-024 | GitHub Actions | CI/CD |
 | ADR-025 | Mercado Pago | Pagamentos (PIX + cartão, marketplace split) |
-| ADR-026 | Keycloak (OAuth 2.0/OIDC) | Autenticação e autorização |
+| ADR-026 | Keycloak (Ousers 2.0/OIDC) | Autenticação e autorização |
 | ADR-027 | FCM + Twilio + Resend | Push + WhatsApp + Email |
 | ADR-028 | Azure Blob Storage | Imagens e arquivos |
 | ADR-029 | Flagsmith | Feature flags |

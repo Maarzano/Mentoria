@@ -37,7 +37,7 @@ Cada ADR é um documento vivo: pode ser revisado, atualizado ou depreciado confo
 | [ADR-023](ADR-023-cdn-assets-estaticos.md) | CDN para Assets Estáticos (Imagens, JS, CSS) | ✅ Aceito | 2026-03-10 |
 | [ADR-024](ADR-024-cicd-github-actions.md) | CI/CD com GitHub Actions (migração futura possível para Jenkins) | ✅ Aceito | 2026-03-10 |
 | [ADR-025](ADR-025-gateway-pagamento.md) | Gateway de Pagamento — Mercado Pago | ✅ Aceito | 2026-03-10 |
-| [ADR-026](ADR-026-autenticacao-oauth.md) | Autenticação e Autorização — Keycloak + OAuth 2.0 + OIDC | ✅ Aceito | 2026-03-10 |
+| [ADR-026](ADR-026-autenticacao-ousers.md) | Autenticação e Autorização — Keycloak + Ousers 2.0 + OIDC | ✅ Aceito | 2026-03-10 |
 | [ADR-027](ADR-027-push-notifications.md) | Push Notifications — FCM + Twilio WhatsApp + Resend | ✅ Aceito | 2026-03-10 |
 | [ADR-028](ADR-028-file-storage.md) | File Storage — Cloudflare R2 para imagens e arquivos | ✅ Aceito | 2026-03-10 |
 | [ADR-029](ADR-029-feature-flags.md) | Feature Flags — Flagsmith self-hosted | ✅ Aceito | 2026-03-10 |
@@ -90,7 +90,7 @@ ADR-025 (Gateway de Pagamento — Mercado Pago)
   ├── ADR-013 (Idempotência — X-Idempotency-Key em toda chamada ao gateway)
   └── ADR-017 (Outbox — PagamentoConfirmado/Falhou via fila garantida)
 
-ADR-026 (Autenticação — Keycloak + OAuth 2.0 + OIDC)
+ADR-026 (Autenticação — Keycloak + Ousers 2.0 + OIDC)
   ├── ADR-009 (Kong valida JWT via JWKS do Keycloak)
   ├── ADR-011 (Keycloak roda como pod no Kubernetes)
   └── ADR-020 (Terraform provisiona Keycloak)

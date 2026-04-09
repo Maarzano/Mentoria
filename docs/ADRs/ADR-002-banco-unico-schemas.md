@@ -20,7 +20,7 @@ Usaremos **um único servidor PostgreSQL** com **um database por serviço**.
 
 Exemplos atuais:
 
-- `foodeapp_auth`
+- `foodeapp_users`
 - `foodeapp_establishments`
 - `foodeapp_catalog`
 - `foodeapp_events`

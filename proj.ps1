@@ -816,10 +816,10 @@ function Invoke-Run {
         Write-Host "       .\proj.ps1 run -c <servico> [servico2 ...]  (via container)" -ForegroundColor Yellow
         Write-Host ""
         Write-Host "  Exemplos:" -ForegroundColor White
-        Write-GRAY "    .\proj.ps1 run svc-auth                Local com hot reload"
-        Write-GRAY "    .\proj.ps1 run svc-auth svc-catalog    Debug composto (local)"
-        Write-GRAY "    .\proj.ps1 run -c svc-auth             Via container (Dockerfile)"
-        Write-GRAY "    .\proj.ps1 run svc-orders              Deps (auth) sobem como container"
+        Write-GRAY "    .\proj.ps1 run svc-users                Local com hot reload"
+        Write-GRAY "    .\proj.ps1 run svc-users svc-catalog    Debug composto (local)"
+        Write-GRAY "    .\proj.ps1 run -c svc-users             Via container (Dockerfile)"
+        Write-GRAY "    .\proj.ps1 run svc-orders              Deps (users) sobem como container"
         Write-Host ""
         Write-TIP "Use '.\proj.ps1 list' para ver servicos disponiveis."
         Write-TIP "Dependencias configuradas em: infra/local/services.json (campo 'depends')"
@@ -1124,7 +1124,7 @@ function Invoke-Attach {
         Write-Host ""
         Write-Host "  Nenhum servico em execucao detectado." -ForegroundColor DarkGray
         Write-Host ""
-        Write-TIP "Inicie um servico:  .\proj.ps1 run svc-auth"
+        Write-TIP "Inicie um servico:  .\proj.ps1 run svc-users"
         Write-Footer
         return
     }
@@ -1353,8 +1353,8 @@ function Invoke-Status {
             Write-Host "  Nenhum servico ou container esta rodando." -ForegroundColor DarkGray
             Write-Host ""
             Write-TIP "Suba a infra:     .\proj.ps1 infra"
-            Write-TIP "Rode um servico:  .\proj.ps1 run svc-auth"
-            Write-TIP "Rode via container: .\proj.ps1 run -c svc-auth"
+            Write-TIP "Rode um servico:  .\proj.ps1 run svc-users"
+            Write-TIP "Rode via container: .\proj.ps1 run -c svc-users"
         }
     }
 
@@ -1596,7 +1596,7 @@ function Show-Help {
     Write-Host "Saude do que esta rodando (ou itens especificos)" -ForegroundColor Gray
     Write-Host ""
     Write-Host "  FLUXO LOCAL (debug com hot reload):" -ForegroundColor DarkYellow
-    Write-Host "    1. .\proj.ps1 run svc-auth        " -ForegroundColor White -NoNewline
+    Write-Host "    1. .\proj.ps1 run svc-users        " -ForegroundColor White -NoNewline
     Write-Host "Sobe infra + hot reload no terminal" -ForegroundColor DarkGray
     Write-Host "    2. .\proj.ps1 attach              " -ForegroundColor White -NoNewline
     Write-Host "Detecta rodando e configura F5" -ForegroundColor DarkGray
@@ -1604,26 +1604,26 @@ function Show-Help {
     Write-Host "  <- breakpoints!" -ForegroundColor Green
     Write-Host ""
     Write-Host "  FLUXO CONTAINER:" -ForegroundColor DarkYellow
-    Write-Host "    1. .\proj.ps1 run -c svc-auth     " -ForegroundColor White -NoNewline
+    Write-Host "    1. .\proj.ps1 run -c svc-users     " -ForegroundColor White -NoNewline
     Write-Host "Build Dockerfile + docker run" -ForegroundColor DarkGray
-    Write-Host "    2. .\proj.ps1 logs svc-auth       " -ForegroundColor White -NoNewline
+    Write-Host "    2. .\proj.ps1 logs svc-users       " -ForegroundColor White -NoNewline
     Write-Host "Logs do container do servico" -ForegroundColor DarkGray
-    Write-Host "    3. .\proj.ps1 stop svc-auth       " -ForegroundColor White -NoNewline
+    Write-Host "    3. .\proj.ps1 stop svc-users       " -ForegroundColor White -NoNewline
     Write-Host "Para o container do servico" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  DEPENDENCIAS:" -ForegroundColor DarkYellow
     Write-Host "    .\proj.ps1 run svc-orders         " -ForegroundColor White -NoNewline
-    Write-Host "Deps (svc-auth) sobem como container" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 run svc-orders svc-auth " -ForegroundColor White -NoNewline
+    Write-Host "Deps (svc-users) sobem como container" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run svc-orders svc-users " -ForegroundColor White -NoNewline
     Write-Host "Ambos local, sem container extra" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  EXEMPLOS:" -ForegroundColor White
-    Write-Host "    .\proj.ps1 run svc-auth" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 run -c svc-auth svc-catalog" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run svc-users" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run -c svc-users svc-catalog" -ForegroundColor DarkGray
     Write-Host "    .\proj.ps1 infra postgres grafana" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 logs svc-auth" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 stop svc-auth" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 status svc-auth postgres" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 logs svc-users" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 stop svc-users" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 status svc-users postgres" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  REFERENCIA:" -ForegroundColor DarkGray
     Write-Host "    Portas/Deps: " -ForegroundColor DarkGray -NoNewline
@@ -1829,8 +1829,8 @@ function Invoke-Status {
             Write-Host "  Nenhum servico ou container esta rodando." -ForegroundColor DarkGray
             Write-Host ""
             Write-TIP "Suba a infra:     .\proj.ps1 infra"
-            Write-TIP "Rode um servico:  .\proj.ps1 run svc-auth"
-            Write-TIP "Rode via container: .\proj.ps1 run -c svc-auth"
+            Write-TIP "Rode um servico:  .\proj.ps1 run svc-users"
+            Write-TIP "Rode via container: .\proj.ps1 run -c svc-users"
         }
     }
 
@@ -2072,7 +2072,7 @@ function Show-Help {
     Write-Host "Saude do que esta rodando (ou itens especificos)" -ForegroundColor Gray
     Write-Host ""
     Write-Host "  FLUXO LOCAL (debug com hot reload):" -ForegroundColor DarkYellow
-    Write-Host "    1. .\proj.ps1 run svc-auth        " -ForegroundColor White -NoNewline
+    Write-Host "    1. .\proj.ps1 run svc-users        " -ForegroundColor White -NoNewline
     Write-Host "Sobe infra + hot reload no terminal" -ForegroundColor DarkGray
     Write-Host "    2. .\proj.ps1 attach              " -ForegroundColor White -NoNewline
     Write-Host "Detecta rodando e configura F5" -ForegroundColor DarkGray
@@ -2080,26 +2080,26 @@ function Show-Help {
     Write-Host "  <- breakpoints!" -ForegroundColor Green
     Write-Host ""
     Write-Host "  FLUXO CONTAINER:" -ForegroundColor DarkYellow
-    Write-Host "    1. .\proj.ps1 run -c svc-auth     " -ForegroundColor White -NoNewline
+    Write-Host "    1. .\proj.ps1 run -c svc-users     " -ForegroundColor White -NoNewline
     Write-Host "Build Dockerfile + docker run" -ForegroundColor DarkGray
-    Write-Host "    2. .\proj.ps1 logs svc-auth       " -ForegroundColor White -NoNewline
+    Write-Host "    2. .\proj.ps1 logs svc-users       " -ForegroundColor White -NoNewline
     Write-Host "Logs do container do servico" -ForegroundColor DarkGray
-    Write-Host "    3. .\proj.ps1 stop svc-auth       " -ForegroundColor White -NoNewline
+    Write-Host "    3. .\proj.ps1 stop svc-users       " -ForegroundColor White -NoNewline
     Write-Host "Para o container do servico" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  DEPENDENCIAS:" -ForegroundColor DarkYellow
     Write-Host "    .\proj.ps1 run svc-orders         " -ForegroundColor White -NoNewline
-    Write-Host "Deps (svc-auth) sobem como container" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 run svc-orders svc-auth " -ForegroundColor White -NoNewline
+    Write-Host "Deps (svc-users) sobem como container" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run svc-orders svc-users " -ForegroundColor White -NoNewline
     Write-Host "Ambos local, sem container extra" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  EXEMPLOS:" -ForegroundColor White
-    Write-Host "    .\proj.ps1 run svc-auth" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 run -c svc-auth svc-catalog" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run svc-users" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 run -c svc-users svc-catalog" -ForegroundColor DarkGray
     Write-Host "    .\proj.ps1 infra postgres grafana" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 logs svc-auth" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 stop svc-auth" -ForegroundColor DarkGray
-    Write-Host "    .\proj.ps1 status svc-auth postgres" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 logs svc-users" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 stop svc-users" -ForegroundColor DarkGray
+    Write-Host "    .\proj.ps1 status svc-users postgres" -ForegroundColor DarkGray
     Write-Host ""
     Write-Host "  REFERENCIA:" -ForegroundColor DarkGray
     Write-Host "    Portas/Deps: " -ForegroundColor DarkGray -NoNewline

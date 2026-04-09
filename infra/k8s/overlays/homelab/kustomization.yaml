@@ -17,8 +17,8 @@ resources:
 
 # Imagens vêm do registry local (importadas no K3S com ctr/crictl)
 images:
-  - name: svc-auth
-    newName: localhost:5000/svc-auth
+  - name: svc-users
+    newName: localhost:5000/svc-users
     newTag: latest
   - name: svc-establishments
     newName: localhost:5000/svc-establishments

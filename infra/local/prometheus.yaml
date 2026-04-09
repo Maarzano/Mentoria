@@ -1,6 +1,6 @@
 ################################################################################
 # Prometheus — Configuração LOCAL (dev)
-# ADR-018: Prometheus coleta métricas do OTel Collector e do svc-auth
+# ADR-018: Prometheus coleta métricas do OTel Collector e do svc-users
 #
 # remote_write_receiver habilitado para receber métricas do Tempo
 # metrics_generator (service graph + span metrics)
@@ -12,7 +12,7 @@ global:
 
 scrape_configs:
   # Métricas exportadas pelo OTel Collector (inclui tudo que veio de OTLP)
-  # svc-auth → OTLP → Collector → :8889 → Prometheus (fluxo único, sem duplicatas)
+  # svc-users → OTLP → Collector → :8889 → Prometheus (fluxo único, sem duplicatas)
   - job_name: otel-collector
     static_configs:
       - targets: ['otel-collector:8889']

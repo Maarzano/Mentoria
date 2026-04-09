@@ -82,15 +82,15 @@ resource "helm_release" "postgresql" {
   version    = "16.4.1"
 
   set {
-    name  = "auth.postgresPassword"
+    name  = "users.postgresPassword"
     value = var.postgres_admin_password
   }
   set {
-    name  = "auth.username"
+    name  = "users.username"
     value = var.postgres_admin_login
   }
   set {
-    name  = "auth.password"
+    name  = "users.password"
     value = var.postgres_admin_password
   }
   set {
@@ -122,7 +122,7 @@ resource "helm_release" "redis" {
   version    = "20.6.2"
 
   set {
-    name  = "auth.password"
+    name  = "users.password"
     value = var.redis_password
   }
   set {
@@ -153,11 +153,11 @@ resource "helm_release" "rabbitmq" {
   version    = "15.1.2"
 
   set {
-    name  = "auth.username"
+    name  = "users.username"
     value = var.rabbitmq_username
   }
   set {
-    name  = "auth.password"
+    name  = "users.password"
     value = var.rabbitmq_password
   }
   set {

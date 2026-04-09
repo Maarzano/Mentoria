@@ -25,7 +25,7 @@ variable "databases" {
   description = "Lista de databases a criar (ADR-002: banco único, multi-schema)"
   type        = list(string)
   default = [
-    "foodeapp_auth",
+    "foodeapp_users",
     "foodeapp_establishments",
     "foodeapp_catalog",
     "foodeapp_events",

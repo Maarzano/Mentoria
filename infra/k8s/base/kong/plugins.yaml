@@ -54,7 +54,7 @@ config:
     - PATCH
     - OPTIONS
   headers:
-    - Authorization
+    - usersorization
     - Content-Type
     - X-Correlation-Id
     - X-Request-Id

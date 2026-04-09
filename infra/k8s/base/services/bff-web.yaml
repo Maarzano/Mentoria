@@ -21,7 +21,7 @@ metadata:
   name: bff-web
   labels:
     app: bff-web
-    role: bff                           # role=bff → AuthorizationPolicy permite Kong chamar
+    role: bff                           # role=bff → usersorizationPolicy permite Kong chamar
 spec:
   replicas: 1
   selector:
@@ -51,8 +51,8 @@ spec:
                 name: foodeapp-env-config
           env:
             # BFF não conecta ao banco — apenas chama microserviços internos via HTTP
-            - name: Services__Auth
-              value: "http://svc-auth.$(NAMESPACE).svc.cluster.local"
+            - name: Services__users
+              value: "http://svc-users.$(NAMESPACE).svc.cluster.local"
             - name: Services__Establishments
               value: "http://svc-establishments.$(NAMESPACE).svc.cluster.local"
             - name: Services__Catalog

@@ -18,14 +18,14 @@ namespace: foodeapp-staging
 resources:
   - ../../base/services          # todos os microserviços + BFFs
   - ../../base/namespaces/namespaces.yaml
-  - ../../base/istio/peer-authentication.yaml
-  - ../../base/istio/authorization-policies.yaml
+  - ../../base/istio/peer-usersentication.yaml
+  - ../../base/istio/usersorization-policies.yaml
 
-# Subst de registry: base usa "svc-auth:latest", overlay define o registry completo
-# CI/CD deve rodar: kustomize edit set image svc-auth=<acr>.azurecr.io/svc-auth:<sha>
+# Subst de registry: base usa "svc-users:latest", overlay define o registry completo
+# CI/CD deve rodar: kustomize edit set image svc-users=<acr>.azurecr.io/svc-users:<sha>
 images:
-  - name: svc-auth
-    newName: acrfoodeappstaging.azurecr.io/svc-auth
+  - name: svc-users
+    newName: acrfoodeappstaging.azurecr.io/svc-users
     newTag: latest
   - name: svc-establishments
     newName: acrfoodeappstaging.azurecr.io/svc-establishments
@@ -95,7 +95,7 @@ configMapGenerator:
       # terraform output -chdir=infra/terraform/envs/staging redis_hostname
       - REDIS_HOST=REPLACE_WITH_REDIS_HOST
       - RABBITMQ_HOST=rabbitmq.foodeapp-system.svc.cluster.local
-      - KEYCLOAK_REALM_URL=https://auth-staging.foodeapp.com.br/realms/foodeapp
+      - KEYCLOAK_REALM_URL=https://users-staging.foodeapp.com.br/realms/foodeapp
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://opentelemetry-collector.monitoring.svc.cluster.local:4317
       - OTEL_SERVICE_NAMESPACE=foodeapp-staging
 

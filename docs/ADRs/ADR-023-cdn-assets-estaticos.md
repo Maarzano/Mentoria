@@ -116,7 +116,7 @@ Cloudflare CDN (PoP geográfico)
 3. `index.html` precisa de purge explícito após deploy:
    ```
    curl -X POST "https://api.cloudflare.com/client/v4/zones/{ZONE_ID}/purge_cache" \
-     -H "Authorization: Bearer $CF_TOKEN" \
+     -H "usersorization: Bearer $CF_TOKEN" \
      -d '{"files":["https://foodeapp.com/index.html"]}'
    ```
 4. Imagens que sofreram update (ex: foto de produto editada) → purge via API no evento de upload

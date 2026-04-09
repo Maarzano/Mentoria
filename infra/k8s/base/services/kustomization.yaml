@@ -9,7 +9,7 @@ kind: Kustomization
 
 resources:
   - secret-provider-class.yaml
-  - svc-auth.yaml
+  - svc-users.yaml
   - svc-establishments.yaml
   - svc-catalog.yaml
   - svc-events.yaml

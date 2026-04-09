@@ -34,7 +34,7 @@ Tudo (portas, hosts, credenciais) vem do arquivo `.env` na raiz do projeto.
 | `POSTGRES_PORT` | `Database__Port` | `DatabaseSettings.Port` |
 | `POSTGRES_USER` | `Database__Username` | `DatabaseSettings.Username` |
 | `POSTGRES_PASSWORD` | `Database__Password` | `DatabaseSettings.Password` |
-| `POSTGRES_DB_AUTH` | `Database__Database` | `DatabaseSettings.Database` |
+| `POSTGRES_DB_users` | `Database__Database` | `DatabaseSettings.Database` |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | `OTEL_EXPORTER_OTLP_ENDPOINT` | `ObservabilitySettings.OtlpEndpoint` |
 
 ## Tradução Local → Container

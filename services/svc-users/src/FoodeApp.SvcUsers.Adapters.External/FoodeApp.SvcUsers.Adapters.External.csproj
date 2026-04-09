@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      ADR-026: O Keycloak Admin Client será adicionado aqui quando precisarmos
+      criar usuários no Keycloak programaticamente (ex: fluxo administrativo).
+      Por ora o svc-users apenas consome headers injetados pelo Kong — sem chamadas ao Keycloak.
+    -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FoodeApp.Svcusers.Domain\FoodeApp.Svcusers.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

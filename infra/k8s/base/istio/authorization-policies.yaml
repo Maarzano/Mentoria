@@ -1,12 +1,12 @@
 ################################################################################
-# Istio AuthorizationPolicy — políticas de acesso entre serviços
+# Istio usersorizationPolicy — políticas de acesso entre serviços
 # Segurança zero-trust: só permite comunicações necessárias
 ################################################################################
 
 ---
 # Política padrão: negar tudo no namespace de produção
 apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
+kind: usersorizationPolicy
 metadata:
   name: deny-all
   namespace: foodeapp-production
@@ -15,7 +15,7 @@ spec: {}  # spec vazio = nega tudo
 ---
 # Política padrão: negar tudo no namespace de staging
 apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
+kind: usersorizationPolicy
 metadata:
   name: deny-all
   namespace: foodeapp-staging
@@ -24,7 +24,7 @@ spec: {}
 ---
 # Permite Kong (foodeapp-system) chamar BFFs
 apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
+kind: usersorizationPolicy
 metadata:
   name: allow-kong-to-bffs
   namespace: foodeapp-production
@@ -44,7 +44,7 @@ spec:
 ---
 # Permite BFFs chamarem microserviços internos
 apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
+kind: usersorizationPolicy
 metadata:
   name: allow-bffs-to-services
   namespace: foodeapp-production
@@ -64,7 +64,7 @@ spec:
 ---
 # Permite Prometheus (monitoring) fazer scrape de métricas em todos os serviços
 apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
+kind: usersorizationPolicy
 metadata:
   name: allow-prometheus-scrape
   namespace: foodeapp-production
