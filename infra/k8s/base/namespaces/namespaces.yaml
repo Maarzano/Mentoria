@@ -30,7 +30,7 @@ metadata:
   name: foodeapp-system
   labels:
     name: foodeapp-system
-    # Sem istio-injection — namespace de ferramentas (Kong, Keycloak, RabbitMQ)
+    # Sem istio-injection — namespace de ferramentas (Kong, ZITADEL, RabbitMQ)
     istio-injection: disabled
 
 ---

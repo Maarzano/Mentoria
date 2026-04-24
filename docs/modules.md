@@ -37,7 +37,7 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
 
 | # | Serviço | Schema DB | Atores | Responsabilidade Principal |
 |---|---------|-----------|--------|---------------------------|
-| 1 | `svc-users` | `users` | Lojista, Usuário | users pós-Keycloak: perfis, favoritos |
+| 1 | `svc-users` | `users` | Lojista, Usuário | Application Profile pós-ZITADEL: perfis, favoritos, promoção de role |
 | 2 | `svc-establishments` | `establishments` | Lojista | Cadastro, config e estado das lojas |
 | 3 | `svc-catalog` | `catalog` | Lojista, Usuário | Cardápios, categorias e itens |
 | 4 | `svc-events` | `events` | Lojista, Usuário | Eventos/feiras e vínculo com estabelecimentos |
@@ -58,30 +58,33 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
 
 **Schema:** `users`
 
-**Contexto:** O Keycloak (ADR-026) é o responsável pela autenticação — emissão de JWT, login social (Google/Apple), gerenciamento de senhas e sessões. O `svc-users` é responsável pelos dados de *aplicação* gerados após o cadastro no Keycloak: perfil, preferências e favoritos. Não executa nenhuma operação de autenticação diretamente.
+**Contexto:** O **ZITADEL** (ADR-026) é o Identity Provider — emissão de JWT, verificação de e-mail, senha, reset de senha, sessões, e (futuramente) login social. O `svc-users` guarda o **Application Profile**: dados de produto gerados após o cadastro no ZITADEL — perfil, preferências, favoritos e role. **Não faz autenticação** e nunca armazena credenciais. A ligação é via `zitadel_user_id` (= claim `sub` do JWT, injetado como `X-User-Id` pelo Kong).
 
 **Quem usa:**
-- Lojista: cria perfil após conta no Keycloak
-- Usuário consumidor: cria perfil, gerencia favoritos
+- Lojista: cria perfil após conta no ZITADEL (fluxo do Backoffice)
+- Comprador: cria perfil no onboarding do app mobile
+- Promoção comprador → lojista: mesmo e-mail reutiliza o perfil existente (ver ADR-026)
 
 **Responsabilidades:**
-- Criar e atualizar perfil de aplicação (nome de exibição, avatar, telefone)
+- Criar e atualizar perfil de aplicação (nome de exibição, avatar, telefone, CPF/CNPJ)
 - Registrar a role do usuário no sistema (`comprador` | `lojista`)
+- Promover comprador para lojista (mantém comprador, adiciona lojista)
 - Gerenciar lista de lojas favoritadas pelo consumidor
 
 **Tabelas:**
 
 ```sql
--- Perfil de aplicação vinculado ao usuário do Keycloak
+-- Perfil de aplicação vinculado ao usuário do ZITADEL
 users.users (
-  id             UUID PRIMARY KEY,
-  keycloak_id    UUID NOT NULL UNIQUE,   -- claim 'sub' do JWT
-  display_name   VARCHAR(100) NOT NULL,
-  avatar_url     TEXT,
-  phone          VARCHAR(20),
-  role           VARCHAR(20) NOT NULL,   -- 'comprador' | 'lojista'
-  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  id                UUID PRIMARY KEY,
+  zitadel_user_id   VARCHAR(32) NOT NULL UNIQUE,  -- claim 'sub' do JWT (snowflake ZITADEL)
+  display_name      VARCHAR(100) NOT NULL,
+  avatar_url        TEXT,
+  phone             VARCHAR(20),
+  tax_id            VARCHAR(20),                  -- CPF (comprador) ou CNPJ (lojista)
+  role              VARCHAR(20) NOT NULL,         -- 'comprador' | 'lojista'
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 )
 
 -- Lojas favoritadas pelo consumidor
@@ -650,7 +653,7 @@ Usuário faz checkout (bff-app → svc-orders, que lê o carrinho do Redis)
 
 | Cenário | Onde fica |
 |---------|-----------|
-| Autenticação (login/logout/tokens) | **Keycloak** (externo) — ADR-026 |
+| Autenticação (login/logout/tokens, verificação de e-mail, reset de senha) | **ZITADEL** (externo) — ADR-026 |
 | Perfil de usuário pós-cadastro e favoritos | `svc-users` |
 | Configuração da loja | `svc-establishments` |
 | Cardápio e itens | `svc-catalog` |

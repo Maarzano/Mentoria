@@ -176,7 +176,7 @@ module "aks" {
   services_node_min   = 3
   services_node_max   = 20
 
-  # Infra pool — Kong, Keycloak, RabbitMQ, Flagsmith
+  # Infra pool — Kong, ZITADEL, RabbitMQ, Flagsmith
   infra_vm_size    = "Standard_D4s_v3"  # 4 vCPUs, 16GB RAM
   infra_node_count = 2
   infra_node_min   = 2

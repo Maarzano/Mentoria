@@ -51,11 +51,11 @@ Comprador paga via app (crédito, débito ou PIX)
 
 ### Modelo de Usuários
 
-- **1 único Identity Provider** — Keycloak com 1 Realm (`foodeapp`)
+- **1 único Identity Provider** — ZITADEL (1 Org `FoodeApp`, 1 Project `FoodeApp`)
 - **2 Realm Roles** — `comprador` e `lojista` (no mesmo realm, sem realms separados)
 - **1 microserviço de perfil** — `svc-users` armazena perfil de aplicação de ambos os roles
 - **Separação por BFF** — `bff-web` serve apenas funcionalidades do lojista; `bff-app` serve apenas funcionalidades do comprador
-- **Autorização** — Kong valida JWT do Keycloak e injeta `X-User-Id` e `X-User-Roles` nos headers; cada endpoint/BFF verifica o role
+- **Autorização** — Kong valida JWT do ZITADEL via JWKS e injeta `X-User-Id` (claim `sub`) e `X-User-Roles` (project roles) nos headers; cada endpoint/BFF verifica o role
 
 ---
 
@@ -64,7 +64,7 @@ Comprador paga via app (crédito, débito ou PIX)
 ### 3.1 Cadastro e Login
 
 ```
-Lojista acessa site → Keycloak (login com Google, Apple ou email/senha)
+Lojista acessa site → ZITADEL (login email/senha; Google/Apple planejados — ver ADR-026)
     → Callback com JWT contendo sub + role=lojista
     → Kong valida JWT, injeta X-User-Id
     → bff-web chama svc-users: POST /v1/profiles/me (upsert do perfil)
@@ -166,7 +166,7 @@ Lojista está em um evento/feira:
 ### 4.1 Cadastro e Login
 
 ```
-Comprador abre app → Keycloak (Google, Apple ou email/senha)
+Comprador abre app → ZITADEL (email/senha; Google/Apple planejados — ver ADR-026)
     → JWT com sub + role=comprador
     → bff-app chama svc-users: POST /v1/profiles/me
     → Perfil com displayName, foto (avatar)
@@ -347,7 +347,7 @@ Comprador usa barra de busca:
 | **Database** | PostgreSQL 16 (1 database por microserviço) |
 | **Cache/State** | Redis (carrinho, geolocalização, backplane WebSocket, idempotência) |
 | **Mensageria** | RabbitMQ (via MassTransit) |
-| **Identity Provider** | Keycloak (Ousers 2.0 + OIDC) |
+| **Identity Provider** | ZITADEL (OAuth 2.0 + OIDC) |
 | **API Gateway** | Kong (JWT validation, rate limiting, routing) |
 | **Service Mesh** | Istio (mTLS, observabilidade interna, retry) |
 | **Observabilidade** | OpenTelemetry + Prometheus + Loki + Tempo + Grafana |
@@ -418,7 +418,7 @@ Comprador usa barra de busca:
     ║   └───────────────────────────────────────────┘                 ║
     ║                                                                  ║
     ║   ┌────────────┐  ┌───────┐  ┌──────────┐  ┌──────────┐       ║
-    ║   │ PostgreSQL │  │ Redis │  │ Keycloak │  │Flagsmith │       ║
+    ║   │ PostgreSQL │  │ Redis │  │ ZITADEL  │  │Flagsmith │       ║
     ║   │ (por svc)  │  │       │  │  (IdP)   │  │(feat.flg)│       ║
     ║   └────────────┘  └───────┘  └──────────┘  └──────────┘       ║
     ║                                                                  ║
@@ -439,7 +439,7 @@ FoodeApp/
 │   ├── web/                  # Frontend React (Lojista)
 │   └── mobile/               # Frontend React Native (Comprador)
 ├── services/
-│   ├── svc-users/             # Perfis pós-Keycloak
+│   ├── svc-users/             # Application Profile pós-ZITADEL
 │   ├── svc-establishments/   # Cadastro e gestão de lojas
 │   ├── svc-catalog/          # Cardápios, categorias, itens
 │   ├── svc-events/           # Eventos/feiras
@@ -475,7 +475,7 @@ services/svc-{nome}/
     ├── FoodeApp.Svc{Nome}.Application/     # Commands, Queries, DTOs, Behaviors, Mappings
     ├── FoodeApp.Svc{Nome}.Adapters.API/    # Endpoints, Middleware, Contracts, Program.cs
     ├── FoodeApp.Svc{Nome}.Adapters.Data/   # DbContext, Repositories, Migrations
-    ├── FoodeApp.Svc{Nome}.Adapters.External/ # Integrações externas (Keycloak, Mercado Pago, etc.)
+    ├── FoodeApp.Svc{Nome}.Adapters.External/ # Integrações externas (ZITADEL Management API, Mercado Pago, etc.)
     └── FoodeApp.Svc{Nome}.Adapters.Messaging/ # Publishers, Consumers, Outbox
 ```
 
@@ -487,7 +487,7 @@ services/svc-{nome}/
 
 | # | Serviço | Porta | Database | Schema | Depende de | Responsabilidade |
 |---|---------|-------|----------|--------|-----------|-----------------|
-| 1 | `svc-users` | 8080 | `foodeapp_users` | `users` | — | Perfis pós-Keycloak, favoritos |
+| 1 | `svc-users` | 8080 | `foodeapp_users` | `users` | — | Application Profile pós-ZITADEL, favoritos, promoção de role |
 | 2 | `svc-catalog` | 8081 | `foodeapp_catalog` | `catalog` | svc-users | Cardápios, categorias, itens |
 | 3 | `svc-establishments` | 8082 | `foodeapp_establishments` | `establishments` | svc-users | Cadastro e gestão de lojas |
 | 4 | `svc-events` | 8083 | `foodeapp_events` | `events` | svc-users | Eventos/feiras, vinculação |
@@ -504,10 +504,10 @@ services/svc-{nome}/
 
 #### `svc-users` — Perfis & Favoritos
 
-- Armazena perfil de aplicação pós-login no Keycloak (display name, avatar, phone, role)
+- Armazena Application Profile pós-login no ZITADEL (display name, avatar, phone, tax_id, role)
 - Gerencia favoritos do comprador (lojas favoritadas)
 - Publica `UserRegisteredEvent` via Outbox
-- **Não faz autenticação** — Keycloak cuida disso
+- **Não faz autenticação** — ZITADEL cuida disso
 
 #### `svc-establishments` — Estabelecimentos
 
@@ -591,7 +591,7 @@ services/svc-{nome}/
 ```sql
 users.users (
     id             UUID PRIMARY KEY,
-    keycloak_id    UUID NOT NULL UNIQUE,    -- claim 'sub' do JWT
+    zitadel_user_id VARCHAR(32) NOT NULL UNIQUE,  -- claim 'sub' do JWT (snowflake ZITADEL)
     display_name   VARCHAR(100) NOT NULL,
     avatar_url     TEXT,
     phone          VARCHAR(20),
@@ -977,7 +977,7 @@ Serviços .NET rodam **nativamente** (`dotnet run`) no dev local, não em contai
 | Redis | Terraform (Helm: bitnami/redis) | Cluster mode off, Sentinel |
 | RabbitMQ | Terraform (Helm: bitnami/rabbitmq) | exchanges + DLQs pré-configurados |
 | Kong | Kustomize (Helm values) | JWT plugin, rate limiting |
-| Keycloak | Kustomize (Helm values) | Realm foodeapp |
+| ZITADEL | Kustomize (Helm values oficiais) | Org `FoodeApp`, Project `FoodeApp` |
 | Istio | Manifests estáticos | mTLS, usersorizationPolicies |
 | Flagsmith | Kustomize (Helm values) | Feature flags |
 | Observabilidade | Terraform (Helm) | Full stack (Prometheus, Loki, Tempo, OTel, Grafana) |
@@ -1019,9 +1019,9 @@ Serviços .NET rodam **nativamente** (`dotnet run`) no dev local, não em contai
 | **CONFIGURATION.md** | Princípios de configuração e checklist de novo serviço |
 | **docker-compose.yml** | PostgreSQL + stack de observabilidade completa |
 | **proj.ps1** | CLI PowerShell (~2500 linhas): infra, build, run, migrations, status |
-| **K8s manifests** | 10 services + namespaces + Kong + Keycloak + RabbitMQ + Istio + Flagsmith |
+| **K8s manifests** | 10 services + namespaces + Kong + ZITADEL + RabbitMQ + Istio + Flagsmith |
 | **Terraform** | 3 ambientes (homelab, staging, production) + 8 módulos |
-| **Shared Kernel** | DatabaseSettings, ObservabilitySettings, KeycloakSettings, RedisSettings, RabbitMqSettings + extensions |
+| **Shared Kernel** | DatabaseSettings, ObservabilitySettings, ZitadelSettings, RedisSettings, RabbitMqSettings + extensions |
 | **Grafana Dashboard** | svc-users-overview.json com painel de métricas, logs e traces |
 | **services.json** | Registro de todos os serviços com portas e dependências |
 | **Wireframes** | Excalidraw com telas do sistema |
@@ -1031,7 +1031,7 @@ Serviços .NET rodam **nativamente** (`dotnet run`) no dev local, não em contai
 
 | Item | Status | Detalhes |
 |------|--------|---------|
-| **svc-users** | ~80% | Domain ✅, Application ✅, API ✅, Data ✅. Faltam: Keycloak real, MassTransit/Outbox, testes de integração |
+| **svc-users** | ~80% | Domain ✅, Application ✅, API ✅, Data ✅. Faltam: ZITADEL Management API real, MassTransit/Outbox, testes de integração |
 
 ### Não Iniciado ⬜
 
@@ -1048,7 +1048,7 @@ Serviços .NET rodam **nativamente** (`dotnet run`) no dev local, não em contai
 | bff-app |
 | web (frontend React) |
 | mobile (frontend React Native) |
-| Integração Keycloak |
+| Integração ZITADEL |
 | Integração RabbitMQ/MassTransit |
 | Integração Redis |
 | Integração Mercado Pago |
@@ -1062,7 +1062,7 @@ Adapters.API/
 │   ├── ProfileEndpoints.cs ✅ POST /v1/profiles, GET /v1/profiles/{id}, GET /v1/profiles
 │   └── HealthEndpoints.cs  ✅ GET /healthz, GET /ready
 ├── Contracts/
-│   ├── RegisterUserRequest ✅ Body: KeycloakId, DisplayName, Role, AvatarUrl?, Phone?
+│   ├── RegisterUserRequest ✅ Body: ZitadelUserId, DisplayName, Role, AvatarUrl?, Phone?
 │   └── ApiResponse<T>      ✅ Envelope padrão: { success, data, error }
 ├── Infrastructure/
 │   ├── ResultExtensions     ✅ Result<T> → IResult (200/404/409/422/500)
@@ -1087,7 +1087,7 @@ Domain/
 │   ├── UserRole             ✅ Enum (Comprador/Lojista) com Parse/TryParse
 │   └── PhoneNumber          ✅ Validação regex 10-15 dígitos
 ├── Events/UserRegisteredEvent ✅
-├── Errors/UserErrors        ✅ AlreadyExists, InvalidRole, InvalidKeycloakId, etc.
+├── Errors/UserErrors        ✅ AlreadyExists, InvalidRole, InvalidZitadelUserId, etc.
 ├── Ports/IUnitOfWork        ✅ Begin/Commit/Rollback
 ├── Ports/IUserWriteRepository ✅ AddAsync
 ├── Ports/IUserEventPublisher ✅ PublishUserRegisteredAsync
@@ -1109,7 +1109,7 @@ Adapters.Messaging/
 └── Extensions/              ⬜ STUB: registra publisher, sem RabbitMQ
 
 Adapters.External/
-└── (vazio)                  ⬜ STUB: Keycloak Admin Client planejado
+└── (vazio)                  ⬜ STUB: ZITADEL Management API Client planejado
 
 Tests/
 ├── Domain.Tests/            ✅ 12 testes: User.Register(), PhoneNumber, UserRole
@@ -1136,7 +1136,7 @@ Lojista cria conta → cria loja → monta cardápio → ativa
 
 | Fase | Serviço | Escopo |
 |------|---------|--------|
-| 1 | svc-users | Completar: Keycloak integration (ou manter headers fake inicialmente) |
+| 1 | svc-users | Completar: ZITADEL Management API integration (ou manter headers fake inicialmente) |
 | 2 | svc-establishments | Novo: CRUD de loja + toggle abrir/fechar |
 | 3 | svc-catalog | Novo: CRUD cardápio + categorias + itens + regra de 1 ativo |
 | 4 | Deploy | Build imagens + kustomize homelab + verificar Grafana |
@@ -1184,7 +1184,7 @@ Lojista cria conta → cria loja → monta cardápio → ativa
 | ADR-023 | CDN (Azure Front Door) | Assets estáticos |
 | ADR-024 | GitHub Actions | CI/CD |
 | ADR-025 | Mercado Pago | Pagamentos (PIX + cartão, marketplace split) |
-| ADR-026 | Keycloak (Ousers 2.0/OIDC) | Autenticação e autorização |
+| ADR-026 | ZITADEL (OAuth 2.0/OIDC) | Autenticação e autorização |
 | ADR-027 | FCM + Twilio + Resend | Push + WhatsApp + Email |
 | ADR-028 | Azure Blob Storage | Imagens e arquivos |
 | ADR-029 | Flagsmith | Feature flags |

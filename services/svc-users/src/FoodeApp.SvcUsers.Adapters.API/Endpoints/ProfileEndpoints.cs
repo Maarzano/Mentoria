@@ -15,7 +15,7 @@ internal static class ProfileEndpoints
         app.MapPost("/profiles", async (RegisterUserRequest request, ISender mediator, CancellationToken ct) =>
         {
             var command = new RegisterUserCommand(
-                request.KeycloakId,
+                request.ZitadelUserId,
                 request.DisplayName,
                 request.Role,
                 request.AvatarUrl,

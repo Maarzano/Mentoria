@@ -6,16 +6,18 @@ using FoodeApp.Svcusers.Domain.ValueObjects;
 namespace FoodeApp.Svcusers.Domain.Entities;
 
 /// <summary>
-/// Aggregate Root do contexto de users.
-/// Representa o perfil de aplicação do usuário após o cadastro no Keycloak (ADR-026).
-/// O Keycloak cuida de autenticação; este agregado cuida dos dados de domínio.
+/// Aggregate Root do Application Profile (ADR-026).
+/// Representa o perfil de aplicação do usuário, vinculado à identidade externa
+/// gerenciada pelo ZITADEL (IAM). O ZITADEL cuida de autenticação, e-mail,
+/// senha, MFA e sessões; este agregado cuida dos dados de domínio.
 /// </summary>
 public sealed class User
 {
     private readonly List<UserRegisteredEvent> _domainEvents = [];
 
     public Guid Id { get; private set; }
-    public string KeycloakId { get; private set; } = default!;
+    /// <summary>ID do usuário no ZITADEL (claim <c>sub</c> do JWT).</summary>
+    public string ZitadelUserId { get; private set; } = default!;
     public string DisplayName { get; private set; } = default!;
     public string? AvatarUrl { get; private set; }
     public PhoneNumber? Phone { get; private set; }
@@ -33,14 +35,14 @@ public sealed class User
     /// </summary>
     public static Result<User> Register(
         Guid id,
-        string keycloakId,
+        string zitadelUserId,
         string displayName,
         string role,
         string? avatarUrl = null,
         string? phone = null)
     {
-        if (string.IsNullOrWhiteSpace(keycloakId))
-            return UserErrors.InvalidKeycloakId;
+        if (string.IsNullOrWhiteSpace(zitadelUserId))
+            return UserErrors.InvalidZitadelUserId;
 
         if (string.IsNullOrWhiteSpace(displayName))
             return UserErrors.InvalidDisplayName;
@@ -61,7 +63,7 @@ public sealed class User
         var user = new User
         {
             Id = id,
-            KeycloakId = keycloakId.Trim(),
+            ZitadelUserId = zitadelUserId.Trim(),
             DisplayName = displayName.Trim(),
             AvatarUrl = string.IsNullOrWhiteSpace(avatarUrl) ? null : avatarUrl.Trim(),
             Phone = phoneObj,
@@ -70,9 +72,10 @@ public sealed class User
             UpdatedAt = DateTimeOffset.UtcNow,
         };
 
-        user._domainEvents.Add(new UserRegisteredEvent(id, keycloakId, displayName, roleResult.Value));
+        user._domainEvents.Add(new UserRegisteredEvent(id, zitadelUserId, displayName, roleResult.Value));
         return user;
     }
 
     public void ClearDomainEvents() => _domainEvents.Clear();
 }
+

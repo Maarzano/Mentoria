@@ -13,7 +13,7 @@ internal sealed class UserReadRepository(NpgsqlDataSource dataSource) : IUserRea
 {
     private sealed record UserProfileReadModel(
         Guid Id,
-        string KeycloakId,
+        string ZitadelUserId,
         string DisplayName,
         string? AvatarUrl,
         string? Phone,
@@ -21,26 +21,26 @@ internal sealed class UserReadRepository(NpgsqlDataSource dataSource) : IUserRea
         DateTime CreatedAt,
         DateTime UpdatedAt);
 
-    public async Task<bool> ExistsByKeycloakIdAsync(string keycloakId, CancellationToken ct = default)
+    public async Task<bool> ExistsByZitadelUserIdAsync(string zitadelUserId, CancellationToken ct = default)
     {
-        const string sql = "SELECT 1 FROM users.users WHERE keycloak_id = @KeycloakId LIMIT 1;";
+        const string sql = "SELECT 1 FROM users.users WHERE zitadel_user_id = @ZitadelUserId LIMIT 1;";
 
         await using var conn = await dataSource.OpenConnectionAsync(ct);
-        var result = await conn.ExecuteScalarAsync<int?>(new CommandDefinition(sql, new { KeycloakId = keycloakId }, cancellationToken: ct));
+        var result = await conn.ExecuteScalarAsync<int?>(new CommandDefinition(sql, new { ZitadelUserId = zitadelUserId }, cancellationToken: ct));
         return result is not null;
     }
 
     public async Task<UserProfileDto?> FindByIdAsync(Guid id, CancellationToken ct = default)
     {
         const string sql = """
-            SELECT id           AS "Id",
-                   keycloak_id  AS "KeycloakId",
-                   display_name AS "DisplayName",
-                   avatar_url   AS "AvatarUrl",
-                   phone        AS "Phone",
-                   role         AS "Role",
-                   created_at   AS "CreatedAt",
-                   updated_at   AS "UpdatedAt"
+            SELECT id               AS "Id",
+                   zitadel_user_id  AS "ZitadelUserId",
+                   display_name     AS "DisplayName",
+                   avatar_url       AS "AvatarUrl",
+                   phone            AS "Phone",
+                   role             AS "Role",
+                   created_at       AS "CreatedAt",
+                   updated_at       AS "UpdatedAt"
               FROM users.users
              WHERE id = @Id;
             """;
@@ -55,14 +55,14 @@ internal sealed class UserReadRepository(NpgsqlDataSource dataSource) : IUserRea
     public async Task<IReadOnlyList<UserProfileDto>> FindAllAsync(CancellationToken ct = default)
     {
         const string sql = """
-            SELECT id           AS "Id",
-                   keycloak_id  AS "KeycloakId",
-                   display_name AS "DisplayName",
-                   avatar_url   AS "AvatarUrl",
-                   phone        AS "Phone",
-                   role         AS "Role",
-                   created_at   AS "CreatedAt",
-                   updated_at   AS "UpdatedAt"
+            SELECT id               AS "Id",
+                   zitadel_user_id  AS "ZitadelUserId",
+                   display_name     AS "DisplayName",
+                   avatar_url       AS "AvatarUrl",
+                   phone            AS "Phone",
+                   role             AS "Role",
+                   created_at       AS "CreatedAt",
+                   updated_at       AS "UpdatedAt"
               FROM users.users
              ORDER BY created_at DESC;
             """;
@@ -74,7 +74,7 @@ internal sealed class UserReadRepository(NpgsqlDataSource dataSource) : IUserRea
 
     private static UserProfileDto ToDto(UserProfileReadModel row) => new(
         row.Id,
-        row.KeycloakId,
+        row.ZitadelUserId,
         row.DisplayName,
         row.AvatarUrl,
         row.Phone,

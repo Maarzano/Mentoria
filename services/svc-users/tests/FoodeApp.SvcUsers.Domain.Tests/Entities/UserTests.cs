@@ -11,12 +11,12 @@ public sealed class UserTests
     {
         var id = Guid.NewGuid();
 
-        var result = User.Register(id, "kc-123", "João Silva", "comprador");
+        var result = User.Register(id, "zitadel-123", "João Silva", "comprador");
 
         result.IsSuccess.Should().BeTrue();
         var user = result.Value;
         user.Id.Should().Be(id);
-        user.KeycloakId.Should().Be("kc-123");
+        user.ZitadelUserId.Should().Be("zitadel-123");
         user.DisplayName.Should().Be("João Silva");
         user.Role.Should().Be(UserRole.Comprador);
         user.DomainEvents.Should().HaveCount(1);
@@ -26,12 +26,12 @@ public sealed class UserTests
     [Theory]
     [InlineData("")]
     [InlineData("   ")]
-    public void Register_ComKeycloakIdVazio_DeveRetornarFalha(string keycloakId)
+    public void Register_ComZitadelUserIdVazio_DeveRetornarFalha(string zitadelUserId)
     {
-        var result = User.Register(Guid.NewGuid(), keycloakId, "Nome", "lojista");
+        var result = User.Register(Guid.NewGuid(), zitadelUserId, "Nome", "lojista");
 
         result.IsFailure.Should().BeTrue();
-        result.Error.Code.Should().Be("User.InvalidKeycloakId");
+        result.Error.Code.Should().Be("User.InvalidZitadelUserId");
     }
 
     [Theory]
@@ -39,7 +39,7 @@ public sealed class UserTests
     [InlineData("   ")]
     public void Register_ComDisplayNameVazio_DeveRetornarFalha(string displayName)
     {
-        var result = User.Register(Guid.NewGuid(), "kc-456", displayName, "comprador");
+        var result = User.Register(Guid.NewGuid(), "zitadel-456", displayName, "comprador");
 
         result.IsFailure.Should().BeTrue();
         result.Error.Code.Should().Be("User.InvalidDisplayName");
@@ -48,7 +48,7 @@ public sealed class UserTests
     [Fact]
     public void Register_ComRoleInvalido_DeveRetornarFalha()
     {
-        var result = User.Register(Guid.NewGuid(), "kc-456", "Maria", "admin");
+        var result = User.Register(Guid.NewGuid(), "zitadel-456", "Maria", "admin");
 
         result.IsFailure.Should().BeTrue();
         result.Error.Code.Should().Be("User.InvalidRole");
@@ -57,7 +57,7 @@ public sealed class UserTests
     [Fact]
     public void Register_ComPhoneInvalido_DeveRetornarFalha()
     {
-        var result = User.Register(Guid.NewGuid(), "kc-456", "Maria", "comprador", phone: "123");
+        var result = User.Register(Guid.NewGuid(), "zitadel-456", "Maria", "comprador", phone: "123");
 
         result.IsFailure.Should().BeTrue();
         result.Error.Code.Should().Be("User.InvalidPhone");
@@ -66,7 +66,7 @@ public sealed class UserTests
     [Fact]
     public void Register_ComAvatarUrlNula_DeveManterNula()
     {
-        var result = User.Register(Guid.NewGuid(), "kc-456", "Maria", "comprador");
+        var result = User.Register(Guid.NewGuid(), "zitadel-456", "Maria", "comprador");
 
         result.IsSuccess.Should().BeTrue();
         result.Value.AvatarUrl.Should().BeNull();
@@ -75,7 +75,7 @@ public sealed class UserTests
     [Fact]
     public void Register_ComPhoneNumber_DeveArmazenarValor()
     {
-        var result = User.Register(Guid.NewGuid(), "kc-456", "Maria", "comprador", phone: "11999887766");
+        var result = User.Register(Guid.NewGuid(), "zitadel-456", "Maria", "comprador", phone: "11999887766");
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Phone.Should().NotBeNull();

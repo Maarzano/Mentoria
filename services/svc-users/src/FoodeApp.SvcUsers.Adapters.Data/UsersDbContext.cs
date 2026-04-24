@@ -24,11 +24,11 @@ internal sealed class usersDbContext(DbContextOptions<usersDbContext> options) :
             entity.Property(u => u.Id)
                   .HasColumnName("id");
 
-            entity.Property(u => u.KeycloakId)
-                  .HasColumnName("keycloak_id")
+            entity.Property(u => u.ZitadelUserId)
+                  .HasColumnName("zitadel_user_id")
                   .IsRequired();
 
-            entity.HasIndex(u => u.KeycloakId)
+            entity.HasIndex(u => u.ZitadelUserId)
                   .IsUnique();
 
             entity.Property(u => u.DisplayName)

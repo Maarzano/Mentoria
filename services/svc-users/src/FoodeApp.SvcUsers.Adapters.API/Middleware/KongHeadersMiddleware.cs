@@ -1,11 +1,11 @@
 namespace FoodeApp.Svcusers.Adapters.API.Middleware;
 
 /// <summary>
-/// Lê os headers de identidade injetados pelo Kong (ADR-009) após validar o JWT (ADR-026).
+/// Lê os headers de identidade injetados pelo Kong (ADR-009) após validar o JWT emitido pelo ZITADEL (ADR-026).
 /// Os serviços internos confiam nesses headers — nunca revalidam o token JWT diretamente.
 ///
 /// Headers injetados pelo Kong:
-///   X-User-Id    → claim 'sub' do JWT (UUID do usuário no Keycloak)
+///   X-User-Id    → claim 'sub' do JWT (ID do usuário no ZITADEL)
 ///   X-User-Roles → roles do usuário (ex: "comprador" ou "lojista")
 ///
 /// Os valores ficam disponíveis em HttpContext.Items para uso nos endpoints.

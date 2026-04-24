@@ -23,14 +23,14 @@ public sealed class RegisterUserCommandHandlerTests
     [Fact]
     public async Task Handle_ComDadosValidos_DeveRetornarSucesso()
     {
-        _readRepository.ExistsByKeycloakIdAsync(Arg.Any<string>()).Returns(false);
+        _readRepository.ExistsByZitadelUserIdAsync(Arg.Any<string>()).Returns(false);
 
-        var command = new RegisterUserCommand("kc-001", "Ana Costa", "comprador", null, null);
+        var command = new RegisterUserCommand("zitadel-001", "Ana Costa", "comprador", null, null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value.KeycloakId.Should().Be("kc-001");
+        result.Value.ZitadelUserId.Should().Be("zitadel-001");
         result.Value.DisplayName.Should().Be("Ana Costa");
         result.Value.Role.Should().Be("comprador");
         await _writeRepository.Received(1).AddAsync(Arg.Any<Domain.Entities.User>());
@@ -40,11 +40,11 @@ public sealed class RegisterUserCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_QuandoKeycloakIdJaExiste_DeveRetornarConflict()
+    public async Task Handle_QuandoZitadelUserIdJaExiste_DeveRetornarConflict()
     {
-        _readRepository.ExistsByKeycloakIdAsync("kc-dup").Returns(true);
+        _readRepository.ExistsByZitadelUserIdAsync("zitadel-dup").Returns(true);
 
-        var command = new RegisterUserCommand("kc-dup", "Duplicado", "lojista", null, null);
+        var command = new RegisterUserCommand("zitadel-dup", "Duplicado", "lojista", null, null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -58,9 +58,9 @@ public sealed class RegisterUserCommandHandlerTests
     [Fact]
     public async Task Handle_ComRoleInvalido_DeveRetornarValidationError()
     {
-        _readRepository.ExistsByKeycloakIdAsync(Arg.Any<string>()).Returns(false);
+        _readRepository.ExistsByZitadelUserIdAsync(Arg.Any<string>()).Returns(false);
 
-        var command = new RegisterUserCommand("kc-002", "João", "admin", null, null);
+        var command = new RegisterUserCommand("zitadel-002", "João", "admin", null, null);
 
         var result = await _handler.Handle(command, CancellationToken.None);
 
@@ -72,9 +72,9 @@ public sealed class RegisterUserCommandHandlerTests
     [Fact]
     public async Task Handle_ComTelefoneValido_DeveRetornarSucessoComPhone()
     {
-        _readRepository.ExistsByKeycloakIdAsync(Arg.Any<string>()).Returns(false);
+        _readRepository.ExistsByZitadelUserIdAsync(Arg.Any<string>()).Returns(false);
 
-        var command = new RegisterUserCommand("kc-003", "Maria", "lojista", null, "11999887766");
+        var command = new RegisterUserCommand("zitadel-003", "Maria", "lojista", null, "11999887766");
 
         var result = await _handler.Handle(command, CancellationToken.None);
 

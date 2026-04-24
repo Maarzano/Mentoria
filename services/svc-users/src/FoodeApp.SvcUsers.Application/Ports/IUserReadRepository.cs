@@ -9,7 +9,7 @@ namespace FoodeApp.Svcusers.Application.Ports;
 /// </summary>
 public interface IUserReadRepository
 {
-    Task<bool> ExistsByKeycloakIdAsync(string keycloakId, CancellationToken ct = default);
+    Task<bool> ExistsByZitadelUserIdAsync(string zitadelUserId, CancellationToken ct = default);
     Task<UserProfileDto?> FindByIdAsync(Guid id, CancellationToken ct = default);
     Task<IReadOnlyList<UserProfileDto>> FindAllAsync(CancellationToken ct = default);
 }

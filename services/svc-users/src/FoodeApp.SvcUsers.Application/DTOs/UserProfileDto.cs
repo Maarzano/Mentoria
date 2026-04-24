@@ -6,7 +6,7 @@ namespace FoodeApp.Svcusers.Application.DTOs;
 /// </summary>
 public sealed record UserProfileDto(
     Guid Id,
-    string KeycloakId,
+    string ZitadelUserId,
     string DisplayName,
     string? AvatarUrl,
     string? Phone,

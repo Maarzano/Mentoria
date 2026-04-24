@@ -1,0 +1,88 @@
+################################################################################
+# ZITADEL Helm Values (ADR-026)
+#
+#   helm repo add zitadel https://charts.zitadel.com
+#   helm install zitadel zitadel/zitadel -n foodeapp-system -f infra/k8s/base/zitadel/values.yaml
+#
+# O ZITADEL substitui o Keycloak como IAM do FoodeApp. Exposto internamente
+# via ClusterIP e externamente via Kong (ADR-009) — o Kong valida JWT por JWKS.
+################################################################################
+
+replicaCount: 2
+
+# Masterkey — injetada via Secret pelo External Secrets Operator (Azure KV).
+zitadel:
+  masterkeyFromSecret:
+    name: zitadel-masterkey
+    key: masterkey
+
+  # Config do ZITADEL (mesclado com zitadel-config ConfigMap pelo chart).
+  configmapConfig:
+    ExternalSecure: true
+    TLS:
+      Enabled: false          # TLS termina no Istio/Kong — ADR-022
+    Database:
+      Postgres:
+        Host: ""              # FQDN do PostgreSQL Flexible Server (output do Terraform)
+        Port: 5432
+        Database: zitadel
+        User:
+          Username: zitadel
+          SSL:
+            Mode: require
+        Admin:
+          Username: pgadmin
+          SSL:
+            Mode: require
+    DefaultInstance:
+      Org:
+        Name: FoodeApp
+      Features:
+        LoginDefaultOrg: true
+
+  # Segredos do DB (criados fora deste chart — ver External Secrets).
+  dbSslRootCrtSecret: ""
+  dbSslUserCrtSecret: ""
+  secretConfig:
+    Database:
+      Postgres:
+        User:
+          Password: ""        # vinda do Secret 'zitadel-db-user'
+        Admin:
+          Password: ""        # vinda do Secret 'zitadel-db-admin'
+
+# Recursos (HA para staging/prod)
+resources:
+  requests:
+    cpu: 300m
+    memory: 512Mi
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+
+service:
+  type: ClusterIP
+  port: 8080
+  protocol: http2
+
+# Probes padrão do chart — ZITADEL expõe /debug/ready e /debug/healthz
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+
+# Node pool dedicado a infra (Kong, RabbitMQ, Flagsmith, ZITADEL)
+nodeSelector:
+  role: infra
+
+tolerations:
+  - key: workload
+    operator: Equal
+    value: infra
+    effect: NoSchedule
+
+# Ingress via Kong — declarado no overlay (host específico por env)
+ingress:
+  enabled: false

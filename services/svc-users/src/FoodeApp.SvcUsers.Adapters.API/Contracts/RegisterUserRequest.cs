@@ -5,7 +5,7 @@ namespace FoodeApp.Svcusers.Adapters.API.Contracts;
 /// transformações/versionamento de contrato sem afetar a Application layer.
 /// </summary>
 public sealed record RegisterUserRequest(
-    string KeycloakId,
+    string ZitadelUserId,
     string DisplayName,
     string Role,
     string? AvatarUrl,

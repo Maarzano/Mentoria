@@ -1,7 +1,7 @@
 ################################################################################
 # svc-users — users & Perfis de Usuário
 # Schema DB: foodeapp_users | Porta: 8080
-# Responsabilidade: perfis de aplicação pós-Keycloak, favoritos
+# Responsabilidade: Application Profile pós-ZITADEL (ADR-026), favoritos
 ################################################################################
 
 ---

@@ -7,8 +7,8 @@ public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUse
 {
     public RegisterUserCommandValidator()
     {
-        RuleFor(x => x.KeycloakId)
-            .NotEmpty().WithMessage("keycloakId é obrigatório.");
+        RuleFor(x => x.ZitadelUserId)
+            .NotEmpty().WithMessage("zitadelUserId é obrigatório.");
 
         RuleFor(x => x.DisplayName)
             .NotEmpty().WithMessage("displayName é obrigatório.")

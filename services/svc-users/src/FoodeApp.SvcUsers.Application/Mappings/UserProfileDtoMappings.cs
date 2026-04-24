@@ -8,7 +8,7 @@ internal static class UserProfileDtoMappings
 {
     internal static UserProfileDto ToUserProfileDto(this User user) => new(
         user.Id,
-        user.KeycloakId,
+        user.ZitadelUserId,
         user.DisplayName,
         user.AvatarUrl,
         user.Phone?.Value,

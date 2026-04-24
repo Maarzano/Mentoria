@@ -61,7 +61,7 @@ variable "services_node_max" {
   default     = 10
 }
 
-# ─── Infra Node Pool (Kong, Keycloak, RabbitMQ, Flagsmith) ────────────────────
+# ─── Infra Node Pool (Kong, ZITADEL, RabbitMQ, Flagsmith) ────────────────────
 
 variable "infra_vm_size" {
   description = "VM size do infra node pool"

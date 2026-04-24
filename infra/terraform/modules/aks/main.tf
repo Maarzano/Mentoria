@@ -4,7 +4,7 @@
 # policy, Log Analytics e quatro node pools:
 #   system   — kube-system (only_critical_addons_enabled)
 #   services — microserviços + BFFs (sem taint, destino padrão)
-#   infra    — Kong, Keycloak, RabbitMQ, Flagsmith (taint workload=infra)
+#   infra    — Kong, ZITADEL, RabbitMQ, Flagsmith (taint workload=infra)
 #   monitor  — Prometheus, Loki, Tempo, Grafana, OTel (taint workload=monitor)
 ################################################################################
 
@@ -134,7 +134,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "services" {
   tags = var.tags
 }
 
-# ─── Infra Node Pool (Kong, Keycloak, RabbitMQ, Flagsmith) ────────────────────
+# ─── Infra Node Pool (Kong, ZITADEL, RabbitMQ, Flagsmith) ────────────────────
 
 resource "azurerm_kubernetes_cluster_node_pool" "infra" {
   name                  = "infra"

@@ -8,9 +8,10 @@
 
   <ItemGroup>
     <!--
-      ADR-026: O Keycloak Admin Client será adicionado aqui quando precisarmos
-      criar usuários no Keycloak programaticamente (ex: fluxo administrativo).
-      Por ora o svc-users apenas consome headers injetados pelo Kong — sem chamadas ao Keycloak.
+      ADR-026: Um cliente da ZITADEL Management API será adicionado aqui quando precisarmos
+      criar/atualizar usuários no IAM programaticamente (ex: fluxo administrativo,
+      promoção comprador→lojista, sincronização de perfis).
+      Por ora o svc-users apenas consome headers injetados pelo Kong — sem chamadas ao IdP.
     -->
   </ItemGroup>
 

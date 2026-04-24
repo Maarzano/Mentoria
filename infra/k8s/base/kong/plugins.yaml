@@ -63,7 +63,7 @@ config:
 plugin: cors
 
 ---
-# KongClusterPlugin — JWT validated globalmente pelo Keycloak JWKS
+# KongClusterPlugin — JWT validado globalmente pelo ZITADEL via JWKS
 apiVersion: configuration.konghq.com/v1
 kind: KongClusterPlugin
 metadata:
@@ -71,8 +71,8 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "kong"
 config:
-  # Kong valida JWT localmente usando JWKS endpoint do Keycloak
-  # Não chama Keycloak a cada request
+  # Kong valida JWT localmente usando JWKS endpoint do ZITADEL
+  # (issuer/.well-known/openid-configuration → jwks_uri). Não chama o IdP por request.
   uri_param_names:
     - jwt
   cookie_names: []

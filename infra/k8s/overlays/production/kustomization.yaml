@@ -97,7 +97,7 @@ configMapGenerator:
       # terraform output -chdir=infra/terraform/envs/production redis_hostname
       - REDIS_HOST=REPLACE_WITH_REDIS_HOST
       - RABBITMQ_HOST=rabbitmq.foodeapp-system.svc.cluster.local
-      - KEYCLOAK_REALM_URL=https://users.foodeapp.com.br/realms/foodeapp
+      - ZITADEL_ISSUER_URL=https://id.foodeapp.com.br
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://opentelemetry-collector.monitoring.svc.cluster.local:4317
       - OTEL_SERVICE_NAMESPACE=foodeapp-production
 

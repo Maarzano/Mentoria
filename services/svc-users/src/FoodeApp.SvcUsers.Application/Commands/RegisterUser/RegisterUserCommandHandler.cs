@@ -18,11 +18,11 @@ public sealed class RegisterUserCommandHandler(
 {
     public async Task<Result<UserProfileDto>> Handle(RegisterUserCommand command, CancellationToken ct)
     {
-        if (await readRepository.ExistsByKeycloakIdAsync(command.KeycloakId, ct))
-            return UserErrors.AlreadyExists(command.KeycloakId);
+        if (await readRepository.ExistsByZitadelUserIdAsync(command.ZitadelUserId, ct))
+            return UserErrors.AlreadyExists(command.ZitadelUserId);
 
         var userResult = User.Register(
-            Guid.NewGuid(), command.KeycloakId, command.DisplayName,
+            Guid.NewGuid(), command.ZitadelUserId, command.DisplayName,
             command.Role, command.AvatarUrl, command.Phone);
 
         if (userResult.IsFailure)

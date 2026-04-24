@@ -26,6 +26,71 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
 
+  # ── ZITADEL (ADR-026 — IAM) ───────────────────────────────────────────────
+  # Fornece OIDC/OAuth2 para FoodeApp (registro email+senha, verificação de
+  # email, reset de senha, sessões, promoção de role). Modo dev-only: insecure
+  # (HTTP), masterkey fixa do .env, banco dedicado no mesmo Postgres via
+  # init container que cria a database 'zitadel'.
+  zitadel-init-db:
+    image: postgres:16-alpine
+    container_name: foodeapp-zitadel-init-db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGPORT: 5432
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    entrypoint:
+      - sh
+      - -c
+      - |
+        psql -d postgres -tc "SELECT 1 FROM pg_database WHERE datname='zitadel'" | grep -q 1 || \
+          psql -d postgres -c "CREATE DATABASE zitadel"
+    restart: "no"
+
+  zitadel:
+    image: ghcr.io/zitadel/zitadel:v2.71.1
+    container_name: foodeapp-zitadel
+    restart: unless-stopped
+    command: >
+      start-from-init
+      --masterkey ${ZITADEL_MASTERKEY}
+      --tlsMode disabled
+    environment:
+      ZITADEL_EXTERNALSECURE: "false"
+      ZITADEL_EXTERNALDOMAIN: ${ZITADEL_EXTERNAL_DOMAIN:-localhost}
+      ZITADEL_EXTERNALPORT: ${ZITADEL_PORT:-8180}
+      ZITADEL_PORT: 8080
+      ZITADEL_TLS_ENABLED: "false"
+      ZITADEL_DATABASE_POSTGRES_HOST: postgres
+      ZITADEL_DATABASE_POSTGRES_PORT: 5432
+      ZITADEL_DATABASE_POSTGRES_DATABASE: zitadel
+      ZITADEL_DATABASE_POSTGRES_USER_USERNAME: ${POSTGRES_USER}
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: ${POSTGRES_PASSWORD}
+      ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: ${POSTGRES_USER}
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: ${POSTGRES_PASSWORD}
+      ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: admin@foodeapp.localhost
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: Admin@FoodeApp1!
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: "false"
+      ZITADEL_FIRSTINSTANCE_ORG_NAME: FoodeApp
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL_ADDRESS: admin@foodeapp.localhost
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL_VERIFIED: "true"
+    depends_on:
+      zitadel-init-db:
+        condition: service_completed_successfully
+    ports:
+      - "${ZITADEL_PORT:-8180}:8080"
+    healthcheck:
+      test: ["CMD", "/app/zitadel", "ready", "--config", "/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
   # ── Observabilidade local (ADR-018) ────────────────────────────────────────
   # Para modo DEV LOCAL: svc-users roda nativo via dotnet run/watch (não container)
   # Para modo PROD: docker-compose.yml.prod com svc-users containerizado

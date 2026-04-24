@@ -12,7 +12,7 @@ public sealed class M001_CreateUsersAndOutbox : Migration
 
         Create.Table("users").InSchema("users")
             .WithColumn("id").AsGuid().PrimaryKey()
-            .WithColumn("keycloak_id").AsString().NotNullable().Unique()
+            .WithColumn("zitadel_user_id").AsString().NotNullable().Unique()
             .WithColumn("display_name").AsString().NotNullable()
             .WithColumn("avatar_url").AsString().Nullable()
             .WithColumn("phone").AsString().Nullable()

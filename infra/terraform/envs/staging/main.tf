@@ -193,11 +193,11 @@ module "aks" {
   services_node_min   = 1   # ocioso: 1 node → ~$130/mês
   services_node_max   = 10  # load test: até 10 nodes → ~$1.300/mês por X horas
 
-  # Infra pool — Kong, Keycloak, RabbitMQ, Flagsmith
+  # Infra pool — Kong, ZITADEL, RabbitMQ, Flagsmith
   # B2ms: 2 vCPU / 8 GB RAM — era Standard_D2s_v3 (2×).
   infra_vm_size    = "Standard_B2ms"
   infra_node_count = 1
-  infra_node_min   = 1   # 1 node carrega Kong + Keycloak + RabbitMQ confortavelmente
+  infra_node_min   = 1   # 1 node carrega Kong + ZITADEL + RabbitMQ confortavelmente
   infra_node_max   = 2
 
   # Monitor pool — Prometheus, Loki, Tempo, Grafana, OTel

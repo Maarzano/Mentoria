@@ -26,7 +26,7 @@ ingressController:
   watchNamespaces:
     - foodeapp-production
     - foodeapp-staging
-    - foodeapp-system      # necessário para rotas do Keycloak e RabbitMQ
+    - foodeapp-system      # necessário para rotas do ZITADEL e RabbitMQ
 
 # Service do proxy (entrada pública)
 proxy:

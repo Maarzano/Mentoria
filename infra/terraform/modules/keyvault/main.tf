@@ -106,8 +106,8 @@ resource "azurerm_key_vault_secret" "mercadopago_access_token" {
   }
 }
 
-resource "azurerm_key_vault_secret" "keycloak_admin_password" {
-  name         = "keycloak-admin-password"
+resource "azurerm_key_vault_secret" "zitadel_masterkey" {
+  name         = "zitadel-masterkey"
   value        = "PLACEHOLDER-CHANGE-ME"
   key_vault_id = azurerm_key_vault.main.id
 
