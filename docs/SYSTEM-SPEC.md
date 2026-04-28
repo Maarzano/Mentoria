@@ -47,14 +47,14 @@ Comprador paga via app (crédito, débito ou PIX)
 | Ator | Descrição | Canal Primário | BFF | Funcionalidades-Chave |
 |------|-----------|---------------|-----|----------------------|
 | **Lojista** | Dono de food truck / estabelecimento fixo | **Web (React)** — navegador mobile, notebook ou desktop | `bff-web` | Configura loja, monta cardápios, gerencia pedidos, cria eventos |
-| **Comprador** | Consumidor final que faz pedidos | **Mobile (React Native)** — smartphone | `bff-app` | Descobre food trucks, faz pedidos, acompanha em tempo real, avalia |
+| **Comprador** | Consumidor final que faz pedidos | **Mobile (React Native)** — smartphone | `bff-mobile` | Descobre food trucks, faz pedidos, acompanha em tempo real, avalia |
 
 ### Modelo de Usuários
 
 - **1 único Identity Provider** — ZITADEL (1 Org `FoodeApp`, 1 Project `FoodeApp`)
 - **2 Realm Roles** — `comprador` e `lojista` (no mesmo realm, sem realms separados)
 - **1 microserviço de perfil** — `svc-users` armazena perfil de aplicação de ambos os roles
-- **Separação por BFF** — `bff-web` serve apenas funcionalidades do lojista; `bff-app` serve apenas funcionalidades do comprador
+- **Separação por BFF** — `bff-web` serve apenas funcionalidades do lojista; `bff-mobile` serve apenas funcionalidades do comprador
 - **Autorização** — Kong valida JWT do ZITADEL via JWKS e injeta `X-User-Id` (claim `sub`) e `X-User-Roles` (project roles) nos headers; cada endpoint/BFF verifica o role
 
 ---
@@ -168,7 +168,7 @@ Lojista está em um evento/feira:
 ```
 Comprador abre app → ZITADEL (email/senha; Google/Apple planejados — ver ADR-026)
     → JWT com sub + role=comprador
-    → bff-app chama svc-users: POST /v1/profiles/me
+    → bff-mobile chama svc-users: POST /v1/profiles/me
     → Perfil com displayName, foto (avatar)
 ```
 
@@ -372,7 +372,7 @@ Comprador usa barra de busca:
 | **SAGA** | ADR-007 | Fluxo de pedido + pagamento via MassTransit state machine |
 | **Hexagonal Architecture** | — | Domain → Application → Adapters (API, Data, Messaging, External) |
 | **Result\<T\>** | — | Railway-oriented programming: sem exceptions para fluxo de negócio |
-| **BFF per Channel** | ADR-010 | `bff-web` (lojista) e `bff-app` (comprador) |
+| **BFF per Channel** | ADR-010 | `bff-web` (lojista) e `bff-mobile` (comprador) |
 | **Idempotência** | ADR-013 | `Idempotency-Key` no header → check Redis → audit PostgreSQL |
 | **Multi-layer Cache** | ADR-015 | L1 (in-process) → L2 (Redis) → L3 (HTTP/CDN) |
 | **Resiliência** | ADR-016 | Polly: retry (exponential backoff + jitter), circuit breaker, fallback |
@@ -397,7 +397,7 @@ Comprador usa barra de busca:
     └──────┬─────────────────────────┬───────────────────────────┬──────┘
            │                         │                           │
     ┌──────▼──────┐           ┌──────▼──────┐            ┌──────▼──────┐
-    │   bff-web   │           │  bff-app    │            │ svc-payments│
+    │   bff-web   │           │ bff-mobile  │            │ svc-payments│
     │  (Lojista)  │           │ (Comprador) │            │  (webhook)  │
     └──────┬──────┘           └──────┬──────┘            └──────┬──────┘
            │                         │                          │
@@ -496,7 +496,7 @@ services/svc-{nome}/
 | 7 | `svc-notifications` | 8086 | `foodeapp_notifications` | `notifications` | svc-users | Push/Email/WhatsApp + SignalR |
 | 8 | `svc-payments` | 8087 | `foodeapp_payments` | `payments` | svc-users, svc-orders | Mercado Pago, estornos |
 | — | `bff-web` | 8090 | — | — | users, catalog, establishments, orders | Agregador Lojista |
-| — | `bff-app` | 8091 | — | — | users, catalog, establishments, orders, location, events | Agregador Comprador |
+| — | `bff-mobile` | 8091 | — | — | users, catalog, establishments, orders, location, events | Agregador Comprador |
 | — | `web` | 3001 | — | — | bff-web | Frontend React (Lojista) |
 | — | `mobile` | 19000 | — | — | bff-mobile | Frontend React Native (Comprador) |
 
@@ -504,7 +504,7 @@ services/svc-{nome}/
 
 #### `svc-users` — Perfis & Favoritos
 
-- Armazena Application Profile pós-login no ZITADEL (display name, avatar, phone, tax_id, role)
+- Armazena Application Profile pós-login no ZITADEL (display name, avatar, phone, role)
 - Gerencia favoritos do comprador (lojas favoritadas)
 - Publica `UserRegisteredEvent` via Outbox
 - **Não faz autenticação** — ZITADEL cuida disso
@@ -886,7 +886,7 @@ establishments.reviews (
 | Origem | Destino | Quando |
 |--------|---------|--------|
 | `bff-web` | `svc-users`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agregar dados para o lojista |
-| `bff-app` | `svc-users`, `svc-location`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agregar dados para o comprador |
+| `bff-mobile` | `svc-users`, `svc-location`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agregar dados para o comprador |
 | `svc-orders` | `svc-catalog` | Validar disponibilidade e obter snapshot de preço no checkout |
 
 ### Comunicação Assíncrona (RabbitMQ + Outbox)
@@ -1045,7 +1045,7 @@ Serviços .NET rodam **nativamente** (`dotnet run`) no dev local, não em contai
 | svc-notifications |
 | svc-payments |
 | bff-web |
-| bff-app |
+| bff-mobile |
 | web (frontend React) |
 | mobile (frontend React Native) |
 | Integração ZITADEL |
@@ -1145,7 +1145,7 @@ Lojista cria conta → cria loja → monta cardápio → ativa
 
 | Slice | Funcionalidade | Serviços |
 |-------|---------------|----------|
-| 2 | Comprador vê lojas e cardápio | svc-catalog (read) + bff-app |
+| 2 | Comprador vê lojas e cardápio | svc-catalog (read) + bff-mobile |
 | 3 | Comprador faz pedido | svc-orders + svc-payments + Redis + RabbitMQ |
 | 4 | Status em tempo real | svc-notifications + SignalR + Redis backplane |
 | 5 | Geolocalização | svc-location + PostGIS + Redis |
@@ -1168,7 +1168,7 @@ Lojista cria conta → cria loja → monta cardápio → ativa
 | ADR-007 | SAGA Pattern | Transações distribuídas (pedido + pagamento) |
 | ADR-008 | Orquestração + Coreografia | SAGA orquestrada, notificações coreografadas |
 | ADR-009 | Kong API Gateway | JWT validation, rate limiting, routing externo |
-| ADR-010 | BFF por canal | bff-web (lojista), bff-app (comprador) |
+| ADR-010 | BFF por canal | bff-web (lojista), bff-mobile (comprador) |
 | ADR-011 | Docker + Kubernetes | Containerização e orquestração |
 | ADR-012 | Redis | Cache, carrinho, geo hot, backplane WebSocket, idempotência |
 | ADR-013 | Idempotência | Idempotency-Key header + Redis + PostgreSQL audit |

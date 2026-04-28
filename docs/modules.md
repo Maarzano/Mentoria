@@ -1,8 +1,8 @@
 # Decomposição em Módulos — FoodeApp
 
-**Versão:** 1.1  
-**Data:** 2026-03-11  
-**Baseado em:** ADR-001, ADR-002, ADR-004, ADR-006, ADR-007, ADR-009, ADR-010, ADR-012, ADR-014, ADR-017, ADR-022, ADR-025, ADR-026, ADR-027
+**Versão:** 1.2  
+**Data:** 2026-04-28  
+**Baseado em:** ADR-001, ADR-002, ADR-004, ADR-006, ADR-007, ADR-009, ADR-010, ADR-012, ADR-014, ADR-017, ADR-022, ADR-025, ADR-026, ADR-027 (alinhado com SYSTEM-SPEC.md)
 
 ---
 
@@ -15,9 +15,9 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
                           │  Kong   │  ← Tráfego externo (ADR-009)
                           └────┬────┘
                ┌───────────────┴───────────────┐
-          ┌────▼─────┐                   ┌─────▼────┐
-          │ bff-web  │                   │ bff-app  │
-          │(Lojista) │                   │(Usuário) │
+          ┌────▼─────┐                   ┌─────▼─────┐
+          │ bff-web  │                   │ bff-mobile │
+          │(Lojista) │                   │ (Usuário)  │
           └────┬─────┘                   └─────┬────┘
                │          Istio mTLS           │
          ──────┴───────────────────────────────┴──────
@@ -46,7 +46,7 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
 | 7 | `svc-notifications` | `notifications` | Sistema (eventos) | Push/Email/WhatsApp + hub SignalR/WebSocket |
 | 8 | `svc-payments` | `payments` | Sistema (SAGA) | Pagamentos via Mercado Pago e estornos |
 | `bff-web` | — | Lojista | Agregador para o painel do lojista (React Web) |
-| `bff-app` | — | Usuário | Agregador para o app do consumidor (React Native) |
+| `bff-mobile` | — | Usuário | Agregador para o app do consumidor (React Native) |
 
 ---
 
@@ -66,7 +66,7 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
 - Promoção comprador → lojista: mesmo e-mail reutiliza o perfil existente (ver ADR-026)
 
 **Responsabilidades:**
-- Criar e atualizar perfil de aplicação (nome de exibição, avatar, telefone, CPF/CNPJ)
+- Criar e atualizar perfil de aplicação (nome de exibição, avatar, telefone)
 - Registrar a role do usuário no sistema (`comprador` | `lojista`)
 - Promover comprador para lojista (mantém comprador, adiciona lojista)
 - Gerenciar lista de lojas favoritadas pelo consumidor
@@ -81,7 +81,6 @@ users.users (
   display_name      VARCHAR(100) NOT NULL,
   avatar_url        TEXT,
   phone             VARCHAR(20),
-  tax_id            VARCHAR(20),                  -- CPF (comprador) ou CNPJ (lojista)
   role              VARCHAR(20) NOT NULL,         -- 'comprador' | 'lojista'
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -283,7 +282,7 @@ events.participations (
 - Redis para acesso de baixa latência à posição atual (TTL longo, sobrescrito a cada update)
 - PostgreSQL + PostGIS para geo-queries: "estabelecimentos abertos num raio de X km"
 - Flush periódico do Redis para o PostgreSQL (persistência de histórico)
-- Publica `EstabelecimentoLocalizacaoAtualizada` via RabbitMQ para o `svc-notifications` (que repassa ao hub WebSocket)
+- Publica `establishment.location_updated` via RabbitMQ para o `svc-notifications` (que repassa ao hub WebSocket)
 
 **Tabelas:**
 
@@ -428,7 +427,7 @@ TTL: 86400 (24h, renovado a cada alteração)
 
 *Realtime (in-app):*
 - Manter conexões WebSocket/SignalR autenticadas (JWT no handshake)
-- Consumir eventos do RabbitMQ: `PedidoStatusAlterado`, `EstabelecimentoLocalizacaoAtualizada`
+- Consumir eventos do RabbitMQ: `order.status_changed`, `establishment.location_updated`
 - Emitir eventos para grupos SignalR corretos (`user:{id}`, `establishment:{id}`)
 - Redis backplane para múltiplas instâncias (ADR-012, ADR-014)
 
@@ -486,7 +485,7 @@ notifications.logs (
 - Processar cobrança via cartão (tokenizado) ou PIX
 - Receber webhooks do Mercado Pago para confirmar/rejeitar pagamentos assíncronos
 - Emitir estorno em compensação de SAGA quando pedido é cancelado
-- Publicar `PagamentoConfirmado` / `PagamentoFalhou` / `PagamentoEstornado` via Outbox
+- Publicar `payment.confirmed` / `payment.failed` / `payment.refunded` via Outbox
 - Garantir idempotência via `X-Idempotency-Key` (ADR-013)
 
 **Tabelas:**
@@ -565,7 +564,7 @@ PUT  /orders/:id/status          → avança status do pedido
 
 ---
 
-### `bff-app` — Backend for Frontend (App do Consumidor)
+### `bff-mobile` — Backend for Frontend (App do Consumidor)
 
 **Schema:** nenhum
 
@@ -602,7 +601,7 @@ POST /favorites/:establishment_id → favoritar/desfavoritar loja
 | Origem | Destino | Motivo |
 |--------|---------|--------|
 | `bff-web` | `svc-users`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agrega dados para o painel |
-| `bff-app` | `svc-users`, `svc-location`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agrega dados para o app |
+| `bff-mobile` | `svc-users`, `svc-location`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agrega dados para o app |
 | `svc-orders` | `svc-catalog` | Valida disponibilidade e obtém snapshot de preço (carrinho + checkout) |
 
 ### Assíncrona (RabbitMQ + Outbox — ADR-006, ADR-017)
@@ -624,15 +623,14 @@ POST /favorites/:establishment_id → favoritar/desfavoritar loja
 ## SAGA: Fluxo Principal de Pedido
 
 ```
-Usuário faz checkout (bff-app → svc-orders, que lê o carrinho do Redis)
+Usuário faz checkout (bff-mobile → svc-orders, que lê o carrinho do Redis)
 │
 ├─ svc-orders: limpa carrinho Redis + cria pedido PENDENTE + salva SAGA state + Outbox { order.created }
 │
 ├─ svc-payments: recebe order.created → processa cobrança
 │     ├─ Sucesso → Outbox { payment.confirmed }
 │     │     └─ svc-orders: pedido → AGUARDANDO_ACEITE + Outbox { order.status_changed }
-│     │           ├─ svc-realtime: notifica usuário e lojista
-│     │           └─ svc-notifications: envia push "Pedido recebido"
+│     │           └─ svc-notifications: WebSocket (usuário/lojista) + push "Pedido recebido"
 │     │
 │     └─ Falha → Outbox { payment.failed }
 │           └─ svc-orders: pedido → CANCELADO (compensação)

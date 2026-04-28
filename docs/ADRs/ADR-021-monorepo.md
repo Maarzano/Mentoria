@@ -28,31 +28,37 @@ Para um time pequeno em fase inicial de produto, a escolha impacta diretamente a
 
 Adotaremos **monorepo único** para conter todo o código-fonte do FoodeApp inicialmente.
 
-### Estrutura proposta do monorepo:
+### Estrutura adotada do monorepo:
 ```
 FoodeApp/
-  src/
-    services/
-      orders/           ← Microserviço de pedidos (.NET)
-      payments/         ← Microserviço de pagamentos (.NET)
-      menu/             ← Microserviço de cardápio (.NET)
-      users/            ← Microserviço de usuários (.NET)
-      notifications/    ← Microserviço de notificações (.NET)
-    bffs/
-      bff-web/          ← BFF para o frontend Web (.NET)
-      bff-app/          ← BFF para o app mobile (.NET)
-    frontends/
-      web/              ← Frontend React Web
-      app/              ← App React Native
-    shared/
-      contracts/        ← Contratos de mensagens e DTOs compartilhados
-      libs/             ← Bibliotecas internas (ex: middlewares, extensões)
+  apps/
+    web/                ← Frontend React Web (Lojista)
+    mobile/             ← App React Native (Comprador)
+    bff-web/            ← BFF para o painel do Lojista (.NET)
+    bff-mobile/         ← BFF para o app do Comprador (.NET)
+  services/
+    svc-users/           ← Application Profile pós-ZITADEL (.NET)
+    svc-establishments/ ← Cadastro de lojas (.NET)
+    svc-catalog/        ← Cardápios, categorias, itens (.NET)
+    svc-events/         ← Eventos/feiras (.NET)
+    svc-location/       ← Geolocalização GPS (.NET)
+    svc-orders/         ← Pedidos + carrinho + SAGA (.NET)
+    svc-payments/       ← Mercado Pago (.NET)
+    svc-notifications/  ← Push/Email/WhatsApp + WebSocket (.NET)
+  shared/
+    contracts-proto/    ← Contratos compartilhados
+    kernel-dotnet/      ← Kernel compartilhado .NET (settings, extensions, observabilidade)
   infra/
-    terraform/          ← IaC (ADR-020)
-    k8s/                ← Manifests Kubernetes / Charts Helm
+    local/              ← Configs Docker Compose (Grafana, Prometheus, Loki, Tempo, OTel)
+    k8s/                ← Manifests Kubernetes (base + overlays: homelab, staging, production)
+    terraform/          ← IaC (ADR-020) — bootstrap + envs + modules
+    scripts/            ← Scripts auxiliares
   docs/
     ADRs/               ← Este diretório
-    diagrams/
+    diagrams/           ← Diagramas C4 e tabelas
+    design/             ← Wireframes (Excalidraw)
+  docker-compose.yml    ← Infraestrutura local
+  proj.ps1              ← CLI do projeto
 ```
 
 ### CI/CD com monorepo:

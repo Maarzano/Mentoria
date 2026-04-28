@@ -26,7 +26,7 @@ Criaremos **dois BFFs dedicados**, um por canal de frontend:
 | BFF | Serve | Responsabilidades |
 |-----|-------|------------------|
 | `bff-web` | Frontend React Web | Agrega dados para dashboards, relatórios, gestão de cardápio, painel do restaurante |
-| `bff-app` | App React Native | Agrega dados para fluxo do consumidor: busca, pedido, status, histórico |
+| `bff-mobile` | App React Native | Agrega dados para fluxo do consumidor: busca, pedido, status, histórico |
 
 Cada BFF:
 - É um serviço .NET separado e deployável independentemente.
