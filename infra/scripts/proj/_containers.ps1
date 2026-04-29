@@ -158,11 +158,16 @@ function Invoke-ServiceContainerUp {
 
     Write-Host "       [$Name] docker build..." -ForegroundColor DarkGray -NoNewline
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
-    docker build -t $imageName -f $dockerfile $repoRoot 2>$null
+    $buildLog = docker build -t $imageName -f $dockerfile $repoRoot 2>&1
     $sw.Stop()
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host " FALHOU" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "  --- docker build output ($Name) ---" -ForegroundColor Red
+        $buildLog | ForEach-Object { Write-Host "  $_" -ForegroundColor DarkGray }
+        Write-Host "  --- fim do output ---" -ForegroundColor Red
+        Write-Host ""
         return $false
     }
     Write-Host " OK ($([math]::Round($sw.Elapsed.TotalSeconds, 1))s)" -ForegroundColor Green
@@ -185,10 +190,15 @@ function Invoke-ServiceContainerUp {
     $runArgs += $envArgs
     $runArgs += $imageName
 
-    & docker @runArgs 2>$null | Out-Null
+    & docker @runArgs 2>&1 | Tee-Object -Variable runLog | Out-Null
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host " FALHOU" -ForegroundColor Red
+        Write-Host ""
+        Write-Host "  --- docker run output ($Name) ---" -ForegroundColor Red
+        $runLog | ForEach-Object { Write-Host "  $_" -ForegroundColor DarkGray }
+        Write-Host "  --- fim do output ---" -ForegroundColor Red
+        Write-Host ""
         return $false
     }
     Write-Host " OK (:$hostPort)" -ForegroundColor Green
