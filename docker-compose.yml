@@ -1,7 +1,17 @@
+# ==============================================================================
+# FoodeApp — docker-compose (DEV LOCAL)
+#
+# Sobe infraestrutura: Postgres + Zitadel + stack de observabilidade.
+# Os microserviços (.NET) podem rodar nativos (`dotnet run`) ou containerizados
+# via `proj.ps1 run -c <nome>` — em ambos os casos eles entram nesta network.
+# ==============================================================================
+
+x-postgres-image: &postgres-image postgres:16-alpine
+
 services:
   postgres:
-    image: postgres:16-alpine
-    container_name: foodeapp-postgres-users
+    image: *postgres-image
+    container_name: foodeapp-postgres
     command:
       - postgres
       - -c
@@ -13,15 +23,16 @@ services:
       - -c
       - log_line_prefix=%t [%p] %u@%d 
     environment:
-      POSTGRES_DB: ${POSTGRES_DB_users}
+      POSTGRES_DB: ${POSTGRES_DB_USERS}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_users}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB_USERS}"]
       interval: 5s
       timeout: 5s
       retries: 20
     volumes:
+      # Volume mantém o nome legado (`_users_data`) para preservar dados existentes.
       - foodeapp_postgres_users_data:/var/lib/postgresql/data
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -32,7 +43,7 @@ services:
   # (HTTP), masterkey fixa do .env, banco dedicado no mesmo Postgres via
   # init container que cria a database 'zitadel'.
   zitadel-init-db:
-    image: postgres:16-alpine
+    image: *postgres-image
     container_name: foodeapp-zitadel-init-db
     depends_on:
       postgres:
@@ -85,15 +96,16 @@ services:
     ports:
       - "${ZITADEL_PORT:-8180}:8080"
     healthcheck:
-      test: ["CMD", "/app/zitadel", "ready", "--config", "/dev/null"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/debug/ready"]
       interval: 10s
       timeout: 5s
       retries: 20
       start_period: 30s
 
   # ── Observabilidade local (ADR-018) ────────────────────────────────────────
-  # Para modo DEV LOCAL: svc-users roda nativo via dotnet run/watch (não container)
-  # Para modo PROD: docker-compose.yml.prod com svc-users containerizado
+  # Toda a stack OTel + Grafana sobe junto com a infra. Os microserviços
+  # exportam telemetria via OTLP (4317/4318) — independentemente de rodarem
+  # nativos (dotnet run/watch) ou containerizados (proj.ps1 run -c).
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.119.0
@@ -106,11 +118,13 @@ services:
     ports:
       - "${OTEL_GRPC_PORT:-4317}:4317"    # OTLP gRPC
       - "${OTEL_HTTP_PORT:-4318}:4318"    # OTLP HTTP
-      - "8889:8889"                       # Prometheus exporter (o Prometheus faz scraping aqui)
+      - "8889:8889"                       # Prometheus exporter (Prometheus faz scrape aqui)
       - "13133:13133"                     # Health check do collector
     depends_on:
-      - tempo
-      - loki
+      tempo:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
 
   prometheus:
     image: prom/prometheus:v3.1.0
@@ -130,8 +144,14 @@ services:
       - prometheus_data:/data
     ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
     depends_on:
-      - otel-collector
+      otel-collector:
+        condition: service_started
 
   tempo:
     image: grafana/tempo:2.7.1
@@ -143,6 +163,11 @@ services:
       - tempo_data:/tmp/tempo
     ports:
       - "${TEMPO_PORT:-3200}:3200"    # Tempo HTTP (Grafana consulta aqui)
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3200/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   loki:
     image: grafana/loki:2.9.7
@@ -154,6 +179,11 @@ services:
       - loki_data:/tmp/loki
     ports:
       - "${LOKI_PORT:-3100}:3100"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3100/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   promtail:
     image: grafana/promtail:3.0.0
@@ -164,15 +194,16 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
-      - loki
+      loki:
+        condition: service_healthy
 
   grafana:
     image: grafana/grafana:11.4.0
     container_name: foodeapp-grafana
     environment:
-      GF_users_ANONYMOUS_ENABLED: "true"
-      GF_users_ANONYMOUS_ORG_ROLE: Admin
-      GF_users_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
     volumes:
       - ./infra/local/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml:ro
       - ./infra/local/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml:ro
@@ -181,9 +212,12 @@ services:
     ports:
       - "${GRAFANA_PORT:-3000}:3000"
     depends_on:
-      - prometheus
-      - tempo
-      - loki
+      prometheus:
+        condition: service_healthy
+      tempo:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
 
 volumes:
   foodeapp_postgres_users_data:
