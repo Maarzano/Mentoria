@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\FoodeApp.Svcusers.Application\FoodeApp.Svcusers.Application.csproj" />
-    <ProjectReference Include="..\..\src\FoodeApp.Svcusers.Domain\FoodeApp.Svcusers.Domain.csproj" />
+    <ProjectReference Include="..\..\src\FoodeApp.SvcUsers.Application\FoodeApp.SvcUsers.Application.csproj" />
+    <ProjectReference Include="..\..\src\FoodeApp.SvcUsers.Domain\FoodeApp.SvcUsers.Domain.csproj" />
   </ItemGroup>
 
 </Project>

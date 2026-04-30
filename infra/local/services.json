@@ -6,7 +6,7 @@
             "path": "services/svc-users",
             "entryProject": "src/FoodeApp.Svcusers.Adapters.API/FoodeApp.Svcusers.Adapters.API.csproj",
             "port": 8080,
-            "database": "POSTGRES_DB_users",
+            "database": "POSTGRES_DB_USERS",
             "depends": []
         },
         "svc-catalog": {

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -21,9 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FoodeApp.Svcusers.Domain\FoodeApp.Svcusers.Domain.csproj" />
-    <!-- IUserReadRepository retorna Application DTOs — dependência permitida (Adapters → Application) -->
-    <ProjectReference Include="..\FoodeApp.Svcusers.Application\FoodeApp.Svcusers.Application.csproj" />
+    <ProjectReference Include="..\FoodeApp.SvcUsers.Domain\FoodeApp.SvcUsers.Domain.csproj" />
+    <!-- IUserReadRepository retorna Application DTOs â€” dependÃªncia permitida (Adapters â†’ Application) -->
+    <ProjectReference Include="..\FoodeApp.SvcUsers.Application\FoodeApp.SvcUsers.Application.csproj" />
     <ProjectReference Include="..\..\..\..\shared\kernel-dotnet\src\FoodeApp.Kernel\FoodeApp.Kernel.csproj" />
   </ItemGroup>
 
