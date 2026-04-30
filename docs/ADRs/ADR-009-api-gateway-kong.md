@@ -35,7 +35,7 @@ Cliente (Web/App)
        ↓
      Kong (API Gateway)
        ↓
-   BFF Web  |  BFF App
+   BFF Web  |  BFF Mobile
        ↓
   Microserviços internos
 ```

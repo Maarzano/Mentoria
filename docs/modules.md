@@ -1,8 +1,8 @@
 # Decomposição em Módulos — FoodeApp
 
-**Versão:** 1.1  
-**Data:** 2026-03-11  
-**Baseado em:** ADR-001, ADR-002, ADR-004, ADR-006, ADR-007, ADR-009, ADR-010, ADR-012, ADR-014, ADR-017, ADR-022, ADR-025, ADR-026, ADR-027
+**Versão:** 1.3  
+**Data:** 2026-04-29  
+**Baseado em:** ADR-001, ADR-002, ADR-003 (revisado, stack poliglota), ADR-004, ADR-006, ADR-007, ADR-009, ADR-010, ADR-012, ADR-014, ADR-017, ADR-022, ADR-025, ADR-026, ADR-027 (alinhado com SYSTEM-SPEC.md)
 
 ---
 
@@ -15,9 +15,9 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
                           │  Kong   │  ← Tráfego externo (ADR-009)
                           └────┬────┘
                ┌───────────────┴───────────────┐
-          ┌────▼─────┐                   ┌─────▼────┐
-          │ bff-web  │                   │ bff-app  │
-          │(Lojista) │                   │(Usuário) │
+          ┌────▼─────┐                   ┌─────▼─────┐
+          │ bff-web  │                   │ bff-mobile │
+          │(Lojista) │                   │ (Usuário)  │
           └────┬─────┘                   └─────┬────┘
                │          Istio mTLS           │
          ──────┴───────────────────────────────┴──────
@@ -35,18 +35,22 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
 
 ## Tabela de Módulos
 
-| # | Serviço | Schema DB | Atores | Responsabilidade Principal |
-|---|---------|-----------|--------|---------------------------|
-| 1 | `svc-users` | `users` | Lojista, Usuário | Application Profile pós-ZITADEL: perfis, favoritos, promoção de role |
-| 2 | `svc-establishments` | `establishments` | Lojista | Cadastro, config e estado das lojas |
-| 3 | `svc-catalog` | `catalog` | Lojista, Usuário | Cardápios, categorias e itens |
-| 4 | `svc-events` | `events` | Lojista, Usuário | Eventos/feiras e vínculo com estabelecimentos |
-| 5 | `svc-location` | `locations` | Lojista, Usuário | GPS em tempo real (Redis hot) e geo-queries |
-| 6 | `svc-orders` | `orders` | Lojista, Usuário | Carrinho (Redis), ciclo de pedidos e SAGA |
-| 7 | `svc-notifications` | `notifications` | Sistema (eventos) | Push/Email/WhatsApp + hub SignalR/WebSocket |
-| 8 | `svc-payments` | `payments` | Sistema (SAGA) | Pagamentos via Mercado Pago e estornos |
-| `bff-web` | — | Lojista | Agregador para o painel do lojista (React Web) |
-| `bff-app` | — | Usuário | Agregador para o app do consumidor (React Native) |
+> Stack poliglota — ver [ADR-003](ADRs/ADR-003-stack-tecnologias.md) e os READMEs em [services/](../services/) e [apps/](../apps/).
+
+| # | Serviço | Linguagem | Schema DB | Atores | Responsabilidade Principal |
+|---|---------|-----------|-----------|--------|---------------------------|
+| 1 | `svc-users` | C# / .NET 10 | `users` | Lojista, Usuário | Application Profile pós-ZITADEL: perfis, favoritos, promoção de role |
+| 2 | `svc-establishments` | C# / .NET 10 | `establishments` | Lojista | Cadastro, config e estado das lojas |
+| 3 | `svc-catalog` | C# / .NET 10 | `catalog` | Lojista, Usuário | Cardápios, categorias e itens |
+| 4 | `svc-events` | C# / .NET 10 | `events` | Lojista, Usuário | Eventos/feiras e vínculo com estabelecimentos |
+| 5 | `svc-location` | **Go** | `locations` | Lojista, Usuário | GPS em tempo real (Redis hot) e geo-queries |
+| 6 | `svc-orders` | C# / .NET 10 | `orders` | Lojista, Usuário | Carrinho (Redis), ciclo de pedidos e SAGA |
+| 7 | `svc-notifications` | **Elixir / Phoenix** | `notifications` | Sistema (eventos) | Push/Email/WhatsApp + hub Phoenix Channels (WS) |
+| 8 | `svc-payments` | **Rust** | `payments` | Sistema (SAGA) | Pagamentos via Mercado Pago e estornos |
+| `bff-web` | TS + Bun (Hono) | — | Lojista | Agregador para o painel do lojista |
+| `bff-mobile` | TS + Bun (Hono) | — | Usuário | Agregador para o app do consumidor |
+| `web` | React + TS + Bun (Vite) | — | Lojista | Painel web do lojista |
+| `mobile` | Expo (React Native + TS) | — | Usuário | App iOS/Android do consumidor |
 
 ---
 
@@ -66,7 +70,7 @@ O FoodeApp é decomposto em **8 microserviços** de domínio + **2 BFFs** de apr
 - Promoção comprador → lojista: mesmo e-mail reutiliza o perfil existente (ver ADR-026)
 
 **Responsabilidades:**
-- Criar e atualizar perfil de aplicação (nome de exibição, avatar, telefone, CPF/CNPJ)
+- Criar e atualizar perfil de aplicação (nome de exibição, avatar, telefone)
 - Registrar a role do usuário no sistema (`comprador` | `lojista`)
 - Promover comprador para lojista (mantém comprador, adiciona lojista)
 - Gerenciar lista de lojas favoritadas pelo consumidor
@@ -81,7 +85,6 @@ users.users (
   display_name      VARCHAR(100) NOT NULL,
   avatar_url        TEXT,
   phone             VARCHAR(20),
-  tax_id            VARCHAR(20),                  -- CPF (comprador) ou CNPJ (lojista)
   role              VARCHAR(20) NOT NULL,         -- 'comprador' | 'lojista'
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -283,7 +286,7 @@ events.participations (
 - Redis para acesso de baixa latência à posição atual (TTL longo, sobrescrito a cada update)
 - PostgreSQL + PostGIS para geo-queries: "estabelecimentos abertos num raio de X km"
 - Flush periódico do Redis para o PostgreSQL (persistência de histórico)
-- Publica `EstabelecimentoLocalizacaoAtualizada` via RabbitMQ para o `svc-notifications` (que repassa ao hub WebSocket)
+- Publica `establishment.location_updated` via RabbitMQ para o `svc-notifications` (que repassa ao hub WebSocket)
 
 **Tabelas:**
 
@@ -409,11 +412,12 @@ TTL: 86400 (24h, renovado a cada alteração)
 
 ### 7. `svc-notifications` — Notificações & Realtime
 
-> Unifica entrega de notificações (push/email/WhatsApp) e o hub WebSocket/SignalR
+> Unifica entrega de notificações (push/email/WhatsApp) e o hub WebSocket via Phoenix Channels.
 
-**Schema:** `notifications`
+**Schema:** `notifications`  
+**Stack:** Elixir / Phoenix (ver [README do serviço](../services/svc-notifications/README.md) e [ADR-003](ADRs/ADR-003-stack-tecnologias.md))
 
-**Contexto:** Este serviço tem duas responsabilidades complementares: (1) entregar notificações *fora* do app (Push via FCM/APNs, WhatsApp via Twilio, e-mail via Resend) e (2) empurrar atualizações em tempo real *para* usuários com o app aberto via SignalR/WebSocket. Ambas as responsabilidades são desencadeadas pelos mesmos eventos do RabbitMQ, tornando natural sua coexistência no mesmo serviço.
+**Contexto:** Este serviço tem duas responsabilidades complementares: (1) entregar notificações *fora* do app (Push via FCM/APNs, WhatsApp via Meta Cloud API, e-mail via Resend/SES) e (2) empurrar atualizações em tempo real *para* usuários com o app aberto via **Phoenix Channels** (substitui SignalR no plano original — ver ADR-003 e ADR-014). Ambas as responsabilidades são desencadeadas pelos mesmos eventos do RabbitMQ (consumidos via Broadway), tornando natural sua coexistência no mesmo serviço.
 
 **Quem usa:**
 - Sistema (consumidor de eventos do RabbitMQ — coreografia)
@@ -427,12 +431,12 @@ TTL: 86400 (24h, renovado a cada alteração)
 - Logar tentativas de entrega para rastreabilidade
 
 *Realtime (in-app):*
-- Manter conexões WebSocket/SignalR autenticadas (JWT no handshake)
-- Consumir eventos do RabbitMQ: `PedidoStatusAlterado`, `EstabelecimentoLocalizacaoAtualizada`
-- Emitir eventos para grupos SignalR corretos (`user:{id}`, `establishment:{id}`)
-- Redis backplane para múltiplas instâncias (ADR-012, ADR-014)
+- Manter conexões WebSocket via **Phoenix Channels** autenticadas (JWT no handshake)
+- Consumir eventos do RabbitMQ via **Broadway**: `order.status_changed`, `establishment.location_updated`
+- Fazer broadcast para tópicos corretos (`user:{id}`, `establishment:{id}`)
+- Distribuição entre nós do cluster Erlang via `Phoenix.PubSub` (cobre o que SignalR fazia com Redis backplane — ADR-014)
 
-**Grupos SignalR:**
+**Tópicos Phoenix Channels:**
 ```
 user:{user_id}            → status do pedido (comprador)
 establishment:{loja_id}   → novos pedidos e atualizações (lojista)
@@ -486,7 +490,7 @@ notifications.logs (
 - Processar cobrança via cartão (tokenizado) ou PIX
 - Receber webhooks do Mercado Pago para confirmar/rejeitar pagamentos assíncronos
 - Emitir estorno em compensação de SAGA quando pedido é cancelado
-- Publicar `PagamentoConfirmado` / `PagamentoFalhou` / `PagamentoEstornado` via Outbox
+- Publicar `payment.confirmed` / `payment.failed` / `payment.refunded` via Outbox
 - Garantir idempotência via `X-Idempotency-Key` (ADR-013)
 
 **Tabelas:**
@@ -565,11 +569,11 @@ PUT  /orders/:id/status          → avança status do pedido
 
 ---
 
-### `bff-app` — Backend for Frontend (App do Consumidor)
+### `bff-mobile` — Backend for Frontend (App do Consumidor)
 
 **Schema:** nenhum
 
-**Atende:** App React Native — consumidor final
+**Atende:** App Expo (React Native) — consumidor final
 
 **Serviços que agrega:**
 - `svc-users` — perfil e favoritos do usuário
@@ -602,7 +606,7 @@ POST /favorites/:establishment_id → favoritar/desfavoritar loja
 | Origem | Destino | Motivo |
 |--------|---------|--------|
 | `bff-web` | `svc-users`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agrega dados para o painel |
-| `bff-app` | `svc-users`, `svc-location`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agrega dados para o app |
+| `bff-mobile` | `svc-users`, `svc-location`, `svc-establishments`, `svc-catalog`, `svc-orders`, `svc-events` | Agrega dados para o app |
 | `svc-orders` | `svc-catalog` | Valida disponibilidade e obtém snapshot de preço (carrinho + checkout) |
 
 ### Assíncrona (RabbitMQ + Outbox — ADR-006, ADR-017)
@@ -624,15 +628,14 @@ POST /favorites/:establishment_id → favoritar/desfavoritar loja
 ## SAGA: Fluxo Principal de Pedido
 
 ```
-Usuário faz checkout (bff-app → svc-orders, que lê o carrinho do Redis)
+Usuário faz checkout (bff-mobile → svc-orders, que lê o carrinho do Redis)
 │
 ├─ svc-orders: limpa carrinho Redis + cria pedido PENDENTE + salva SAGA state + Outbox { order.created }
 │
 ├─ svc-payments: recebe order.created → processa cobrança
 │     ├─ Sucesso → Outbox { payment.confirmed }
 │     │     └─ svc-orders: pedido → AGUARDANDO_ACEITE + Outbox { order.status_changed }
-│     │           ├─ svc-realtime: notifica usuário e lojista
-│     │           └─ svc-notifications: envia push "Pedido recebido"
+│     │           └─ svc-notifications: WebSocket (usuário/lojista) + push "Pedido recebido"
 │     │
 │     └─ Falha → Outbox { payment.failed }
 │           └─ svc-orders: pedido → CANCELADO (compensação)
@@ -663,7 +666,7 @@ Usuário faz checkout (bff-app → svc-orders, que lê o carrinho do Redis)
 | Posição GPS atual (baixa latência) | `svc-location` → Redis |
 | Posição GPS histórica | `svc-location` → PostgreSQL |
 | Notificação push/email/whatsapp | `svc-notifications` |
-| Atualização live (WebSocket) | `svc-notifications` (SignalR embutido) |
+| Atualização live (WebSocket) | `svc-notifications` (Phoenix Channels) |
 | Busca global (item/restaurante) | Endpoints de query do `svc-catalog` + `svc-establishments`, agregados pelo BFF (PostgreSQL full-text — sem serviço dedicado no estágio atual) |
 
 ---
@@ -682,7 +685,7 @@ postgres/
 └── payments.*          → svc-payments
 ```
 
-> `svc-orders` e `svc-notifications` também usam **Redis** para estado efêmero (carrinho e backplane SignalR, respectivamente), mas não possuem schemas adicionais.
+> `svc-orders` usa **Redis** para o carrinho. `svc-notifications` distribui mensagens entre nós via `Phoenix.PubSub` (cluster Erlang), sem precisar de Redis backplane.
 
 **Regras absolutas** (ADR-002):
 - Cada serviço acessa **apenas o seu próprio schema**

@@ -1,24 +1,24 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.Svcusers.Domain", "src\FoodeApp.Svcusers.Domain\FoodeApp.Svcusers.Domain.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.SvcUsers.Domain", "src\FoodeApp.SvcUsers.Domain\FoodeApp.SvcUsers.Domain.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.Svcusers.Application", "src\FoodeApp.Svcusers.Application\FoodeApp.Svcusers.Application.csproj", "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.SvcUsers.Application", "src\FoodeApp.SvcUsers.Application\FoodeApp.SvcUsers.Application.csproj", "{B2C3D4E5-F6A7-8901-BCDE-F12345678901}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.Svcusers.Adapters.API", "src\FoodeApp.Svcusers.Adapters.API\FoodeApp.Svcusers.Adapters.API.csproj", "{C3D4E5F6-A7B8-9012-CDEF-123456789012}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.SvcUsers.Adapters.API", "src\FoodeApp.SvcUsers.Adapters.API\FoodeApp.SvcUsers.Adapters.API.csproj", "{C3D4E5F6-A7B8-9012-CDEF-123456789012}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.Svcusers.Adapters.Data", "src\FoodeApp.Svcusers.Adapters.Data\FoodeApp.Svcusers.Adapters.Data.csproj", "{D4E5F6A7-B8C9-0123-DEF0-234567890123}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.SvcUsers.Adapters.Data", "src\FoodeApp.SvcUsers.Adapters.Data\FoodeApp.SvcUsers.Adapters.Data.csproj", "{D4E5F6A7-B8C9-0123-DEF0-234567890123}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.Svcusers.Adapters.External", "src\FoodeApp.Svcusers.Adapters.External\FoodeApp.Svcusers.Adapters.External.csproj", "{E5F6A7B8-C9D0-1234-EF01-345678901234}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.SvcUsers.Adapters.External", "src\FoodeApp.SvcUsers.Adapters.External\FoodeApp.SvcUsers.Adapters.External.csproj", "{E5F6A7B8-C9D0-1234-EF01-345678901234}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.Svcusers.Adapters.Messaging", "src\FoodeApp.Svcusers.Adapters.Messaging\FoodeApp.Svcusers.Adapters.Messaging.csproj", "{F6A7B8C9-D0E1-2345-F012-456789012345}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.SvcUsers.Adapters.Messaging", "src\FoodeApp.SvcUsers.Adapters.Messaging\FoodeApp.SvcUsers.Adapters.Messaging.csproj", "{F6A7B8C9-D0E1-2345-F012-456789012345}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.Svcusers.Domain.Tests", "tests\FoodeApp.Svcusers.Domain.Tests\FoodeApp.Svcusers.Domain.Tests.csproj", "{A7B8C9D0-E1F2-3456-0123-567890123456}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.SvcUsers.Domain.Tests", "tests\FoodeApp.SvcUsers.Domain.Tests\FoodeApp.SvcUsers.Domain.Tests.csproj", "{A7B8C9D0-E1F2-3456-0123-567890123456}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.Svcusers.Application.Tests", "tests\FoodeApp.Svcusers.Application.Tests\FoodeApp.Svcusers.Application.Tests.csproj", "{B8C9D0E1-F2A3-4567-1234-678901234567}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.SvcUsers.Application.Tests", "tests\FoodeApp.SvcUsers.Application.Tests\FoodeApp.SvcUsers.Application.Tests.csproj", "{B8C9D0E1-F2A3-4567-1234-678901234567}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoodeApp.Kernel", "..\..\shared\kernel-dotnet\src\FoodeApp.Kernel\FoodeApp.Kernel.csproj", "{10000000-0000-0000-0000-000000000001}"
 EndProject
